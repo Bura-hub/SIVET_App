@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif; /* Asumiendo que Inter está disponible o se importa */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Estilos personalizados para el contenedor del formulario de login */
+.login-card {
+    background-color: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+/* Estilos para los campos de entrada */
+.input-field {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #E0E0E0;
+    border-radius: 0.5rem;
+    outline: none;
+    transition: border-color 0.2s ease-in-out;
+    font-size: 1rem;
+    color: #333;
+}
+.input-field:focus {
+    border-color: #3B82F6;
+}
+/* Estilo para el botón principal */
+.login-button {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    background-color: #3B82F6;
+    color: white;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+    cursor: pointer;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+.login-button:hover {
+    background-color: #2563EB;
+    transform: translateY(-1px);
+}
+.login-button:active {
+    transform: translateY(0);
+}
+/* Estilo para enlaces secundarios */
+.secondary-link {
+    color: #3B82F6;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+.secondary-link:hover {
+    color: #2563EB;
+    text-decoration: underline;
+}
+
+/* Estilo para el contenedor del gráfico */
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 900px; /* Ancho máximo para el gráfico */
+  height: 400px; /* Altura fija para el gráfico */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Ajustes responsivos para el contenedor del gráfico */
+@media (max-width: 768px) {
+  .chart-container {
+    height: 300px; /* Menor altura en pantallas pequeñas */
+  }
+}

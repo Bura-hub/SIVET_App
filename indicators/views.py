@@ -6,12 +6,14 @@ from .models import Indicator
 from .serializers import IndicatorSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from datetime import datetime, timedelta
 
 # Create your views here.
 class IndicatorViewSet(viewsets.ModelViewSet):
     queryset = Indicator.objects.all()
     serializer_class = IndicatorSerializer
+    # permission_classes = [AllowAny] # Si quisiera que esta vista fuera pública
 
     @action(detail=False, methods=['get'], url_path='by-source-and-range')
     def get_by_source_and_range(self, request):

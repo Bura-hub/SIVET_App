@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
-import ElectricalDetails from './components/ElectricalDetails'; // Import the new component
+import ElectricalDetails from './components/ElectricalDetails';
+import InverterDetails from './components/InverterDetails';
+import WeatherDetails from './components/WeatherDetails';
+import ExportReports from './components/ExportReports'; // Import the new component
 import './index.css';
 
 function App() {
@@ -9,23 +12,20 @@ function App() {
     const [username, setUsername] = useState(localStorage.getItem('username'));
     const [isSuperuser, setIsSuperuser] = useState(localStorage.getItem('isSuperuser') === 'true');
     const [showLogoutAnimation, setShowLogoutAnimation] = useState(false);
-    // Inicializar currentPage desde localStorage, si no existe, usa 'dashboard'
+
     const [currentPage, setCurrentPage] = useState(localStorage.getItem('currentPage') || 'dashboard');
-    // Inicializar isSidebarMinimized desde localStorage, si no existe, usa false (expandido por defecto)
-    // localStorage almacena strings, así que 'true'/'false' deben convertirse a booleanos
     const [isSidebarMinimized, setIsSidebarMinimized] = useState(
         localStorage.getItem('isSidebarMinimized') === 'true'
     );
 
-    // useEffect para guardar el estado de la página actual en localStorage
     useEffect(() => {
         localStorage.setItem('currentPage', currentPage);
     }, [currentPage]);
 
-    // useEffect para guardar el estado de la barra lateral en localStorage
     useEffect(() => {
         localStorage.setItem('isSidebarMinimized', isSidebarMinimized);
     }, [isSidebarMinimized]);
+
 
     const handleLoginSuccess = (data) => {
         localStorage.setItem('authToken', data.token);
@@ -34,8 +34,8 @@ function App() {
         setAuthToken(data.token);
         setUsername(data.username);
         setIsSuperuser(data.is_superuser);
-        setCurrentPage('dashboard'); // Redirigir a dashboard después del login
-        localStorage.setItem('currentPage', 'dashboard'); // Asegurar que se guarda en localStorage
+        setCurrentPage('dashboard');
+        localStorage.setItem('currentPage', 'dashboard');
     };
 
     const handleLogout = async () => {
@@ -61,18 +61,20 @@ function App() {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('username');
                 localStorage.removeItem('isSuperuser');
-                localStorage.removeItem('currentPage'); // Limpiar la página guardada
-                localStorage.removeItem('isSidebarMinimized'); // Limpiar el estado de la barra lateral
+                localStorage.removeItem('currentPage');
+                localStorage.removeItem('isSidebarMinimized');
+                localStorage.removeItem('electricalDetailsActiveTab');
+                localStorage.removeItem('inverterDetailsActiveTab');
+                localStorage.removeItem('weatherDetailsActiveTab');
                 setAuthToken(null);
                 setUsername(null);
                 setIsSuperuser(false);
                 setShowLogoutAnimation(false);
-                setCurrentPage('dashboard'); // Resetear a dashboard después del logout
+                setCurrentPage('dashboard');
             }
-        }, 2000);
+        }, 3000);
     };
 
-    // Function to change the current page
     const navigateTo = (page) => {
       setCurrentPage(page);
     };
@@ -80,7 +82,7 @@ function App() {
     return (
         <div className="min-h-screen w-full">
             {authToken ? (
-                // Renderizar contenido basado en el estado currentPage
+                // Render content based on currentPage state
                 currentPage === 'dashboard' ? (
                     <Dashboard
                         authToken={authToken}
@@ -88,18 +90,48 @@ function App() {
                         username={username}
                         isSuperuser={isSuperuser}
                         navigateTo={navigateTo}
-                        isSidebarMinimized={isSidebarMinimized} // Pasar estado de la barra lateral
-                        setIsSidebarMinimized={setIsSidebarMinimized} // Pasar setter de la barra lateral
+                        isSidebarMinimized={isSidebarMinimized}
+                        setIsSidebarMinimized={setIsSidebarMinimized}
                     />
-                ) : (
+                ) : currentPage === 'electricalDetails' ? (
                     <ElectricalDetails
                         authToken={authToken}
                         onLogout={handleLogout}
                         username={username}
                         isSuperuser={isSuperuser}
                         navigateTo={navigateTo}
-                        isSidebarMinimized={isSidebarMinimized} // Pasar estado de la barra lateral
-                        setIsSidebarMinimized={setIsSidebarMinimized} // Pasar setter de la barra lateral
+                        isSidebarMinimized={isSidebarMinimized}
+                        setIsSidebarMinimized={setIsSidebarMinimized}
+                    />
+                ) : currentPage === 'inverterDetails' ? (
+                    <InverterDetails
+                        authToken={authToken}
+                        onLogout={handleLogout}
+                        username={username}
+                        isSuperuser={isSuperuser}
+                        navigateTo={navigateTo}
+                        isSidebarMinimized={isSidebarMinimized}
+                        setIsSidebarMinimized={setIsSidebarMinimized}
+                    />
+                ) : currentPage === 'weatherDetails' ? (
+                    <WeatherDetails
+                        authToken={authToken}
+                        onLogout={handleLogout}
+                        username={username}
+                        isSuperuser={isSuperuser}
+                        navigateTo={navigateTo}
+                        isSidebarMinimized={isSidebarMinimized}
+                        setIsSidebarMinimized={setIsSidebarMinimized}
+                    />
+                ) : ( // New condition for ExportReports
+                    <ExportReports
+                        authToken={authToken}
+                        onLogout={handleLogout}
+                        username={username}
+                        isSuperuser={isSuperuser}
+                        navigateTo={navigateTo}
+                        isSidebarMinimized={isSidebarMinimized}
+                        setIsSidebarMinimized={setIsSidebarMinimized}
                     />
                 )
             ) : (
@@ -108,7 +140,7 @@ function App() {
                 </div>
             )}
 
-            {/* Overlay de animación para Cerrar Sesión */}
+            {/* Animation Overlay for Logout */}
             {showLogoutAnimation && (
                 <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
                     <div className="flex flex-col items-center">

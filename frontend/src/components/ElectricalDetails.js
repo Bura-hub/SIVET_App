@@ -31,8 +31,9 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [activeTab, setActiveTab] = useState('consumptionTrends'); // State for active tab
-
+  // Initialize activeTab from localStorage, default to 'consumptionTrends'
+  const [activeTab, setActiveTab] = useState(localStorage.getItem('electricalDetailsActiveTab') || 'consumptionTrends');
+  
   const profileMenuRef = useRef(null);
 
   // Close profile menu when clicking outside
@@ -47,6 +48,11 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [profileMenuRef]);
+
+  // Save activeTab to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('electricalDetailsActiveTab', activeTab);
+  }, [activeTab]);
 
   // Dummy data for charts in Electrical Details
   const dailyConsumptionData = {
@@ -172,9 +178,8 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     return () => clearTimeout(timer);
   }, [activeTab]);
 
-
   return (
-    <div className="flex min-h-screen bg-[#f0f1f0] w-full">
+    <div className="flex min-h-screen bg-gray-100 w-full">
       {/* Sidebar - Reused from Dashboard */}
       <aside className={`bg-white p-6 shadow-lg flex flex-col justify-between transition-all duration-300 ${isSidebarMinimized ? 'w-20 items-center overflow-hidden' : 'w-64'}`}>
         <div>
@@ -228,7 +233,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
           <nav>
             <ul>
               <li className="mb-2">
-                <a href="#" className={`flex items-center p-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('dashboard')}>
+                <a href="#" className={`flex items-center p-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-blue-700 transition-colors ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('dashboard')}>
                   <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                   <span className={`transition-opacity duration-300 ${isSidebarMinimized ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>Inicio</span>
                 </a>
@@ -240,19 +245,19 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                 </a>
               </li>
               <li className="mb-2">
-                <a href="#" className={`flex items-center p-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('inverterDetails')}>
+                <a href="#" className={`flex items-center p-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-red-700 transition-colors ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('inverterDetails')}>
                   <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0h7m-7 0h-2m7 0v-6a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2h-2a2 2 0 01-2-2zm0 0h-2m0-9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v3.337C3 11.901 4.238 13 5.762 13H18.238c1.524 0 2.762-1.099 2.762-2.663V7a2 2 0 00-2-2h-2a2 2 0 00-2 2v3.337"></path></svg>
                   <span className={`transition-opacity duration-300 ${isSidebarMinimized ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>Inversores</span>
                 </a>
               </li>
               <li className="mb-2">
-                <a href="#" className={`flex items-center p-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('weatherDetails')}>
+                <a href="#" className={`flex items-center p-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-orange-700 transition-colors ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('weatherDetails')}>
                   <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h1M4 12H3m15.325 6.675l-.707.707M6.707 6.707l-.707-.707m12.728 0l-.707-.707M6.707 17.293l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                   <span className={`transition-opacity duration-300 ${isSidebarMinimized ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>Estaciones</span>
                 </a>
               </li>
               <li className="mb-2">
-                <a href="#" className={`flex items-center p-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('exportReports')}>
+                <a href="#" className={`flex items-center p-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-blue-700 transition-colors ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('exportReports')}>
                   <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                   <span className={`transition-opacity duration-300 ${isSidebarMinimized ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>Exportar Reportes</span>
                 </a>
@@ -368,40 +373,41 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
         </header>
 
         {/* Key Indicators Section */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"> {/* Changed to 3 columns */}
-          <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between">
-            <h3 className="text-gray-600 text-sm mb-2">Carga Diaria Promedio</h3>
+        <section className="bg-white grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"> {/* Changed to 3 columns */}
+          <div className="bg-gray-100 p-6 rounded-xl shadow-md flex flex-col justify-between">
+            <h3 className="text-gray-600 text-sm font-medium text-gray-400 mb-2">Carga Diaria Promedio</h3>
             <p className="text-2xl font-bold text-gray-900">500 kWh</p>
             <p className="text-gray-500 text-xs">Estable</p> {/* Changed text */}
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between">
-            <h3 className="text-gray-600 text-sm mb-2">Demanda Pico</h3>
+          <div className="bg-gray-100 p-6 rounded-xl shadow-md flex flex-col justify-between">
+            <h3 className="text-gray-600 text-sm font-medium text-gray-400 mb-2">Demanda Pico</h3>
             <p className="text-2xl font-bold text-gray-900">750 kW</p>
-            <p className="text-gray-500 text-xs">14:30 ayer</p> {/* Changed text */}
+            <p className="text-gray-500 text-xs font-semibold text-red-600">14:30 ayer</p> {/* Changed text */}
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between">
-            <h3 className="text-gray-600 text-sm mb-2">Consumo Acumulado</h3>
+          <div className="bg-gray-100 p-6 rounded-xl shadow-md flex flex-col justify-between">
+            <h3 className="text-gray-600 text-sm font-medium text-gray-400 mb-2">Consumo Acumulado</h3>
             <p className="text-2xl font-bold text-gray-900">3.5 MWh</p>
-            <p className="text-gray-500 text-xs">YTD</p> {/* Changed text */}
+            <p className="text-gray-500 text-xs font-semibold text-green-600">YTD</p> {/* Changed text */}
           </div>
         </section>
 
         {/* Tabs for Consumption Trends, Generation Overview, Energy Balance */}
-        <div className="mb-6 flex border-b border-gray-200">
+        <div className="mb-6 flex space-x-6">
           <button
-            className={`py-2 px-4 text-sm font-medium ${activeTab === 'consumptionTrends' ? 'border-b-2 border-blue-500 text-blue-700' : 'text-gray-600 hover:text-gray-900'}`}
+          flex items-center p-3 rounded-xl bg-green-100 text-green-700 font-semibold 
+            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'consumptionTrends' ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-600 hover:text-green-700 font-semibold'}`}
             onClick={() => setActiveTab('consumptionTrends')}
           >
             Tendencias de Consumo
           </button>
           <button
-            className={`py-2 px-4 text-sm font-medium ${activeTab === 'generationOverview' ? 'border-b-2 border-blue-500 text-blue-700' : 'text-gray-600 hover:text-gray-900'}`}
+            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'generationOverview' ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-600 hover:text-green-700 font-semibold'}`}
             onClick={() => setActiveTab('generationOverview')}
           >
             Visión General de Generación
           </button>
           <button
-            className={`py-2 px-4 text-sm font-medium ${activeTab === 'energyBalance' ? 'border-b-2 border-blue-500 text-blue-700' : 'text-gray-600 hover:text-gray-900'}`}
+            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'energyBalance' ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-600 hover:text-green-700 font-semibold'}`}
             onClick={() => setActiveTab('energyBalance')}
           >
             Balance Energético
@@ -412,7 +418,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
         {activeTab === 'consumptionTrends' && (
           <section className="grid grid-cols-1 lg:grid-cols-1 gap-6">
             {/* Daily Consumption Chart */}
-            <div className="bg-white p-6 shadow-md rounded-xl">
+            <div className="bg-gray-100 p-6 shadow-md rounded-xl">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Consumo Diario (Últimos 30 Días)</h3>
               <p className="text-sm text-gray-500 mb-4">Gráfico interactivo con Tooltips y Líneas codificadas por color (ej. Rojo para Pico, Verde para Meta)</p>
               <div className="chart-container">
@@ -421,7 +427,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
             </div>
 
             {/* Hourly Load Profile Chart */}
-            <div className="bg-white p-6 shadow-md rounded-xl">
+            <div className="bg-gray-100 p-6 shadow-md rounded-xl">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Perfil de Carga Horaria (Hoy)</h3>
               <p className="text-sm text-gray-500 mb-4">Gráfico interactivo con Zoom & Pan</p>
               <div className="chart-container">

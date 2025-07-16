@@ -1,5 +1,3 @@
-// frontend/src/components/Dashboard.js
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import {
@@ -14,8 +12,10 @@ import {
   Legend,
 } from 'chart.js';
 
+// Import the SVG logo
 import sivetLogo from './sivet-logo.svg';
 
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -27,17 +27,16 @@ ChartJS.register(
   Legend
 );
 
-// Recibe isSidebarMinimized y setIsSidebarMinimized de App.js
-function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isSidebarMinimized, setIsSidebarMinimized }) {
-  const [data, setData] = useState([]);
+function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigateTo, isSidebarMinimized, setIsSidebarMinimized }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [source, setSource] = useState('electricidad');
-  const [days, setDays] = useState(30);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  // Initialize activeTab from localStorage, default to 'consumptionTrends'
+  const [activeTab, setActiveTab] = useState(localStorage.getItem('electricalDetailsActiveTab') || 'consumptionTrends');
 
   const profileMenuRef = useRef(null);
 
+  // Close profile menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
@@ -50,12 +49,57 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     };
   }, [profileMenuRef]);
 
-  const electricityConsumptionData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  // Save activeTab to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('electricalDetailsActiveTab', activeTab);
+  }, [activeTab]);
+
+  // Dummy data for charts in Electrical Details
+  const dailyConsumptionData = {
+    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7', 'Day 8', 'Day 9', 'Day 10', 'Day 11', 'Day 12', 'Day 13', 'Day 14', 'Day 15', 'Day 16', 'Day 17', 'Day 18', 'Day 19', 'Day 20', 'Day 21', 'Day 22', 'Day 23', 'Day 24', 'Day 25', 'Day 26', 'Day 27', 'Day 28', 'Day 29', 'Day 30'],
     datasets: [
       {
-        label: 'Consumption (MWh)',
-        data: [1.0, 1.1, 1.2, 1.1, 1.3, 1.4, 1.3, 1.2, 1.1, 1.0, 0.9, 1.0],
+        label: 'Consumo Diario (kWh)',
+        data: Array.from({ length: 30 }, () => Math.floor(Math.random() * (700 - 300 + 1)) + 300), // Random data between 300-700 kWh
+        borderColor: '#3B82F6',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 2,
+        pointBackgroundColor: '#3B82F6',
+      },
+      {
+        label: 'Pico (kW)',
+        data: Array.from({ length: 30 }, () => Math.floor(Math.random() * (900 - 600 + 1)) + 600), // Random data for peak
+        borderColor: '#EF4444', // Red for Peak
+        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+        fill: false,
+        tension: 0.4,
+        pointRadius: 2,
+        pointBackgroundColor: '#EF4444',
+        borderDash: [5, 5], // Dashed line for peak
+      },
+      {
+        label: 'Meta (kWh)',
+        data: Array.from({ length: 30 }, () => 550), // Green for Target
+        borderColor: '#10B981',
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+        fill: false,
+        tension: 0.4,
+        pointRadius: 0, // No points for target line
+      },
+    ],
+  };
+
+  const hourlyLoadData = {
+    labels: Array.from({ length: 24 }, (_, i) => `${i}:00`), // Labels from 0:00 to 23:00
+    datasets: [
+      {
+        label: 'Carga Horaria (kW)',
+        data: [
+          100, 90, 80, 70, 60, 80, 150, 250, 350, 400, 420, 410, // Morning to Noon
+          380, 350, 320, 300, 280, 250, 200, 180, 160, 140, 120, 110 // Afternoon to Night
+        ], // Example hourly load data
         borderColor: '#3B82F6',
         backgroundColor: 'rgba(59, 130, 246, 0.2)',
         fill: true,
@@ -66,41 +110,13 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     ],
   };
 
-  const inverterGenerationData = {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-    datasets: [
-      {
-        label: 'Generation (MWh)',
-        data: [0.25, 0.28, 0.26, 0.30],
-        backgroundColor: '#10B981',
-        borderColor: '#059669',
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const temperatureTrendsData = {
-    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
-    datasets: [
-      {
-        label: 'Avg Temp (°C)',
-        data: [28, 29, 30, 32, 31, 29, 28],
-        borderColor: '#EF4444',
-        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 2,
-        pointBackgroundColor: '#EF4444',
-      },
-    ],
-  };
-
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false,
+        display: true, // Display legend for multiple datasets
+        position: 'bottom',
       },
       title: {
         display: false,
@@ -121,6 +137,21 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
             return label;
           }
         }
+      },
+      zoom: { // Enable zoom and pan
+        pan: {
+          enabled: true,
+          mode: 'x', // Pan only on x-axis
+        },
+        zoom: {
+          wheel: {
+            enabled: true,
+          },
+          pinch: {
+            enabled: true
+          },
+          mode: 'x', // Zoom only on x-axis
+        }
       }
     },
     scales: {
@@ -138,39 +169,18 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
   };
 
   useEffect(() => {
-    const fetchIndicators = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`/api/indicators/by-source-and-range/?source=${source}&days=${days}`, {
-            headers: {
-                'Authorization': `Token ${authToken}`
-            }
-        });
-        if (!response.ok) {
-          if (response.status === 401 || response.status === 403) {
-            onLogout();
-            throw new Error('Unauthorized. Please log in again.');
-          }
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const result = await response.json();
-        setData(result);
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (authToken) {
-        fetchIndicators();
-    }
-  }, [source, days, authToken, onLogout]);
+    // In a real app, you would fetch data based on activeTab, time range, etc.
+    // For now, we just simulate loading
+    setLoading(true);
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000); // Simulate network request
+    return () => clearTimeout(timer);
+  }, [activeTab]);
 
   return (
     <div className="flex min-h-screen bg-[#f0f1f0] w-full">
-      {/* Sidebar */}
+      {/* Sidebar - Reused from Dashboard */}
       <aside className={`bg-white p-6 shadow-lg flex flex-col justify-between transition-all duration-300 ${isSidebarMinimized ? 'w-20 items-center overflow-hidden' : 'w-64'}`}>
         <div>
           <div className={`flex items-center mb-3 w-full transition-all duration-300 ${isSidebarMinimized ? 'justify-center' : 'justify-between'}`}>
@@ -223,13 +233,13 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
           <nav>
             <ul>
               <li className="mb-2">
-                <a href="#" className={`flex items-center p-3 rounded-xl bg-blue-100 text-blue-700 font-semibold ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('dashboard')}>
+                <a href="#" className={`flex items-center p-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('dashboard')}>
                   <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                   <span className={`transition-opacity duration-300 ${isSidebarMinimized ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>Inicio</span>
                 </a>
               </li>
               <li className="mb-2">
-                <a href="#" className={`flex items-center p-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('electricalDetails')}>
+                <a href="#" className={`flex items-center p-3 rounded-xl bg-blue-100 text-blue-700 font-semibold ${isSidebarMinimized ? 'justify-center' : ''}`} onClick={() => navigateTo('electricalDetails')}>
                   <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                   <span className={`transition-opacity duration-300 ${isSidebarMinimized ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>Medidores</span>
                 </a>
@@ -328,7 +338,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       <main className="flex-1 p-8 bg-white rounded-tl-3xl shadow-inner">
         {/* Header */}
         <header className="flex justify-between items-center mb-8 bg-white p-4 -mx-8 -mt-8 rounded-tl-3xl">
-          <h1 className="text-3xl font-bold text-gray-800">Visión General</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Detalles Eléctricos</h1>
           <div className="flex items-center space-x-4">
             {/* Time Range Button */}
             <button className="flex items-center bg-gray-100 text-gray-800 px-4 py-2 rounded-full text-sm font-medium transition hover:bg-gray-200 shadow-sm">
@@ -350,16 +360,6 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
               Ubicación: Todas
             </button>
 
-            {/* Site Selector */}
-            <button className="flex items-center bg-gray-100 text-gray-800 px-4 py-2 rounded-full text-sm font-medium transition hover:bg-gray-200 shadow-sm">
-              {/* Building/Site Icon */}
-              <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                <path d="M3 3h18v4H3zM6 7v14h12V7" />
-                <path d="M10 11h4M10 15h4" strokeLinecap="round" />
-              </svg>
-              Sitio Actual
-            </button>
-
             {/* Device Filter */}
             <button className="flex items-center bg-gray-100 text-gray-800 px-4 py-2 rounded-full text-sm font-medium transition hover:bg-gray-200 shadow-sm">
               {/* Device Icon */}
@@ -373,58 +373,83 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         </header>
 
         {/* Key Indicators Section */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gray-100 p-6 rounded-xl shadow-md flex flex-col justify-between">
-            <h3 className="text-gray-600 text-sm mb-2">Consumo Total</h3>
-            <p className="text-2xl font-bold text-gray-900">1.2 MWh</p>
-            <p className="text-green-500 text-xs">+8.5% vs el mes pasado</p>
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between">
+            <h3 className="text-gray-600 text-sm mb-2">Carga Diaria Promedio</h3>
+            <p className="text-2xl font-bold text-gray-900">500 kWh</p>
+            <p className="text-gray-500 text-xs">Estable</p>
           </div>
-          <div className="bg-gray-100 p-6 rounded-xl shadow-md flex flex-col justify-between">
-            <h3 className="text-gray-600 text-sm mb-2">Variación semanal</h3>
-            <p className="text-2xl font-bold text-green-600">+5.2%</p>
-            <p className="text-gray-500 text-xs">Crecimiento constante</p>
+          <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between">
+            <h3 className="text-gray-600 text-sm mb-2">Demanda Pico</h3>
+            <p className="text-2xl font-bold text-gray-900">750 kW</p>
+            <p className="text-gray-500 text-xs">14:30 ayer</p>
           </div>
-          <div className="bg-gray-100 p-6 rounded-xl shadow-md flex flex-col justify-between">
-            <h3 className="text-gray-600 text-sm mb-2">Temperatura máxima</h3>
-            <p className="text-2xl font-bold text-gray-900">32°C</p>
-            <p className="text-gray-500 text-xs">Prom: 28°C</p>
-          </div>
-          <div className="bg-gray-100 p-6 rounded-xl shadow-md flex flex-col justify-between">
-            <h3 className="text-gray-600 text-sm mb-2">Temperatura mínima</h3>
-            <p className="text-2xl font-bold text-gray-900">18°C</p>
-            <p className="text-gray-500 text-xs">Prom: 15°C</p>
+          <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col justify-between">
+            <h3 className="text-gray-600 text-sm mb-2">Consumo Acumulado</h3>
+            <p className="text-2xl font-bold text-gray-900">3.5 MWh</p>
+            <p className="text-gray-500 text-xs">YTD</p>
           </div>
         </section>
 
-        {/* Charts Section */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 30-Day Electricity Consumption */}
-          <div className="bg-gray-100 p-6 shadow-md rounded-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Consumo de electricidad de 30 días</h3>
-            <div className="chart-container">
-              <Line data={electricityConsumptionData} options={chartOptions} />
-            </div>
-          </div>
+        {/* Tabs for Consumption Trends, Generation Overview, Energy Balance */}
+        <div className="mb-6 flex space-x-6">
+          <button
+            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'consumptionTrends' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-blue-700'}`}
+            onClick={() => setActiveTab('consumptionTrends')}
+          >
+            Tendencias de Consumo
+          </button>
+          <button
+            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'generationOverview' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-blue-700'}`}
+            onClick={() => setActiveTab('generationOverview')}
+          >
+            Visión General de Generación
+          </button>
+          <button
+            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'energyBalance' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-blue-700'}`}
+            onClick={() => setActiveTab('energyBalance')}
+          >
+            Balance Energético
+          </button>
+        </div>
 
-          {/* Monthly Inverter Generation Comparison */}
-          <div className="bg-gray-100 p-6 rounded-xl shadow-md">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Comparación de la generación mensual de inversores</h3>
-            <div className="chart-container">
-              <Bar data={inverterGenerationData} options={chartOptions} />
+        {/* Content based on active tab */}
+        {activeTab === 'consumptionTrends' && (
+          <section className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+            {/* Daily Consumption Chart */}
+            <div className="bg-white p-6 shadow-md rounded-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Consumo Diario (Últimos 30 Días)</h3>
+              <p className="text-sm text-gray-500 mb-4">Gráfico interactivo con Tooltips y Líneas codificadas por color (ej. Rojo para Pico, Verde para Meta)</p>
+              <div className="chart-container">
+                <Line data={dailyConsumptionData} options={chartOptions} />
+              </div>
             </div>
-          </div>
 
-          {/* Daily Average Temperature Trends */}
-          <div className="bg-gray-100 p-6 rounded-xl shadow-md lg:col-span-2">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Tendencias de la temperatura media diaria</h3>
-            <div className="chart-container">
-              <Line data={temperatureTrendsData} options={chartOptions} />
+            {/* Hourly Load Profile Chart */}
+            <div className="bg-white p-6 shadow-md rounded-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Perfil de Carga Horaria (Hoy)</h3>
+              <p className="text-sm text-gray-500 mb-4">Gráfico interactivo con Zoom & Pan</p>
+              <div className="chart-container">
+                <Line data={hourlyLoadData} options={chartOptions} />
+              </div>
             </div>
+          </section>
+        )}
+
+        {/* Placeholder for other tabs */}
+        {activeTab === 'generationOverview' && (
+          <div className="bg-white p-6 shadow-md rounded-xl h-96 flex items-center justify-center text-gray-500">
+            Contenido para Visión General de Generación
           </div>
-        </section>
+        )}
+        {activeTab === 'energyBalance' && (
+          <div className="bg-white p-6 shadow-md rounded-xl h-96 flex items-center justify-center text-gray-500">
+            Contenido para Balance Energético
+          </div>
+        )}
       </main>
     </div>
   );
 }
 
-export default Dashboard;
+export default ElectricalDetails;

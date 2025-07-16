@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import sivetLogo from './sivet-logo.svg'; 
 
 function LoginPage({ onLoginSuccess }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
     const [loading, setLoading] = useState(false);
+    const [showAnimation, setShowAnimation] = useState(false); // New state for animation
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -20,12 +22,26 @@ function LoginPage({ onLoginSuccess }) {
                 body: JSON.stringify({ username, password }),
             });
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                setMessage({ text: 'Server error: Unexpected response. (Is backend running?)', type: 'error' });
+                console.error('Error parsing JSON:', jsonError);
+                console.error('Server response:', await response.text());
+                setLoading(false);
+                return;
+            }
 
             if (response.ok) {
-                setMessage({ text: 'Inicio de sesión exitoso. Redirigiendo...', type: 'success' });
-                // Llama a la función pasada por props para manejar el éxito del login
-                onLoginSuccess(data.token);
+                setMessage({ text: 'Inicio exitoso. Redireccionando...', type: 'success' });
+                setShowAnimation(true); // Show animation on success
+
+                // Simulate 3-second animation before calling onLoginSuccess
+                setTimeout(() => {
+                    setShowAnimation(false); // Hide animation
+                    onLoginSuccess(data); // Proceed with login success
+                }, 2000); // 3 seconds
             } else {
                 // Manejar errores específicos de la API (ej. credenciales inválidas)
                 const errorMessage = data.non_field_errors ? data.non_field_errors[0] : 'Credenciales inválidas. Inténtalo de nuevo.';
@@ -41,20 +57,21 @@ function LoginPage({ onLoginSuccess }) {
 
     return (
         <div className="login-card">
-            <div className="flex justify-center mb-4">
-                <span className="text-4xl text-blue-500">⚡</span>
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-1">EnergyFlow</h2>
-            <p className="text-sm text-gray-500 mb-8">Monitor. Analyze. Decide.</p>
+            <img
+                src={sivetLogo}
+                alt="SIVET Logo"
+                className="w-50 h-auto mx-auto"
+            />
+            <p className="text-sm text-gray-500 mb-8">Transparencia energética para un futuro descentralizado</p>
 
             <form onSubmit={handleSubmit}>
                 <div className="mb-5 text-left">
-                    <label htmlFor="username" className="block text-gray-700 text-sm font-medium mb-2">Username</label>
+                    <label htmlFor="username" className="block text-gray-700 text-sm font-medium mb-2">Usuario</label>
                     <input
                         type="text"
                         id="username"
                         name="username"
-                        placeholder="Enter your username"
+                        placeholder="Introduce tu usuario"
                         className="input-field"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
@@ -62,12 +79,12 @@ function LoginPage({ onLoginSuccess }) {
                     />
                 </div>
                 <div className="mb-6 text-left">
-                    <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-2">Password</label>
+                    <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-2">Contraseña</label>
                     <input
                         type="password"
                         id="password"
                         name="password"
-                        placeholder="Enter your password"
+                        placeholder="Introduce tu contraseña"
                         className="input-field"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -75,7 +92,7 @@ function LoginPage({ onLoginSuccess }) {
                     />
                 </div>
                 <button type="submit" className="login-button" disabled={loading}>
-                    {loading ? 'Iniciando sesión...' : 'Login'}
+                    {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                 </button>
             </form>
 
@@ -88,9 +105,17 @@ function LoginPage({ onLoginSuccess }) {
             )}
 
             <div className="mt-8 flex justify-between text-sm">
-                <a href="#" className="secondary-link">Forgot Password?</a>
-                <a href="#" className="secondary-link">Create an Account</a>
+                <a href="#" className="secondary-link">Olvido su contraseña?</a>
+                <a href="#" className="secondary-link">Crear una cuenta</a>
             </div>
+            {showAnimation && (
+            <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
+                <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+                    <p className="mt-4 text-lg text-gray-700">Iniciando sesión...</p>
+                </div>
+            </div>
+            )}
         </div>
     );
 }

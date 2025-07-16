@@ -4,20 +4,21 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', sans-serif; /* Asumiendo que Inter está disponible o se importa */
+  font-family: 'Inter', sans-serif; /* Asegúrate de que esta fuente esté disponible o sea una alternativa */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
 }
 
 /* Estilos personalizados para el contenedor del formulario de login */
 .login-card {
-    background-color: white;
+    background-color: #f0f1f0; /* Fondo de la tarjeta de login */
     border-radius: 1.5rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     padding: 2.5rem;
     width: 100%;
     max-width: 400px;
@@ -70,7 +71,7 @@ code {
     text-decoration: underline;
 }
 
-/* Estilo para el contenedor del gráfico */
+/* Estilos para el contenedor del gráfico */
 .chart-container {
   position: relative;
   width: 100%;

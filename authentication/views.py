@@ -16,7 +16,8 @@ class LoginView(ObtainAuthToken):
         return Response({
             'token': token.key,
             'user_id': user.pk,
-            'username': user.username
+            'username': user.username,
+            'is_superuser': user.is_superuser # ¡Añade esta línea!
         })
 
 class LogoutView(APIView):

@@ -159,3 +159,14 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated', # Por defecto, todas las vistas requieren autenticación
     ]
 }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake', # Un nombre único para tu caché en memoria
+        'TIMEOUT': 300, # Tiempo predeterminado en segundos para que un elemento expire (ej. 5 minutos)
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000 # Número máximo de entradas en la caché
+        }
+    }
+}

@@ -20,5 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('indicators.urls')),
-    path('api/auth/', include('authentication.urls')), # Añadir aquí
+    path('api/auth/', include('authentication.urls')),
+    path('api/scada/', include('scada_proxy.urls')), # Nueva ruta para tu proxy SCADA
 ]

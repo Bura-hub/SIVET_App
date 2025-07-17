@@ -9,8 +9,19 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Accede a las variables de entorno
+SCADA_USERNAME = os.getenv("SCADA_USERNAME")
+SCADA_PASSWORD = os.getenv("SCADA_PASSWORD")
+
+# Asegúrate de que existan (para depuración, en producción fallará si no están seteadas)
+if not SCADA_USERNAME or not SCADA_PASSWORD:
+    raise EnvironmentError("SCADA_USERNAME or SCADA_PASSWORD environment variables are not set.")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,7 +53,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'indicators',
     'rest_framework.authtoken',
-    'authentication'
+    'authentication',
+    'scada_proxy'
 ]
 
 MIDDLEWARE = [

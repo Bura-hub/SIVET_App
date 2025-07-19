@@ -190,7 +190,8 @@ CELERY_ACCEPT_CONTENT = ['json'] # Formatos de datos aceptados
 CELERY_TASK_SERIALIZER = 'json' # Serializador para los datos de la tarea
 CELERY_RESULT_SERIALIZER = 'json' # Serializador para los resultados de la tarea
 CELERY_TIMEZONE = 'America/Bogota' # ¡Asegúrate de que coincida con tu TIME_ZONE de Django!
-CELERY_TASK_TRACK_STARTED = True # Las tareas reportarán su estado 'STARTED'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_RESULT_EXTENDED = True  # Para obtener más detalles de los resultados
 
 # Configuración para Celery Beat (planificador de tareas)
 from datetime import timedelta

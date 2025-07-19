@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import DeviceCategory, Device, Measurement, Institution
+from .models import DeviceCategory, Device, Measurement, Institution, TaskProgress
 
 class InstitutionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,3 +26,22 @@ class MeasurementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Measurement
         fields = '__all__'
+
+class TaskProgressSerializer(serializers.ModelSerializer):
+    progress_percent = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TaskProgress
+        fields = [
+            'task_id',
+            'status',
+            'processed_devices',
+            'total_devices',
+            'progress_percent',
+            'message',
+            'started_at',
+            'finished_at'
+        ]
+
+    def get_progress_percent(self, obj):
+        return obj.progress_percent()

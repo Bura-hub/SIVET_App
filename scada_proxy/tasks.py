@@ -8,7 +8,7 @@ from django.db import transaction, IntegrityError
 
 # Importa tu cliente SCADA y tus modelos
 from .scada_client import ScadaConnectorClient
-from .models import Institution, DeviceCategory, Device, Measurement
+from .models import Institution, DeviceCategory, Device, Measurement, TaskProgress
 
 logger = logging.getLogger(__name__)
 scada_client = ScadaConnectorClient()
@@ -168,6 +168,7 @@ def fetch_and_save_measurements_for_device(self, device_scada_id: str, django_de
 def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
     """
     Lanza subtareas para obtener mediciones históricas de todos los dispositivos en el rango dado.
+    Permite cancelar la ejecución a través de la tabla TaskProgress.
     """
     time_range = timedelta(seconds=time_range_seconds)
     now_utc = datetime.now(timezone.utc)
@@ -181,7 +182,23 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
         logger.warning("No hay dispositivos activos registrados en la base de datos.")
         return
 
+    # Intentar obtener el registro de progreso
+    task_progress = None
+    from celery import current_task
+    if current_task:
+        task_progress = TaskProgress.objects.filter(task_id=current_task.request.id).first()
+
     for device in devices:
+        # Verificar si se marcó como cancelada
+        if task_progress:
+            task_progress.refresh_from_db()
+            if getattr(task_progress, "is_cancelled", False):
+                logger.warning(f"Tarea {task_progress.task_id} cancelada. Abortando ejecución.")
+                task_progress.status = 'CANCELLED'
+                task_progress.message = 'La tarea fue cancelada mientras se ejecutaba.'
+                task_progress.save(update_fields=['status', 'message'])
+                return  # Sale del bucle y no encola más subtareas
+
         fetch_and_save_measurements_for_device.delay(
             device_scada_id=device.scada_id,
             django_device_id=device.id,
@@ -190,5 +207,15 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
         )
         logger.info(f"Tarea creada para dispositivo {device.name} ({device.scada_id}) "
                     f"desde {from_date} hasta {now_utc}.")
+
+        # Actualizar progreso si existe registro
+        if task_progress:
+            task_progress.processed_devices += 1
+            task_progress.save(update_fields=['processed_devices'])
+
+    if task_progress:
+        task_progress.status = 'SUCCESS'
+        task_progress.message = 'Todas las subtareas para obtener mediciones han sido encoladas.'
+        task_progress.save(update_fields=['status', 'message'])
 
     logger.info("Todas las subtareas para obtener mediciones han sido encoladas.")

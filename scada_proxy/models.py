@@ -72,3 +72,19 @@ class Measurement(models.Model):
 
     def __str__(self):
         return f"{self.device.name} - {self.date}"
+    
+class TaskProgress(models.Model):
+    task_id = models.CharField(max_length=255, unique=True)
+    status = models.CharField(max_length=50, default='PENDING')  # PENDING, IN_PROGRESS, SUCCESS, FAILURE, CANCELLED
+    processed_devices = models.IntegerField(default=0)
+    total_devices = models.IntegerField(default=0)
+    message = models.TextField(blank=True, null=True)
+    started_at = models.DateTimeField(default=timezone.now)
+    finished_at = models.DateTimeField(blank=True, null=True)
+    is_cancelled = models.BooleanField(default=False)  # NUEVO CAMPO
+
+    def progress_percent(self):
+        return (self.processed_devices / self.total_devices * 100) if self.total_devices > 0 else 0
+
+    def __str__(self):
+        return f"Task {self.task_id} - {self.status}"

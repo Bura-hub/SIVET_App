@@ -1,0 +1,17 @@
+import os
+from celery import Celery
+
+# Establece la variable de entorno de configuración predeterminada de Django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+
+app = Celery('core')
+
+# Usar el config de Django para Celery
+app.config_from_object('django.conf:settings', namespace='CELERY')
+
+# Carga las tareas de todas las aplicaciones de Django registradas en INSTALLED_APPS
+app.autodiscover_tasks()
+
+@app.task(bind=True, ignore_result=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')

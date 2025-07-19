@@ -54,7 +54,9 @@ INSTALLED_APPS = [
     'indicators',
     'rest_framework.authtoken',
     'authentication',
-    'scada_proxy'
+    'scada_proxy',
+    'django_celery_beat',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -103,8 +105,15 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv("name_db"),
+        'USER': os.getenv("user_postgres"),
+        'PASSWORD': os.getenv("password_user_postgres"),
+        'HOST': 'localhost',
+        'PORT': os.getenv("port_postgres", '5432'),
+        'OPTIONS': {
+            'options': '-c client_encoding=UTF8'
+        }
     }
 }
 
@@ -169,4 +178,36 @@ CACHES = {
             'MAX_ENTRIES': 1000 # Número máximo de entradas en la caché
         }
     }
+}
+
+# Configuración de Celery
+# URL de tu broker de mensajes (Redis). Ajusta 'localhost' si Redis está en otro servidor.
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# URL para almacenar los resultados de las tareas (útil para verificar el estado de las tareas)
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+CELERY_ACCEPT_CONTENT = ['json'] # Formatos de datos aceptados
+CELERY_TASK_SERIALIZER = 'json' # Serializador para los datos de la tarea
+CELERY_RESULT_SERIALIZER = 'json' # Serializador para los resultados de la tarea
+CELERY_TIMEZONE = 'America/Bogota' # ¡Asegúrate de que coincida con tu TIME_ZONE de Django!
+CELERY_TASK_TRACK_STARTED = True # Las tareas reportarán su estado 'STARTED'
+
+# Configuración para Celery Beat (planificador de tareas)
+from datetime import timedelta
+CELERY_BEAT_SCHEDULE = {
+    'fetch-device-metadata-daily': {  # Sincroniza categorías y dispositivos una vez al día
+        'task': 'scada_proxy.tasks.sync_scada_metadata',
+        'schedule': timedelta(days=1),  # Ejecutar cada 24 horas
+        'args': (int(timedelta(days=1).total_seconds()),),  # 86400 segundos
+    },
+    'fetch-historical-measurements-hourly': {  # Ingesta mediciones cada hora
+        'task': 'scada_proxy.tasks.fetch_historical_measurements_for_all_devices',
+        'schedule': timedelta(hours=1),  # Ejecutar cada hora
+        'args': (int(timedelta(hours=2).total_seconds()),),  # 7200 segundos (últimas 2 horas)
+    },
+    'fetch-long-term-historical-data-monthly': {  # Ingesta datos históricos a largo plazo cada 30 días
+        'task': 'scada_proxy.tasks.fetch_long_term_historical_data',
+        'schedule': timedelta(days=30),  # Cada 30 días
+        'args': (int(timedelta(days=30).total_seconds()),),  # 2592000 segundos
+    },
 }

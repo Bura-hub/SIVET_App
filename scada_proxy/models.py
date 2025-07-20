@@ -9,7 +9,6 @@ import uuid
 class Institution(models.Model):
     scada_id = models.CharField(max_length=255, unique=True, db_index=True)  # ID en la API SCADA
     name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -25,6 +24,7 @@ class DeviceCategory(models.Model):
     scada_id = models.CharField(max_length=255, unique=True, db_index=True)  # ID en la API SCADA
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
+    charts = models.JSONField(default=list, blank=True)  # Nuevo campo
 
     def __str__(self):
         return self.name
@@ -38,7 +38,7 @@ class DeviceCategory(models.Model):
 # =========================
 class Device(models.Model):
     # ID local
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.AutoField(primary_key=True)  # Ahora es entero autoincremental
 
     # ID remoto en SCADA
     scada_id = models.CharField(max_length=255, unique=True, db_index=True)

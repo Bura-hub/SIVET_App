@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'scada_proxy',
     'django_celery_beat',
     'django_filters',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -166,7 +167,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated', # Por defecto, todas las vistas requieren autenticación
-    ]
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 CACHES = {
@@ -210,5 +212,23 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'scada_proxy.tasks.fetch_long_term_historical_data',
         'schedule': timedelta(days=30),  # Cada 30 días
         'args': (int(timedelta(days=30).total_seconds()),),  # 2592000 segundos
+    },
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'SIVET API',
+    'DESCRIPTION': 'API para integrar datos SCADA con sistemas de monitoreo y análisis, permitiendo la consulta de dispositivos y mediciones, así como la ejecución y seguimiento de tareas de procesamiento histórico en segundo plano.',
+    'VERSION': '1.0.0',
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SECURITY": [{"TokenAuth": []}],
+    "COMPONENTS": {
+        "securitySchemes": {
+            "TokenAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "Authorization",
+                "description": "Formato: **Token &lt;tu_token&gt;**"
+            }
+        }
     },
 }

@@ -17,9 +17,26 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+# swagger
+from django.urls import path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
+
 urlpatterns = [
+    # Esquema OpenAPI en JSON
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Swagger UI
+    path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # Redoc UI
+    path('redocs/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    # NORMAL
     path('admin/', admin.site.urls),
+    path('auth/', include('authentication.urls')),
     path('api/', include('indicators.urls')),
-    path('api/auth/', include('authentication.urls')),
-    path('api/scada/', include('scada_proxy.urls')), # Nueva ruta para tu proxy SCADA
+    path('scada/', include('scada_proxy.urls_scada')),
+    path('local/', include('scada_proxy.urls_local')),
+    path('tasks/', include('scada_proxy.urls_tasks')),
 ]

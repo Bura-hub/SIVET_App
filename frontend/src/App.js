@@ -44,7 +44,7 @@ function App() {
         setTimeout(async () => {
             try {
                 if (authToken) {
-                    const response = await fetch('/api/auth/logout/', {
+                    const response = await fetch('/auth/logout/', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Token ${authToken}`,

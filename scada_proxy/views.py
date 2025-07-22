@@ -239,8 +239,8 @@ class LocalDeviceListView(generics.ListAPIView):
     description="Lista mediciones históricas filtradas por dispositivo y rango de fechas.",
     parameters=[
         OpenApiParameter("device", str, OpenApiParameter.QUERY, description="ID o SCADA_ID del dispositivo (string)"),
-        OpenApiParameter("from_date", str, OpenApiParameter.QUERY, description="Fecha de inicio (ISO 8601)"),
-        OpenApiParameter("to_date", str, OpenApiParameter.QUERY, description="Fecha final (ISO 8601)"),
+        OpenApiParameter("from_date", str, OpenApiParameter.QUERY, description="Fecha de inicio (ISO 8601) 2025-01-18T13:00:00"),
+        OpenApiParameter("to_date", str, OpenApiParameter.QUERY, description="Fecha final (ISO 8601) 2025-01-18T13:00:00"),
         OpenApiParameter("ordering", str, OpenApiParameter.QUERY, description="Ordenar por 'timestamp' o 'value'"),
     ],
     responses={200: MeasurementSerializer(many=True)}
@@ -281,7 +281,7 @@ class HistoricalMeasurementsView(generics.ListAPIView):
     tags=["Datos Locales"],
     description="Obtiene un resumen diario (promedio, máximo, mínimo y suma) de las mediciones de un dispositivo.",
     parameters=[
-        OpenApiParameter("device", str, OpenApiParameter.QUERY, description="ID del dispositivo (UUID o string)"),
+        OpenApiParameter("device", str, OpenApiParameter.QUERY, description="Scada_ID del dispositivo (UUID o string)"),
         OpenApiParameter("variable_key", str, OpenApiParameter.QUERY, description="Clave de la variable medida (dentro de `data`)"),
         OpenApiParameter("from_date", str, OpenApiParameter.QUERY, description="Fecha de inicio (ISO 8601)"),
         OpenApiParameter("to_date", str, OpenApiParameter.QUERY, description="Fecha final (ISO 8601)"),

@@ -174,7 +174,16 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
     now_utc = datetime.now(timezone.utc)
     from_date = now_utc - time_range
 
-    logger.info(f"Iniciando la obtención de mediciones históricas para los últimos {time_range}.")
+    # Convertimos a hora local para los logs
+    local_tz = timezone.get_current_timezone()
+    now_local = now_utc.astimezone(local_tz)
+    from_date_local = from_date.astimezone(local_tz)
+
+    logger.info(
+        f"Iniciando la obtención de mediciones históricas "
+        f"para los últimos {time_range}. "
+        f"Rango: {from_date_local} -> {now_local} (hora local)"
+    )
 
     devices = Device.objects.filter(is_active=True)
 
@@ -205,8 +214,10 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
             from_datetime_str=from_date.isoformat(),
             to_datetime_str=now_utc.isoformat()
         )
-        logger.info(f"Tarea creada para dispositivo {device.name} ({device.scada_id}) "
-                    f"desde {from_date} hasta {now_utc}.")
+        logger.info(
+            f"Tarea creada para dispositivo {device.name} ({device.scada_id}) "
+            f"desde {from_date_local} hasta {now_local} (hora local)."
+        )
 
         # Actualizar progreso si existe registro
         if task_progress:

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 
@@ -195,23 +196,17 @@ CELERY_TIMEZONE = 'America/Bogota' # ¡Asegúrate de que coincida con tu TIME_ZO
 CELERY_TASK_TRACK_STARTED = True
 CELERY_RESULT_EXTENDED = True  # Para obtener más detalles de los resultados
 
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 # Configuración para Celery Beat (planificador de tareas)
-from datetime import timedelta
 CELERY_BEAT_SCHEDULE = {
     'fetch-device-metadata-daily': {  # Sincroniza categorías y dispositivos una vez al día
         'task': 'scada_proxy.tasks.sync_scada_metadata',
         'schedule': timedelta(days=1),  # Ejecutar cada 24 horas
-        'args': (int(timedelta(days=1).total_seconds()),),  # 86400 segundos
     },
     'fetch-historical-measurements-hourly': {  # Ingesta mediciones cada hora
         'task': 'scada_proxy.tasks.fetch_historical_measurements_for_all_devices',
         'schedule': timedelta(hours=1),  # Ejecutar cada hora
         'args': (int(timedelta(hours=2).total_seconds()),),  # 7200 segundos (últimas 2 horas)
-    },
-    'fetch-long-term-historical-data-monthly': {  # Ingesta datos históricos a largo plazo cada 30 días
-        'task': 'scada_proxy.tasks.fetch_long_term_historical_data',
-        'schedule': timedelta(days=30),  # Cada 30 días
-        'args': (int(timedelta(days=30).total_seconds()),),  # 2592000 segundos
     },
 }
 

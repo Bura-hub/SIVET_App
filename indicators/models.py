@@ -1,21 +1,17 @@
 from django.db import models
 
-# Create your models here.
-# python manage.py makemigrations
-# python manage.py migrate
-class Indicator(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Nombre del Indicador")
-    value = models.FloatField(verbose_name="Valor")
-    unit = models.CharField(max_length=50, verbose_name="Unidad de Medida")
-    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Fecha y Hora")
-    source = models.CharField(max_length=100, verbose_name="Fuente de Datos") # Ej: 'electricidad', 'inversor', 'meteorológica'
+class MonthlyConsumptionKPI(models.Model):
+    """
+    Modelo para almacenar el KPI de consumo total mensual pre-calculado.
+    Solo debe haber una instancia de este modelo.
+    """
+    total_consumption_current_month = models.FloatField(default=0.0, help_text="Consumo total acumulado del mes actual en kWh.")
+    total_consumption_previous_month = models.FloatField(default=0.0, help_text="Consumo total acumulado del mes anterior en kWh.")
+    last_calculated = models.DateTimeField(auto_now=True, help_text="Fecha y hora de la última vez que se calculó este KPI.")
 
     class Meta:
-        ordering = ['-timestamp'] # Ordenar por fecha descendente
-        verbose_name = "Indicador"
-        verbose_name_plural = "Indicadores"
+        verbose_name = "KPI de Consumo Mensual"
+        verbose_name_plural = "KPIs de Consumo Mensual"
 
     def __str__(self):
-        return f"{self.name} ({self.source}): {self.value} {self.unit} at {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
-
-
+        return f"Consumo Mensual KPI (Actualizado: {self.last_calculated.strftime('%Y-%m-%d %H:%M')})"

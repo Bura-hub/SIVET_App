@@ -1,10 +1,11 @@
 import logging
 from celery import shared_task
-from datetime import datetime, timedelta, timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware, is_naive
 import requests
 from django.db import transaction, IntegrityError
+from datetime import datetime, timedelta, timezone as dt_timezone
+from django.utils import timezone as dj_timezone
 
 # Importa tu cliente SCADA y tus modelos
 from .scada_client import ScadaConnectorClient
@@ -97,15 +98,16 @@ def sync_scada_metadata(self):
 def fetch_and_save_measurements_for_device(self, device_scada_id: str, django_device_id: int, from_datetime_str: str, to_datetime_str: str):
     """
     Obtiene y guarda mediciones para un dispositivo SCADA.
-    Cada medicion se guarda como un solo JSON por timestamp.
+    Cada medición se guarda como un solo JSON por timestamp.
     Usa update_or_create para evitar duplicados.
     """
     try:
         token = scada_client.get_token()
         device_instance = Device.objects.get(id=django_device_id)
 
-        from_dt = datetime.fromisoformat(from_datetime_str).astimezone(timezone.utc)
-        to_dt = datetime.fromisoformat(to_datetime_str).astimezone(timezone.utc)
+        # Convertimos los strings a datetime con tz UTC explícita
+        from_dt = datetime.fromisoformat(from_datetime_str).astimezone(dt_timezone.utc)
+        to_dt = datetime.fromisoformat(to_datetime_str).astimezone(dt_timezone.utc)
 
         page_size = 1000
         offset = 0
@@ -138,7 +140,7 @@ def fetch_and_save_measurements_for_device(self, device_scada_id: str, django_de
                     logger.warning(f"Fecha inválida: {date_str}")
                     continue
 
-                if is_naive(dt):
+                if is_naive(dt):  # Hacer aware si está en naive
                     dt = make_aware(dt)
 
                 _, created = Measurement.objects.update_or_create(
@@ -171,11 +173,13 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
     Permite cancelar la ejecución a través de la tabla TaskProgress.
     """
     time_range = timedelta(seconds=time_range_seconds)
-    now_utc = datetime.now(timezone.utc)
+
+    # Tiempo actual en UTC usando datetime + dt_timezone
+    now_utc = datetime.now(dt_timezone.utc)
     from_date = now_utc - time_range
 
-    # Convertimos a hora local para los logs
-    local_tz = timezone.get_current_timezone()
+    # Convertimos a hora local para logs usando Django
+    local_tz = dj_timezone.get_current_timezone()
     now_local = now_utc.astimezone(local_tz)
     from_date_local = from_date.astimezone(local_tz)
 
@@ -186,19 +190,15 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
     )
 
     devices = Device.objects.filter(is_active=True)
-
     if not devices.exists():
         logger.warning("No hay dispositivos activos registrados en la base de datos.")
         return
 
-    # Intentar obtener el registro de progreso
-    task_progress = None
     from celery import current_task
-    if current_task:
-        task_progress = TaskProgress.objects.filter(task_id=current_task.request.id).first()
+    task_progress = TaskProgress.objects.filter(task_id=current_task.request.id).first() if current_task else None
 
     for device in devices:
-        # Verificar si se marcó como cancelada
+        # Verificar si se canceló la tarea
         if task_progress:
             task_progress.refresh_from_db()
             if getattr(task_progress, "is_cancelled", False):
@@ -206,8 +206,9 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
                 task_progress.status = 'CANCELLED'
                 task_progress.message = 'La tarea fue cancelada mientras se ejecutaba.'
                 task_progress.save(update_fields=['status', 'message'])
-                return  # Sale del bucle y no encola más subtareas
+                return
 
+        # Encolar subtarea por dispositivo
         fetch_and_save_measurements_for_device.delay(
             device_scada_id=device.scada_id,
             django_device_id=device.id,
@@ -219,7 +220,7 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
             f"desde {from_date_local} hasta {now_local} (hora local)."
         )
 
-        # Actualizar progreso si existe registro
+        # Actualizar progreso
         if task_progress:
             task_progress.processed_devices += 1
             task_progress.save(update_fields=['processed_devices'])

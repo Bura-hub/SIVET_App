@@ -208,6 +208,14 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': timedelta(hours=1),  # Ejecutar cada hora
         'args': (int(timedelta(hours=2).total_seconds()),),  # 7200 segundos (últimas 2 horas)
     },
+    'calculate-monthly-consumption-kpi-daily': {
+        'task': 'indicators.tasks.calculate_monthly_consumption_kpi',
+        'schedule': timedelta(days=1), # Ejecutar una vez al día
+        # 'schedule': timedelta(hours=6), # O cada 6 horas, según la frecuencia deseada
+        'args': (),
+        'kwargs': {},
+        'options': {'queue': 'default'}, # Asegúrate de que la cola sea la correcta
+    },
 }
 
 SPECTACULAR_SETTINGS = {

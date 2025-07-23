@@ -40,8 +40,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
   const [selectedDevice, setSelectedDevice] = useState('Todos');
 
   // Datos dummy para los KPIs (estos se reemplazarán con datos reales de la API)
-  const kpiData = {
-    totalConsumption: { title: "Consumo total", value: "1.2", unit: "MWh", change: "+8.5% vs mes pasado", status: "positivo" },
+  const [kpiData, setKpiData] = useState({
+    totalConsumption: { title: "Consumo total", value: "Cargando...", unit: "", change: "", status: "" },
     totalGeneration: { title: "Generación total", value: "950", unit: "kWh", change: "+12% vs mes pasado", status: "positivo" },
     energyBalance: { title: "Equilibrio energético", value: "-250", unit: "kWh", description: "Déficit", status: "negativo" },
     activeInverters: { title: "Inversores activos", value: "18", unit: "/20", description: "2 inactivos", status: "critico" },
@@ -49,7 +49,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     avgDailyTemp: { title: "Temp. prom. diaria", value: "25", unit: "°C", description: "Rango normal", status: "normal" },
     relativeHumidity: { title: "Humedad relativa", value: "65", unit: "%", description: "Optimo", status: "optimo" },
     windSpeed: { title: "Velocidad del viento", value: "15", unit: "km/h", description: "Moderado", status: "moderado" },
-  };
+  });
 
   // Datos dummy para los gráficos (estos se reemplazarán con datos reales de la API)
   const electricityConsumptionData = {
@@ -200,6 +200,32 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       setLoading(true);
       setError(null);
       try {
+        // --- Fetch para el KPI de Consumo Total ---
+        const consumptionResponse = await fetch('/api/consumption-summary/', {
+          headers: {
+            'Authorization': `Token ${authToken}`
+          }
+        });
+
+        if (!consumptionResponse.ok) {
+          if (consumptionResponse.status === 401 || consumptionResponse.status === 403) {
+            onLogout(); // Redirigir al login si hay un problema de autenticación
+            return;
+          }
+          const errorData = await consumptionResponse.json();
+          throw new Error(errorData.detail || 'Error al cargar el consumo total.');
+        }
+
+        const consumptionData = await consumptionResponse.json();
+
+        // Actualizar solo el KPI de consumo total en el estado
+        setKpiData(prevKpiData => ({
+          ...prevKpiData,
+          totalConsumption: consumptionData.totalConsumption
+        }));
+
+        // --- Simulación de carga para otros datos (reemplazar con llamadas a la API real) ---
+        await new Promise(resolve => setTimeout(resolve, 500));
         // Aquí iría la lógica para llamar a tu API de Django
         // para obtener los datos reales de KPIs, y datos para los gráficos.
         // Por ejemplo:
@@ -208,9 +234,6 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         // const chartsResponse = await axios.get('/api/scada/local/charts/', { params: { timeRange: selectedTimeRange, location: selectedLocation, device: selectedDevice } });
         // setElectricityConsumptionData(chartsResponse.data.electricityConsumption);
         // ... y así para los demás gráficos y alertas
-
-        // Simulamos un tiempo de carga
-        await new Promise(resolve => setTimeout(resolve, 500)); 
 
       } catch (e) {
         setError(e.message);
@@ -228,7 +251,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     if (authToken) {
       fetchDashboardData();
     }
-  }, [authToken, selectedTimeRange, selectedLocation, selectedDevice, onLogout]); // Dependencias de los filtros y auth token
+  }, [authToken, onLogout]); // Dependencias de los filtros y auth token
 
   // Si está cargando, muestra un spinner o mensaje
   if (loading) {

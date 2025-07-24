@@ -42,9 +42,9 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
   // Datos dummy para los KPIs (estos se reemplazarán con datos reales de la API)
   const [kpiData, setKpiData] = useState({
     totalConsumption: { title: "Consumo total", value: "Cargando...", unit: "", change: "", status: "" },
-    totalGeneration: { title: "Generación total", value: "950", unit: "kWh", change: "+12% vs mes pasado", status: "positivo" },
-    energyBalance: { title: "Equilibrio energético", value: "-250", unit: "kWh", description: "Déficit", status: "negativo" },
-    activeInverters: { title: "Inversores activos", value: "18", unit: "/20", description: "2 inactivos", status: "critico" },
+    totalGeneration: { title: "Generación total", value: "Cargando...", unit: "", change: "", status: "" },
+    energyBalance: { title: "Equilibrio energético", value: "Cargando...", unit: "", description: "", status: "" },
+    activeInverters: { title: "Inversores activos", value: "Cargando...", unit: "", description: "", status: "" }, // Nuevo KPI de inversores activos
     currentInverterPower: { title: "Pot. corriente de los inversores", value: "85", unit: "kW", description: "Estable", status: "estable" },
     avgDailyTemp: { title: "Temp. prom. diaria", value: "25", unit: "°C", description: "Rango normal", status: "normal" },
     relativeHumidity: { title: "Humedad relativa", value: "65", unit: "%", description: "Optimo", status: "optimo" },
@@ -193,7 +193,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       },
     },
   };
-
+  
   // Efecto para cargar datos (actualmente usa datos dummy, pero aquí iría la lógica de la API)
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -201,27 +201,30 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       setError(null);
       try {
         // --- Fetch para el KPI de Consumo Total ---
-        const consumptionResponse = await fetch('/api/consumption-summary/', {
+        const kpisResponse = await fetch('/api/dashboard/consumption-summary/', {
           headers: {
             'Authorization': `Token ${authToken}`
           }
         });
 
-        if (!consumptionResponse.ok) {
-          if (consumptionResponse.status === 401 || consumptionResponse.status === 403) {
+        if (!kpisResponse.ok) {
+          if (kpisResponse.status === 401 || kpisResponse.status === 403) {
             onLogout(); // Redirigir al login si hay un problema de autenticación
             return;
           }
-          const errorData = await consumptionResponse.json();
-          throw new Error(errorData.detail || 'Error al cargar el consumo total.');
+          const errorData = await kpisResponse.json();
+          throw new Error(errorData.detail || 'Error al cargar los KPIs.');
         }
 
-        const consumptionData = await consumptionResponse.json();
-
-        // Actualizar solo el KPI de consumo total en el estado
+        const kpisDataFetched = await kpisResponse.json();
+        
+        // Actualizar los KPIs de consumo y generación total en el estado
         setKpiData(prevKpiData => ({
           ...prevKpiData,
-          totalConsumption: consumptionData.totalConsumption
+          totalConsumption: kpisDataFetched.totalConsumption,
+          totalGeneration: kpisDataFetched.totalGeneration,
+          energyBalance: kpisDataFetched.energyBalance, // Nuevo KPI de balance
+          activeInverters: kpisDataFetched.activeInverters // Añadido el nuevo KPI de inversores activos
         }));
 
         // --- Simulación de carga para otros datos (reemplazar con llamadas a la API real) ---

@@ -28,22 +28,89 @@ function Sidebar({
 
   // Define los elementos de navegación
   const navItems = [
-    { name: 'Inicio', page: 'dashboard', icon: (
-      <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-    ), activeColor: 'blue' },
-    { name: 'Medidores', page: 'electricalDetails', icon: (
-      <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-    ), activeColor: 'green' },
-    { name: 'Inversores', page: 'inverterDetails', icon: (
-      <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0h7m-7 0h-2m7 0v-6a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2h-2a2 2 0 01-2-2zm0 0h-2m0-9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v3.337C3 11.901 4.238 13 5.762 13H18.238c1.524 0 2.762-1.099 2.762-2.663V7a2 2 0 00-2-2h-2a2 2 0 00-2 2v3.337"></path></svg>
-    ), activeColor: 'red' },
-    { name: 'Estaciones', page: 'weatherDetails', icon: (
-      <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h1M4 12H3m15.325 6.675l-.707.707M6.707 6.707l-.707-.707m12.728 0l-.707-.707M6.707 17.293l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-    ), activeColor: 'orange' },
-    { name: 'Exportar Reportes', page: 'exportReports', icon: (
-      <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-    ), activeColor: 'blue' },
+    { 
+      name: 'Inicio', 
+      page: 'dashboard', 
+      icon: (
+        <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+        </svg>
+      ),
+      activeClasses: 'bg-blue-100 text-blue-600 font-semibold hover:text-blue-700',
+      inactiveClasses: 'text-gray-600 hover:bg-gray-50 hover:text-blue-700'
+    },
+    { 
+      name: 'Medidores', 
+      page: 'electricalDetails', 
+      icon: (
+        <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+      ),
+      activeClasses: 'bg-green-100 text-green-600 font-semibold hover:text-green-700',
+      inactiveClasses: 'text-gray-600 hover:bg-gray-50 hover:text-green-700'
+    },
+    { 
+      name: 'Inversores', 
+      page: 'inverterDetails', 
+      icon: (
+        <svg
+          className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
+          <path d="M7 12h2l1 2 2-4 1 2h2"></path>
+          <path d="M17 16h.01"></path>
+          <path d="M17 8h.01"></path>
+        </svg>
+      ),
+      activeClasses: 'bg-red-100 text-red-600 font-semibold hover:text-red-700',
+      inactiveClasses: 'text-gray-600 hover:bg-gray-50 hover:text-red-700'
+    },
+    { 
+      name: 'Estaciones', 
+      page: 'weatherDetails', 
+      icon: (
+        <svg
+          className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="12" cy="6" r="2"></circle>
+          <path d="M12 8v4"></path>
+          <path d="M6 20h12"></path>
+          <path d="M12 12l4 8"></path>
+          <path d="M12 12l-4 8"></path>
+          <path d="M4 10a8 8 0 0116 0"></path>
+        </svg>
+      ),
+      activeClasses: 'bg-orange-100 text-orange-600 font-semibold hover:text-orange-700',
+      inactiveClasses: 'text-gray-600 hover:bg-gray-50 hover:text-orange-700'
+    },
+    { 
+      name: 'Exportar Reportes', 
+      page: 'exportReports', 
+      icon: (
+        <svg className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+      ),
+      activeClasses: 'bg-blue-100 text-blue-600 font-semibold hover:text-blue-700',
+      inactiveClasses: 'text-gray-600 hover:bg-gray-50 hover:text-blue-700'
+    },
   ];
+
 
   return (
     <aside className={`bg-white p-6 shadow-lg flex flex-col justify-between transition-all duration-300 ${isSidebarMinimized ? 'w-20 items-center overflow-hidden' : 'w-64'}`}>
@@ -78,10 +145,8 @@ function Sidebar({
                 <a
                   href="#"
                   className={`flex items-center p-3 rounded-xl transition-colors ${isSidebarMinimized ? 'justify-center' : ''} ${
-                    currentPage === item.page
-                      ? `bg-${item.activeColor}-100 text-${item.activeColor}-700 font-semibold`
-                      : 'text-gray-600 hover:bg-gray-50'
-                  } hover:text-${item.activeColor}-700`}
+                    currentPage === item.page ? item.activeClasses : item.inactiveClasses
+                  }`}
                   onClick={() => navigateTo(item.page)}
                 >
                   {item.icon}

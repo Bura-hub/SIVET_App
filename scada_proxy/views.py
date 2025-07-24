@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 import logging
 import requests
+import uuid # ¡Importar el módulo uuid!
 
 from django.db.models import Avg, Max, Min, Sum, F, FloatField, Q
 from django.db.models.functions import TruncDay, Cast
@@ -97,9 +98,9 @@ class DeviceCategoriesView(ScadaProxyView):
     tags=["SCADA Proxy"],
     description="Obtiene dispositivos desde el sistema SCADA, filtrando por categoría, institución o nombre.",
     parameters=[
-        OpenApiParameter("category_id", str, OpenApiParameter.QUERY, description="Filtrar por ID de categoría"),
+        OpenApiParameter("category_id", str, OpenApiParameter.QUERY, description="Filtrar por ID de categoría (UUID de SCADA) o nombre de categoría (ej. 'inverter')"),
         OpenApiParameter("institution_id", str, OpenApiParameter.QUERY, description="Filtrar por ID de institución"),
-        OpenApiParameter("name", str, OpenApiParameter.QUERY, description="Filtrar por nombre del dispositivo"),
+        OpenApiParameter("name", str, OpenApiParameter.QUERY, description="Filtrar por nombre de dispositivo (si 'category_id' es UUID) o por nombre de categoría (si 'category_id' no es un UUID o no está presente)"),
         OpenApiParameter("limit", int, OpenApiParameter.QUERY, description="Cantidad máxima de resultados"),
         OpenApiParameter("offset", int, OpenApiParameter.QUERY, description="Paginación - desplazamiento inicial"),
     ],
@@ -114,14 +115,50 @@ class DevicesView(ScadaProxyView):
         if isinstance(token, Response):
             return token
         try:
-            params = {
-                "category_id": request.query_params.get('category_id'),
-                "institution_id": request.query_params.get('institution_id'),
-                "name": request.query_params.get('name'),
-                "limit": request.query_params.get('limit'),
-                "offset": request.query_params.get('offset')
-            }
-            resp = scada_client.get_devices(token, **params)
+            # Inicializar un diccionario para los parámetros que se enviarán a scada_client.get_devices
+            scada_client_params = {}
+
+            # Manejar el parámetro 'category_id' de la solicitud de Django
+            # Puede ser un SCADA ID (UUID) o un nombre de categoría.
+            request_category_id = request.query_params.get('category_id')
+            if request_category_id:
+                try:
+                    # Intentar convertir a UUID. Si tiene éxito, es un SCADA ID de categoría.
+                    uuid.UUID(request_category_id)
+                    scada_client_params["category_scada_id"] = request_category_id
+                except ValueError:
+                    # Si no es un UUID, asumir que es un nombre de categoría (ej. "inverter").
+                    scada_client_params["category_name_filter"] = request_category_id
+            
+            # Manejar el parámetro 'name' de la solicitud de Django.
+            # Según las pruebas de Thunderclient, la API de SCADA usa 'name' para filtrar por nombre de CATEGORÍA.
+            # Esto entra en conflicto con la descripción de OpenApiParameter "Filtrar por nombre del dispositivo".
+            # Priorizaremos 'category_id' si ya se usó para filtrar por nombre de categoría.
+            request_name = request.query_params.get('name')
+            if request_name:
+                # Si 'category_name_filter' NO fue establecido por 'category_id' (es decir, 'category_id' fue un UUID o no se proporcionó)
+                # entonces usamos el 'name' de la request como filtro de nombre de categoría para SCADA.
+                if "category_name_filter" not in scada_client_params:
+                    scada_client_params["category_name_filter"] = request_name
+                else:
+                    # Si 'category_id' ya fue interpretado como un nombre de categoría,
+                    # y también se proporcionó 'name', loguear una advertencia de conflicto y 'name' no se usará como category_name_filter.
+                    # Si 'name' fuera para 'device_name', se necesitaría una lógica adicional para determinarlo.
+                    logger.warning(
+                        f"Parámetros de filtro de categoría en conflicto: 'category_id' (como nombre) "
+                        f"y 'name' proporcionados. Priorizando 'category_id' para el filtro de nombre de categoría."
+                    )
+
+            # Añadir otros parámetros que se mapean directamente
+            if request.query_params.get('institution_id'):
+                scada_client_params["institution_id"] = request.query_params.get('institution_id')
+            if request.query_params.get('limit'):
+                scada_client_params["limit"] = request.query_params.get('limit')
+            if request.query_params.get('offset'):
+                scada_client_params["offset"] = request.query_params.get('offset')
+
+            # Llamar a scada_client.get_devices con los parámetros correctamente mapeados
+            resp = scada_client.get_devices(token, **scada_client_params)
             return Response({"data": resp.get("data", []), "total": resp.get("total", 0)})
         except requests.exceptions.RequestException as e:
             logger.error(f"Error al obtener dispositivos: {e}")

@@ -11,11 +11,9 @@ class MonthlyConsumptionKPI(models.Model):
     total_generation_current_month = models.FloatField(default=0.0, help_text="Generación total acumulada del mes actual en Wh.")
     total_generation_previous_month = models.FloatField(default=0.0, help_text="Generación total acumulada del mes anterior en Wh.")
 
-    # Nuevos campos para el balance energético (en kWh para consistencia)
-    total_imported_current_month = models.FloatField(default=0.0, help_text="Energía total importada del mes actual en kWh.")
-    total_imported_previous_month = models.FloatField(default=0.0, help_text="Energía total importada del mes anterior en kWh.")
-    total_exported_current_month = models.FloatField(default=0.0, help_text="Energía total exportada del mes actual en kWh.")
-    total_exported_previous_month = models.FloatField(default=0.0, help_text="Energía total exportada del mes anterior en kWh.")
+    # Nuevos campos para la potencia instantánea promedio de inversores (en Watts)
+    avg_instantaneous_power_current_month = models.FloatField(default=0.0, help_text="Potencia instantánea promedio de inversores del mes actual en Watts.")
+    avg_instantaneous_power_previous_month = models.FloatField(default=0.0, help_text="Potencia instantánea promedio de inversores del mes anterior en Watts.")
 
     last_calculated = models.DateTimeField(auto_now=True, help_text="Fecha y hora de la última vez que se calculó este KPI.")
 

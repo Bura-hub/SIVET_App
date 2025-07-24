@@ -45,7 +45,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     totalGeneration: { title: "Generación total", value: "Cargando...", unit: "", change: "", status: "" },
     energyBalance: { title: "Equilibrio energético", value: "Cargando...", unit: "", description: "", status: "" },
     activeInverters: { title: "Inversores activos", value: "Cargando...", unit: "", description: "", status: "" }, // Nuevo KPI de inversores activos
-    currentInverterPower: { title: "Pot. corriente de los inversores", value: "85", unit: "kW", description: "Estable", status: "estable" },
+    averageInstantaneousPower: { title: "Pot. instan. promedio", value: "Cargando...", unit: "W", description: "", status: "normal" }, 
     avgDailyTemp: { title: "Temp. prom. diaria", value: "25", unit: "°C", description: "Rango normal", status: "normal" },
     relativeHumidity: { title: "Humedad relativa", value: "65", unit: "%", description: "Optimo", status: "optimo" },
     windSpeed: { title: "Velocidad del viento", value: "15", unit: "km/h", description: "Moderado", status: "moderado" },
@@ -224,6 +224,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
           totalConsumption: kpisDataFetched.totalConsumption,
           totalGeneration: kpisDataFetched.totalGeneration,
           energyBalance: kpisDataFetched.energyBalance, // Nuevo KPI de balance
+          averageInstantaneousPower: kpisDataFetched.averageInstantaneousPower,
           activeInverters: kpisDataFetched.activeInverters // Añadido el nuevo KPI de inversores activos
         }));
 

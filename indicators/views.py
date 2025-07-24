@@ -6,11 +6,13 @@ import logging
 from datetime import datetime, timedelta, timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+import uuid 
 
 # Importa el modelo de indicators
 from .models import MonthlyConsumptionKPI 
-# Importa el cliente SCADA (se mantiene para get_scada_token)
+# Importa el cliente SCADA y el modelo DeviceCategory de scada_proxy
 from scada_proxy.scada_client import ScadaConnectorClient 
+from scada_proxy.models import DeviceCategory 
 import requests
 
 logger = logging.getLogger(__name__)
@@ -29,7 +31,7 @@ class ConsumptionSummaryView(APIView):
             return Response({"detail": "SCADA server configuration error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except requests.exceptions.RequestException as e:
             logger.error(f"Error getting SCADA token: {e}")
-            return Response({"detail": "Could not authenticate with SCADA API. Check credentials."}, status=status.HTTP_502_BAD_GATEWAY)
+            return Response({"detail": "No se pudo autenticar con la API SCADA. Revise las credenciales."}, status=status.HTTP_502_BAD_GATEWAY)
 
     def get(self, request, *args, **kwargs):
         token = self.get_scada_token()
@@ -37,13 +39,11 @@ class ConsumptionSummaryView(APIView):
             return token
 
         try:
-            # Obtener el registro de KPI pre-calculado (consumo, generación, balance)
+            # Obtener el registro de KPI pre-calculado
             kpi_record = MonthlyConsumptionKPI.objects.first()
             if not kpi_record:
                 logger.warning("MonthlyConsumptionKPI record not found. Task might not have run yet.")
-                # Si no hay datos pre-calculados, aún podemos intentar obtener los inversores activos
-                # para no bloquear completamente la respuesta.
-                pass # Continuar para intentar obtener los inversores activos
+                pass 
 
             # --- Consumo Total ---
             total_consumption_current_month = kpi_record.total_consumption_current_month if kpi_record else 0.0
@@ -53,16 +53,17 @@ class ConsumptionSummaryView(APIView):
             total_generation_current_month = kpi_record.total_generation_current_month if kpi_record else 0.0
             total_generation_previous_month = kpi_record.total_generation_previous_month if kpi_record else 0.0
 
-            # --- Balance Energético ---
-            total_imported_current_month = kpi_record.total_imported_current_month if kpi_record else 0.0
-            total_imported_previous_month = kpi_record.total_imported_previous_month if kpi_record else 0.0
-            total_exported_current_month = kpi_record.total_exported_current_month if kpi_record else 0.0
-            total_exported_previous_month = kpi_record.total_exported_previous_month if kpi_record else 0.0
-            
-            net_balance_current_month = total_imported_current_month - total_exported_current_month
-            net_balance_previous_month = total_imported_previous_month - total_exported_previous_month
+            # --- Balance Energético (Generación - Consumo) ---
+            net_balance_current_month = (total_generation_current_month / 1000.0) - total_consumption_current_month
+            net_balance_previous_month = (total_generation_previous_month / 1000.0) - total_consumption_previous_month
 
             logger.info(f"Retrieved pre-calculated KPIs: Consumption (C:{total_consumption_current_month}, P:{total_consumption_previous_month}), Generation (C:{total_generation_current_month}, P:{total_generation_previous_month}), Balance (C:{net_balance_current_month}, P:{net_balance_previous_month})")
+
+            # --- Potencia Instantánea Promedio (Inversores) ---
+            avg_instantaneous_power_current = kpi_record.avg_instantaneous_power_current_month if kpi_record else 0.0
+            avg_instantaneous_power_previous = kpi_record.avg_instantaneous_power_previous_month if kpi_record else 0.0
+
+            logger.info(f"Avg Instantaneous Power: Current: {avg_instantaneous_power_current} W, Previous: {avg_instantaneous_power_previous} W")
 
             # --- Inversores Activos (Real-time from SCADA API) ---
             active_inverters_count = 0
@@ -71,9 +72,11 @@ class ConsumptionSummaryView(APIView):
             inverter_description_text = "Cargando..."
 
             try:
-                # category_id = 1 para inversores
-                scada_inverters_response = scada_client.get_devices(token, category_id=1) 
-                scada_inverters = scada_inverters_response.get('data', []) # Asumiendo que 'data' contiene la lista de dispositivos
+                inverter_category_obj = DeviceCategory.objects.get(name='inverter')
+                inverter_scada_id = inverter_category_obj.scada_id
+
+                scada_inverters_response = scada_client.get_devices(token, category_scada_id=inverter_scada_id) 
+                scada_inverters = scada_inverters_response.get('data', [])
 
                 total_inverters_count = len(scada_inverters)
                 online_inverters_count = 0
@@ -98,6 +101,10 @@ class ConsumptionSummaryView(APIView):
 
                 logger.info(f"Inverters: Active: {active_inverters_count}, Total: {total_inverters_count}")
 
+            except DeviceCategory.DoesNotExist:
+                logger.error("Inverter category not found in local DB. Cannot fetch real-time inverters from SCADA.")
+                inverter_status_text = "error"
+                inverter_description_text = "Categoría 'inverter' no encontrada localmente."
             except requests.exceptions.RequestException as e:
                 logger.error(f"Error getting real-time inverter data from SCADA: {e}")
                 inverter_status_text = "error"
@@ -107,7 +114,7 @@ class ConsumptionSummaryView(APIView):
                 inverter_status_text = "error"
                 inverter_description_text = "Error interno"
 
-            # Función de conversión de unidades (se mantiene igual)
+            # Función de conversión de unidades
             def format_energy_value(value_base_unit, base_unit_name="Wh"):
                 if base_unit_name == "Wh":
                     if value_base_unit >= 1_000_000_000:
@@ -125,14 +132,22 @@ class ConsumptionSummaryView(APIView):
                         return f"{value_base_unit / 1_000:.2f}", "MWh"
                     else:
                         return f"{value_base_unit:.2f}", "kWh"
+                elif base_unit_name == "W": # Nueva unidad para potencia
+                    if value_base_unit >= 1_000_000:
+                        return f"{value_base_unit / 1_000_000:.2f}", "MW"
+                    elif value_base_unit >= 1_000:
+                        return f"{value_base_unit / 1_000:.2f}", "kW"
+                    else:
+                        return f"{value_base_unit:.2f}", "W"
                 return f"{value_base_unit:.2f}", base_unit_name
 
-            def calculate_kpi_metrics(current_value, previous_value, title, base_unit_name, is_balance=False):
+            def calculate_kpi_metrics(current_value, previous_value, title, base_unit_name, is_balance=False, is_average_power=False):
                 formatted_value, unit = format_energy_value(current_value, base_unit_name)
                 change_percentage = 0.0
                 status_text = "normal"
                 description_text = ""
 
+                # Calcular el cambio porcentual
                 if previous_value != 0:
                     change_percentage = ((current_value - previous_value) / previous_value) * 100
                 elif current_value != 0:
@@ -140,15 +155,29 @@ class ConsumptionSummaryView(APIView):
 
                 if is_balance:
                     if current_value > 0:
-                        description_text = "Déficit"
-                        status_text = "negativo"
-                    elif current_value < 0:
                         description_text = "Superávit"
                         status_text = "positivo"
+                    elif current_value < 0:
+                        description_text = "Déficit"
+                        status_text = "negativo"
                     else:
                         description_text = "Equilibrio"
                         status_text = "normal"
-                else:
+                elif is_average_power: # Lógica específica para Potencia Instantánea Promedio
+                    if current_value > 0:
+                        description_text = "Generando"
+                        status_text = "estable"
+                    else:
+                        description_text = "Sin generación"
+                        status_text = "normal" # O "critico" si se espera generación y es 0
+                    
+                    # También podemos añadir el cambio porcentual para la potencia promedio si es relevante
+                    if change_percentage > 0:
+                        description_text += f" (+{change_percentage:.2f}%)"
+                    elif change_percentage < 0:
+                        description_text += f" ({change_percentage:.2f}%)"
+
+                else: # Para consumo y generación
                     if change_percentage > 0:
                         status_text = "positivo"
                     elif change_percentage < 0:
@@ -183,22 +212,31 @@ class ConsumptionSummaryView(APIView):
                 total_generation_current_month,
                 total_generation_previous_month,
                 "Generación total",
-                "Wh"
+                "Wh" 
             )
 
-            # KPI de Equilibrio Energético
+            # KPI de Equilibrio Energético (Generación - Consumo)
             energy_balance_kpi = calculate_kpi_metrics(
                 net_balance_current_month,
                 net_balance_previous_month, 
                 "Equilibrio energético",
-                "kWh",
+                "kWh", 
                 is_balance=True
             )
 
-            # Nuevo KPI de Inversores Activos
+            # Nuevo KPI de Potencia Instantánea Promedio
+            avg_power_kpi = calculate_kpi_metrics(
+                avg_instantaneous_power_current,
+                avg_instantaneous_power_previous,
+                "Potencia instantánea promedio",
+                "W", # Base unit for instantaneous power
+                is_average_power=True # Flag para lógica específica de potencia promedio
+            )
+
+            # KPI de Inversores Activos
             active_inverters_kpi = {
                 "title": "Inversores activos",
-                "value": str(active_inverters_count), # Valor como string
+                "value": str(active_inverters_count),
                 "unit": f"/{total_inverters_count}",
                 "description": inverter_description_text,
                 "status": inverter_status_text
@@ -208,7 +246,8 @@ class ConsumptionSummaryView(APIView):
                 "totalConsumption": consumption_kpi,
                 "totalGeneration": generation_kpi,
                 "energyBalance": energy_balance_kpi,
-                "activeInverters": active_inverters_kpi, # Añadido el nuevo KPI
+                "averageInstantaneousPower": avg_power_kpi, # Añadido el nuevo KPI
+                "activeInverters": active_inverters_kpi,
             }
             return Response(kpi_data)
 

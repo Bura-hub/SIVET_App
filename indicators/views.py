@@ -12,7 +12,7 @@ import uuid
 from .models import MonthlyConsumptionKPI 
 # Importa el cliente SCADA y el modelo DeviceCategory de scada_proxy
 from scada_proxy.scada_client import ScadaConnectorClient 
-from scada_proxy.models import DeviceCategory 
+from scada_proxy.models import DeviceCategory
 import requests
 
 logger = logging.getLogger(__name__)
@@ -64,6 +64,22 @@ class ConsumptionSummaryView(APIView):
             avg_instantaneous_power_previous = kpi_record.avg_instantaneous_power_previous_month if kpi_record else 0.0
 
             logger.info(f"Avg Instantaneous Power: Current: {avg_instantaneous_power_current} W, Previous: {avg_instantaneous_power_previous} W")
+
+            # --- Temperatura Promedio Diaria ---
+            avg_daily_temp_current = kpi_record.avg_daily_temp_current_month if kpi_record else 0.0
+            avg_daily_temp_previous = kpi_record.avg_daily_temp_previous_month if kpi_record else 0.0
+            logger.info(f"Avg Daily Temperature: Current: {avg_daily_temp_current} °C, Previous: {avg_daily_temp_previous} °C")
+
+            # --- Humedad Relativa Promedio ---
+            avg_relative_humidity_current = kpi_record.avg_relative_humidity_current_month if kpi_record else 0.0
+            avg_relative_humidity_previous = kpi_record.avg_relative_humidity_previous_month if kpi_record else 0.0
+            logger.info(f"Avg Relative Humidity: Current: {avg_relative_humidity_current} %RH, Previous: {avg_relative_humidity_previous} %RH")
+
+            # --- Velocidad del Viento Promedio ---
+            avg_wind_speed_current = kpi_record.avg_wind_speed_current_month if kpi_record else 0.0
+            avg_wind_speed_previous = kpi_record.avg_wind_speed_previous_month if kpi_record else 0.0
+            logger.info(f"Avg Wind Speed: Current: {avg_wind_speed_current} km/h, Previous: {avg_wind_speed_previous} km/h")
+
 
             # --- Inversores Activos (Real-time from SCADA API) ---
             active_inverters_count = 0
@@ -132,22 +148,27 @@ class ConsumptionSummaryView(APIView):
                         return f"{value_base_unit / 1_000:.2f}", "MWh"
                     else:
                         return f"{value_base_unit:.2f}", "kWh"
-                elif base_unit_name == "W": # Nueva unidad para potencia
+                elif base_unit_name == "W":
                     if value_base_unit >= 1_000_000:
                         return f"{value_base_unit / 1_000_000:.2f}", "MW"
                     elif value_base_unit >= 1_000:
                         return f"{value_base_unit / 1_000:.2f}", "kW"
                     else:
                         return f"{value_base_unit:.2f}", "W"
+                elif base_unit_name == "°C": 
+                    return f"{value_base_unit:.1f}", "°C" 
+                elif base_unit_name == "%RH": 
+                    return f"{value_base_unit:.1f}", "%" 
+                elif base_unit_name == "km/h": # Nueva unidad para velocidad del viento
+                    return f"{value_base_unit:.1f}", "km/h"
                 return f"{value_base_unit:.2f}", base_unit_name
 
-            def calculate_kpi_metrics(current_value, previous_value, title, base_unit_name, is_balance=False, is_average_power=False):
+            def calculate_kpi_metrics(current_value, previous_value, title, base_unit_name, is_balance=False, is_average_power=False, is_temperature=False, is_humidity=False, is_wind_speed=False):
                 formatted_value, unit = format_energy_value(current_value, base_unit_name)
                 change_percentage = 0.0
                 status_text = "normal"
                 description_text = ""
 
-                # Calcular el cambio porcentual
                 if previous_value != 0:
                     change_percentage = ((current_value - previous_value) / previous_value) * 100
                 elif current_value != 0:
@@ -163,20 +184,58 @@ class ConsumptionSummaryView(APIView):
                     else:
                         description_text = "Equilibrio"
                         status_text = "normal"
-                elif is_average_power: # Lógica específica para Potencia Instantánea Promedio
+                elif is_average_power:
                     if current_value > 0:
                         description_text = "Generando"
                         status_text = "estable"
                     else:
                         description_text = "Sin generación"
-                        status_text = "normal" # O "critico" si se espera generación y es 0
+                        status_text = "normal" 
                     
-                    # También podemos añadir el cambio porcentual para la potencia promedio si es relevante
                     if change_percentage > 0:
                         description_text += f" (+{change_percentage:.2f}%)"
                     elif change_percentage < 0:
                         description_text += f" ({change_percentage:.2f}%)"
+                elif is_temperature: 
+                    description_text = "Rango normal"
+                    status_text = "normal" 
+                    
+                    if change_percentage > 0:
+                        description_text += f" (+{change_percentage:.1f}%)" 
+                    elif change_percentage < 0:
+                        description_text += f" ({change_percentage:.1f}%)"
+                elif is_humidity: 
+                    if 40 <= current_value <= 60: 
+                        description_text = "Óptimo"
+                        status_text = "optimo"
+                    elif current_value > 60:
+                        description_text = "Alta"
+                        status_text = "critico" 
+                    else:
+                        description_text = "Baja"
+                        status_text = "critico" 
 
+                    if change_percentage > 0:
+                        description_text += f" (+{change_percentage:.1f}%)"
+                    elif change_percentage < 0:
+                        description_text += f" ({change_percentage:.1f}%)"
+                elif is_wind_speed: # Lógica específica para Velocidad del Viento
+                    # Puedes definir rangos para "Moderado", "Alto", "Bajo"
+                    if current_value < 10:
+                        description_text = "Bajo"
+                        status_text = "normal"
+                    elif 10 <= current_value <= 30:
+                        description_text = "Moderado"
+                        status_text = "moderado"
+                    else:
+                        description_text = "Alto"
+                        status_text = "critico"
+
+                    if change_percentage > 0:
+                        description_text += f" (+{change_percentage:.1f}%)"
+                    elif change_percentage < 0:
+                        description_text += f" ({change_percentage:.1f}%)"
+                    
                 else: # Para consumo y generación
                     if change_percentage > 0:
                         status_text = "positivo"
@@ -224,13 +283,40 @@ class ConsumptionSummaryView(APIView):
                 is_balance=True
             )
 
-            # Nuevo KPI de Potencia Instantánea Promedio
+            # KPI de Potencia Instantánea Promedio
             avg_power_kpi = calculate_kpi_metrics(
                 avg_instantaneous_power_current,
                 avg_instantaneous_power_previous,
-                "Potencia instantánea promedio",
-                "W", # Base unit for instantaneous power
-                is_average_power=True # Flag para lógica específica de potencia promedio
+                "Pot. instan. promedio", 
+                "W", 
+                is_average_power=True 
+            )
+
+            # KPI de Temperatura Promedio Diaria
+            avg_daily_temp_kpi = calculate_kpi_metrics(
+                avg_daily_temp_current,
+                avg_daily_temp_previous,
+                "Temp. prom. diaria",
+                "°C",
+                is_temperature=True 
+            )
+
+            # KPI de Humedad Relativa Promedio
+            avg_relative_humidity_kpi = calculate_kpi_metrics(
+                avg_relative_humidity_current,
+                avg_relative_humidity_previous,
+                "Humedad relativa", 
+                "%RH", 
+                is_humidity=True 
+            )
+
+            # Nuevo KPI de Velocidad del Viento Promedio
+            avg_wind_speed_kpi = calculate_kpi_metrics(
+                avg_wind_speed_current,
+                avg_wind_speed_previous,
+                "Velocidad del viento", # Título solicitado
+                "km/h", # Unidad base de la DB
+                is_wind_speed=True # Flag para lógica específica de velocidad del viento
             )
 
             # KPI de Inversores Activos
@@ -246,7 +332,10 @@ class ConsumptionSummaryView(APIView):
                 "totalConsumption": consumption_kpi,
                 "totalGeneration": generation_kpi,
                 "energyBalance": energy_balance_kpi,
-                "averageInstantaneousPower": avg_power_kpi, # Añadido el nuevo KPI
+                "averageInstantaneousPower": avg_power_kpi,
+                "avgDailyTemp": avg_daily_temp_kpi, 
+                "relativeHumidity": avg_relative_humidity_kpi, 
+                "windSpeed": avg_wind_speed_kpi, # Añadido el nuevo KPI
                 "activeInverters": active_inverters_kpi,
             }
             return Response(kpi_data)

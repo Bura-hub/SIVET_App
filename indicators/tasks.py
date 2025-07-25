@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 @shared_task
 def calculate_monthly_consumption_kpi():
     """
-    Calcula el consumo total, la generación total, y la potencia instantánea promedio
+    Calcula el consumo total, la generación total, la potencia instantánea promedio,
+    la temperatura promedio diaria, la humedad relativa promedio, y la velocidad del viento promedio
     para el mes actual (hasta la fecha) y el mes anterior completo.
     Guarda los resultados en MonthlyConsumptionKPI.
     """
@@ -37,6 +38,9 @@ def calculate_monthly_consumption_kpi():
 
         inverters = Device.objects.filter(category__id=1, is_active=True)
         logger.info(f"Found {inverters.count()} active inverter devices.")
+
+        weather_stations = Device.objects.filter(category__name='weatherStation', is_active=True) 
+        logger.info(f"Found {weather_stations.count()} active weather station devices.")
 
         # --- Cálculo de Consumo Total (Medidores Eléctricos) ---
         current_month_consumption_sum = Measurement.objects.filter(
@@ -75,7 +79,6 @@ def calculate_monthly_consumption_kpi():
         logger.info(f"Generation - Current month: {current_month_generation_sum}, Previous month: {previous_month_generation_sum}")
 
         # --- Cálculo de Potencia Instantánea Promedio (Inversores) ---
-        # Promedio de 'acPower' de los inversores para el mes actual
         avg_instantaneous_power_current = Measurement.objects.filter(
             device__in=inverters,
             date__date__range=(start_current_month, end_current_month),
@@ -84,7 +87,6 @@ def calculate_monthly_consumption_kpi():
             avg_value=Avg(Cast(F('data__acPower'), FloatField()))
         )['avg_value'] or 0.0
 
-        # Promedio de 'acPower' de los inversores para el mes anterior
         avg_instantaneous_power_previous = Measurement.objects.filter(
             device__in=inverters,
             date__date__range=(start_previous_month, end_previous_month),
@@ -93,6 +95,60 @@ def calculate_monthly_consumption_kpi():
             avg_value=Avg(Cast(F('data__acPower'), FloatField()))
         )['avg_value'] or 0.0
         logger.info(f"Avg Instantaneous Power - Current month: {avg_instantaneous_power_current} W, Previous month: {avg_instantaneous_power_previous} W")
+
+        # --- Cálculo: Temperatura Promedio Diaria (Estaciones Meteorológicas) ---
+        avg_daily_temp_current = Measurement.objects.filter(
+            device__in=weather_stations,
+            date__date__range=(start_current_month, end_current_month),
+            data__temperature__isnull=False
+        ).aggregate(
+            avg_value=Avg(Cast(F('data__temperature'), FloatField()))
+        )['avg_value'] or 0.0
+
+        avg_daily_temp_previous = Measurement.objects.filter(
+            device__in=weather_stations,
+            date__date__range=(start_previous_month, end_previous_month),
+            data__temperature__isnull=False
+        ).aggregate(
+            avg_value=Avg(Cast(F('data__temperature'), FloatField()))
+        )['avg_value'] or 0.0
+        logger.info(f"Avg Daily Temperature - Current month: {avg_daily_temp_current} °C, Previous month: {avg_daily_temp_previous} °C")
+
+        # --- Cálculo: Humedad Relativa Promedio (Estaciones Meteorológicas) ---
+        avg_relative_humidity_current = Measurement.objects.filter(
+            device__in=weather_stations,
+            date__date__range=(start_current_month, end_current_month),
+            data__humidity__isnull=False
+        ).aggregate(
+            avg_value=Avg(Cast(F('data__humidity'), FloatField()))
+        )['avg_value'] or 0.0
+
+        avg_relative_humidity_previous = Measurement.objects.filter(
+            device__in=weather_stations,
+            date__date__range=(start_previous_month, end_previous_month),
+            data__humidity__isnull=False
+        ).aggregate(
+            avg_value=Avg(Cast(F('data__humidity'), FloatField()))
+        )['avg_value'] or 0.0
+        logger.info(f"Avg Relative Humidity - Current month: {avg_relative_humidity_current} %RH, Previous month: {avg_relative_humidity_previous} %RH")
+
+        # --- Nuevo Cálculo: Velocidad del Viento Promedio (Estaciones Meteorológicas) ---
+        avg_wind_speed_current = Measurement.objects.filter(
+            device__in=weather_stations,
+            date__date__range=(start_current_month, end_current_month),
+            data__windSpeed__isnull=False
+        ).aggregate(
+            avg_value=Avg(Cast(F('data__windSpeed'), FloatField()))
+        )['avg_value'] or 0.0
+
+        avg_wind_speed_previous = Measurement.objects.filter(
+            device__in=weather_stations,
+            date__date__range=(start_previous_month, end_previous_month),
+            data__windSpeed__isnull=False
+        ).aggregate(
+            avg_value=Avg(Cast(F('data__windSpeed'), FloatField()))
+        )['avg_value'] or 0.0
+        logger.info(f"Avg Wind Speed - Current month: {avg_wind_speed_current} km/h, Previous month: {avg_wind_speed_previous} km/h")
 
 
         # Update or create the single KPI record
@@ -103,8 +159,14 @@ def calculate_monthly_consumption_kpi():
                 'total_consumption_previous_month': previous_month_consumption_sum,
                 'total_generation_current_month': current_month_generation_sum,
                 'total_generation_previous_month': previous_month_generation_sum,
-                'avg_instantaneous_power_current_month': avg_instantaneous_power_current, # Nuevo campo
-                'avg_instantaneous_power_previous_month': avg_instantaneous_power_previous, # Nuevo campo
+                'avg_instantaneous_power_current_month': avg_instantaneous_power_current,
+                'avg_instantaneous_power_previous_month': avg_instantaneous_power_previous,
+                'avg_daily_temp_current_month': avg_daily_temp_current,
+                'avg_daily_temp_previous_month': avg_daily_temp_previous,
+                'avg_relative_humidity_current_month': avg_relative_humidity_current,
+                'avg_relative_humidity_previous_month': avg_relative_humidity_previous,
+                'avg_wind_speed_current_month': avg_wind_speed_current, # Nuevo campo
+                'avg_wind_speed_previous_month': avg_wind_speed_previous, # Nuevo campo
             }
         )
         if not created:
@@ -112,12 +174,18 @@ def calculate_monthly_consumption_kpi():
             kpi_record.total_consumption_previous_month = previous_month_consumption_sum
             kpi_record.total_generation_current_month = current_month_generation_sum
             kpi_record.total_generation_previous_month = previous_month_generation_sum
-            kpi_record.avg_instantaneous_power_current_month = avg_instantaneous_power_current # Actualizar
-            kpi_record.avg_instantaneous_power_previous_month = avg_instantaneous_power_previous # Actualizar
+            kpi_record.avg_instantaneous_power_current_month = avg_instantaneous_power_current
+            kpi_record.avg_instantaneous_power_previous_month = avg_instantaneous_power_previous
+            kpi_record.avg_daily_temp_current_month = avg_daily_temp_current
+            kpi_record.avg_daily_temp_previous_month = avg_daily_temp_previous
+            kpi_record.avg_relative_humidity_current_month = avg_relative_humidity_current
+            kpi_record.avg_relative_humidity_previous_month = avg_relative_humidity_previous
+            kpi_record.avg_wind_speed_current_month = avg_wind_speed_current # Actualizar
+            kpi_record.avg_wind_speed_previous_month = avg_wind_speed_previous # Actualizar
             kpi_record.save()
 
-        logger.info("Monthly Consumption, Generation, and Avg Instantaneous Power KPIs calculated and updated successfully.")
-        return "Monthly Consumption, Generation, and Avg Instantaneous Power KPIs calculated and updated successfully."
+        logger.info("All Monthly KPIs calculated and updated successfully.")
+        return "All Monthly KPIs calculated and updated successfully."
 
     except Exception as e:
         logger.error(f"Error calculating monthly KPIs: {e}", exc_info=True)

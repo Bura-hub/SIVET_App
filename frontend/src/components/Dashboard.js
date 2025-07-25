@@ -41,14 +41,14 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
 
   // Datos dummy para los KPIs (estos se reemplazarán con datos reales de la API)
   const [kpiData, setKpiData] = useState({
-    totalConsumption: { title: "Consumo total", value: "Cargando...", unit: "", change: "", status: "" },
-    totalGeneration: { title: "Generación total", value: "Cargando...", unit: "", change: "", status: "" },
-    energyBalance: { title: "Equilibrio energético", value: "Cargando...", unit: "", description: "", status: "" },
-    activeInverters: { title: "Inversores activos", value: "Cargando...", unit: "", description: "", status: "" }, // Nuevo KPI de inversores activos
+    totalConsumption: { title: "Consumo total", value: "Cargando...", unit: "", change: "", status: "normal" },
+    totalGeneration: { title: "Generación total", value: "Cargando...", unit: "", change: "", status: "normal" },
+    energyBalance: { title: "Equilibrio energético", value: "Cargando...", unit: "", description: "", status: "normal" },
+    activeInverters: { title: "Inversores activos", value: "Cargando...", unit: "", description: "", status: "normal" },
     averageInstantaneousPower: { title: "Pot. instan. promedio", value: "Cargando...", unit: "W", description: "", status: "normal" }, 
-    avgDailyTemp: { title: "Temp. prom. diaria", value: "25", unit: "°C", description: "Rango normal", status: "normal" },
-    relativeHumidity: { title: "Humedad relativa", value: "65", unit: "%", description: "Optimo", status: "optimo" },
-    windSpeed: { title: "Velocidad del viento", value: "15", unit: "km/h", description: "Moderado", status: "moderado" },
+    avgDailyTemp: { title: "Temp. prom. diaria", value: "Cargando...", unit: "°C", description: "Rango normal", status: "normal" }, // Nuevo KPI
+    relativeHumidity: { title: "Humedad relativa", value: "Cargando...", unit: "%", description: "", status: "normal" },
+    windSpeed: { title: "Velocidad del viento", value: "Cargando...", unit: "km/h", description: "Moderado", status: "moderado" },
   });
 
   // Datos dummy para los gráficos (estos se reemplazarán con datos reales de la API)
@@ -218,14 +218,17 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
 
         const kpisDataFetched = await kpisResponse.json();
         
-        // Actualizar los KPIs de consumo y generación total en el estado
+        // Actualizar todos los KPIs en el estado
         setKpiData(prevKpiData => ({
           ...prevKpiData,
           totalConsumption: kpisDataFetched.totalConsumption,
           totalGeneration: kpisDataFetched.totalGeneration,
-          energyBalance: kpisDataFetched.energyBalance, // Nuevo KPI de balance
+          energyBalance: kpisDataFetched.energyBalance,
           averageInstantaneousPower: kpisDataFetched.averageInstantaneousPower,
-          activeInverters: kpisDataFetched.activeInverters // Añadido el nuevo KPI de inversores activos
+          avgDailyTemp: kpisDataFetched.avgDailyTemp, 
+          relativeHumidity: kpisDataFetched.relativeHumidity, 
+          windSpeed: kpisDataFetched.windSpeed, // Añadido el nuevo KPI
+          activeInverters: kpisDataFetched.activeInverters,
         }));
 
         // --- Simulación de carga para otros datos (reemplazar con llamadas a la API real) ---
@@ -242,10 +245,6 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       } catch (e) {
         setError(e.message);
         console.error("Error al cargar datos del dashboard:", e);
-        // Si el error es de autenticación, redirige al login
-        if (e.response && (e.response.status === 401 || e.response.status === 403)) {
-          onLogout();
-        }
       } finally {
         setLoading(false);
       }
@@ -312,7 +311,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       <section className="bg-white grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
         {Object.keys(kpiData).map((key) => {
           const item = kpiData[key];
-          return <KpiCard key={key} {...item} />;
+          const description = item.description || (item.change ? item.change : "Datos disponibles");
+          return <KpiCard key={key} {...item} description={description} />;
         })}
       </section>
 

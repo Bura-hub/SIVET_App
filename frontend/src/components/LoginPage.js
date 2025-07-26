@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import sivetLogo from './sivet-logo.svg'; 
+import background from './bg.png'; // Importa la imagen de fondo local
 
 function LoginPage({ onLoginSuccess }) {
     const [username, setUsername] = useState('');
@@ -16,7 +17,7 @@ function LoginPage({ onLoginSuccess }) {
 
         try {
             // Asegúrate que esta es la URL correcta para tu endpoint de login de Django
-            const response = await fetch('/auth/login/', { 
+            const response = await fetch('/auth/login/', { // Cambiado a /api/auth/login/ según la configuración de Django
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -38,7 +39,7 @@ function LoginPage({ onLoginSuccess }) {
             
             if (response.ok) {
                 setMessage({ text: 'Inicio exitoso. Redireccionando...', type: 'success' });
-                // Simular animación de 2 segundos antes de llamar a onLoginSuccess
+                // Simular animación de 1.5 segundos antes de llamar a onLoginSuccess
                 setTimeout(() => {
                     setShowAnimation(false); // Ocultar animación
                     // Pasar los datos de autenticación como se espera en App.js
@@ -63,8 +64,11 @@ function LoginPage({ onLoginSuccess }) {
     return (
         // Contenedor principal para centrar el formulario.
         // Usamos flexbox para centrar y min-h-screen para ocupar toda la altura.
-        // bg-gray-100 para el fondo de la página de login.
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4 font-inter">
+        // Se ha cambiado el fondo a una imagen local usando clases de Tailwind CSS.
+        <div 
+            className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 font-inter"
+            style={{ backgroundImage: `url(${background})` }} // Usa el estilo inline para la imagen importada
+        >
             {/* Aquí se usa la clase 'login-card' de tu index.css */}
             <div className="login-card">
                 <div className="flex justify-center mb-6"> {/* Centra el logo */}

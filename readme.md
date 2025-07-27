@@ -1,4 +1,4 @@
-# SIVET: Sistema de Visualización de Energia Transaccional
+# SIVET: Sistema de Visualización Energética Transaccional
 
 ## Descripción General del Proyecto
 

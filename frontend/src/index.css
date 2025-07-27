@@ -1,64 +1,72 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Importación de los estilos base, componentes y utilidades de Tailwind CSS */
 
+/* Estilos globales */
 body {
   margin: 0;
-  font-family: 'Inter', sans-serif; /* Asegúrate de que esta fuente esté disponible o sea una alternativa */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Inter', sans-serif; /* Fuente base del sitio, asegúrate de que esté importada correctamente */
+  -webkit-font-smoothing: antialiased; /* Mejora el renderizado en navegadores WebKit */
+  -moz-osx-font-smoothing: grayscale;  /* Mejora el renderizado en macOS */
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+    monospace; /* Fuente monoespaciada para fragmentos de código */
 }
 
-/* Estilos personalizados para el contenedor del formulario de login */
+/* Tarjeta de login centrada con diseño moderno */
 .login-card {
-    background-color: #f0f1f0; /* Fondo de la tarjeta de login */
-    border-radius: 1.5rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    padding: 2.5rem;
+    background-color: #f0f1f0; /* Color de fondo neutro */
+    border-radius: 1.5rem; /* Bordes redondeados */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidad */
+    padding: 2.5rem; /* Espaciado interno generoso */
     width: 100%;
-    max-width: 400px;
-    text-align: center;
+    max-width: 400px; /* Máximo ancho para mantener enfoque visual */
+    text-align: center; /* Alineación centrada del contenido */
 }
-/* Estilos para los campos de entrada */
+
+/* Campos de entrada del formulario */
 .input-field {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #E0E0E0;
-    border-radius: 0.5rem;
+    padding: 0.75rem 1rem; /* Espaciado interno */
+    border: 1px solid #E0E0E0; /* Borde claro */
+    border-radius: 0.5rem; /* Bordes ligeramente redondeados */
     outline: none;
-    transition: border-color 0.2s ease-in-out;
+    transition: border-color 0.2s ease-in-out; /* Transición suave en foco */
     font-size: 1rem;
-    color: #333;
+    color: #333; /* Color de texto accesible */
 }
+
 .input-field:focus {
-    border-color: #3B82F6;
+    border-color: #3B82F6; /* Color azul al enfocar el input */
 }
-/* Estilo para el botón principal */
+
+/* Botón principal del formulario */
 .login-button {
     width: 100%;
     padding: 0.85rem 1rem;
-    background-color: #3B82F6;
+    background-color: #3B82F6; /* Azul principal */
     color: white;
     font-weight: 600;
     border-radius: 0.75rem;
     transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
     cursor: pointer;
     font-size: 1.1rem;
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3); /* Sombra sutil para elevación */
 }
+
 .login-button:hover {
-    background-color: #2563EB;
-    transform: translateY(-1px);
+    background-color: #2563EB; /* Azul más oscuro al pasar el mouse */
+    transform: translateY(-1px); /* Efecto sutil de elevación */
 }
+
 .login-button:active {
-    transform: translateY(0);
+    transform: translateY(0); /* Retorno al estado base al hacer clic */
 }
-/* Estilo para enlaces secundarios */
+
+/* Enlaces secundarios, como "¿Olvidaste tu contraseña?" */
 .secondary-link {
     color: #3B82F6;
     font-size: 0.9rem;
@@ -66,24 +74,25 @@ code {
     text-decoration: none;
     transition: color 0.2s ease-in-out;
 }
+
 .secondary-link:hover {
     color: #2563EB;
     text-decoration: underline;
 }
 
-/* Estilos para el contenedor del gráfico */
+/* Contenedor principal del gráfico */
 .chart-container {
   position: relative;
   width: 100%;
-  max-width: 900px; /* Ancho máximo para el gráfico */
-  height: 400px; /* Altura fija para el gráfico */
+  max-width: 900px; /* Limita el ancho máximo del gráfico */
+  height: 400px; /* Altura fija para asegurar proporción */
   margin-left: auto;
-  margin-right: auto;
+  margin-right: auto; /* Centrado horizontal */
 }
 
-/* Ajustes responsivos para el contenedor del gráfico */
+/* Ajuste responsivo para pantallas pequeñas */
 @media (max-width: 768px) {
   .chart-container {
-    height: 300px; /* Menor altura en pantallas pequeñas */
+    height: 300px; /* Reduce la altura en dispositivos móviles */
   }
 }

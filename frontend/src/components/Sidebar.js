@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import sivetLogo from './sivet-logo.svg'; // Ajusta la ruta si es necesario
+import sivetLogo from './sivet-logo.svg'; // Importa el logo de la aplicación
 
+// Componente Sidebar que recibe props para gestionar estado y navegación
 function Sidebar({
   username,
   isSuperuser,
@@ -10,23 +11,24 @@ function Sidebar({
   onLogout, // onLogout ahora incluye la animación desde App.js
   currentPage // Para determinar qué elemento de navegación está activo
 }) {
+  // Estado para mostrar u ocultar el menú de perfil
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const profileMenuRef = useRef(null);
+  const profileMenuRef = useRef(null); // Referencia para detectar clics fuera del menú
 
-  // Cierra el menú de perfil al hacer clic fuera
+  // Hook para cerrar el menú de perfil si se hace clic fuera de él
   useEffect(() => {
     function handleClickOutside(event) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-        setShowProfileMenu(false);
+        setShowProfileMenu(false); // Cierra el menú si se clickea fuera
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside); // Añade listener
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside); // Limpia listener
     };
   }, [profileMenuRef]);
 
-  // Define los elementos de navegación
+  // Elementos de navegación con nombre, página asociada, ícono y clases
   const navItems = [
     { 
       name: 'Inicio', 
@@ -113,6 +115,7 @@ function Sidebar({
 
 
   return (
+    // Contenedor principal del sidebar
     <aside className={`bg-white p-6 shadow-lg flex flex-col justify-between transition-all duration-300 ${isSidebarMinimized ? 'w-20 items-center overflow-hidden' : 'w-64'}`}>
       <div>
         {/* Logo y botón de minimizado */}

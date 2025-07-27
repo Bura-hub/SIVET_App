@@ -1,38 +1,44 @@
+/* Estilo general del contenedor principal de la aplicación */
 .App {
   text-align: center;
 }
 
+/* Estilo del logo de la aplicación */
 .App-logo {
-  height: 40vmin;
-  pointer-events: none;
+  height: 40vmin;            /* Escala del logo en relación al viewport vertical */
+  pointer-events: none;      /* Desactiva interacciones del mouse sobre el logo */
 }
 
+/* Aplica una animación al logo si el usuario no ha activado la preferencia de movimiento reducido */
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+    animation: App-logo-spin infinite 20s linear; /* Rotación infinita del logo cada 20s */
   }
 }
 
+/* Encabezado principal de la aplicación */
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  background-color: #282c34;        /* Color de fondo oscuro */
+  min-height: 100vh;                /* Ocupa al menos el alto total del viewport */
+  display: flex;                    /* Usa flexbox para organizar el contenido */
+  flex-direction: column;          /* Distribuye los hijos verticalmente */
+  align-items: center;             /* Centra horizontalmente */
+  justify-content: center;         /* Centra verticalmente */
+  font-size: calc(10px + 2vmin);   /* Tamaño de fuente responsivo */
+  color: white;                    /* Texto en color blanco */
 }
 
+/* Estilo para enlaces dentro de la app */
 .App-link {
-  color: #61dafb;
+  color: #61dafb;  /* Azul claro, consistente con el branding de React */
 }
 
+/* Definición de la animación de rotación del logo */
 @keyframes App-logo-spin {
   from {
-    transform: rotate(0deg);
+    transform: rotate(0deg);   /* Punto inicial de la rotación */
   }
   to {
-    transform: rotate(360deg);
+    transform: rotate(360deg); /* Rotación completa */
   }
 }

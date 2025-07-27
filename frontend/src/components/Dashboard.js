@@ -1,6 +1,9 @@
+// Importaciones necesarias de React y componentes personalizados
 import React, { useState, useEffect, useRef } from 'react';
 import { KpiCard } from "./KPI/KpiCard";
 import { ChartCard } from "./KPI/ChartCard";
+
+// Importaciones desde Chart.js y el plugin de zoom
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,11 +14,11 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler // Importar Filler para áreas de gráfico
+  Filler // Para gráficos con relleno de área
 } from 'chart.js';
 import zoomPlugin from 'chartjs-plugin-zoom'
 
-// Registrar componentes de Chart.js
+// Registro de los componentes de Chart.js necesarios
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -29,24 +32,25 @@ ChartJS.register(
   zoomPlugin
 );
 
+// Componente principal del dashboard
 function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isSidebarMinimized, setIsSidebarMinimized }) {
-  // Estados para los datos del dashboard
+  // Estados para control de carga y errores
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Estados para los filtros del header
+  // Estados para los filtros del encabezado (aún sin lógica activa)
   const [selectedTimeRange, setSelectedTimeRange] = useState('Últimos 30 días');
   const [selectedLocation, setSelectedLocation] = useState('Todas');
   const [selectedDevice, setSelectedDevice] = useState('Todos');
 
-  // Datos dummy para los KPIs (estos se reemplazarán con datos reales de la API)
+  // Estado con datos simulados para los KPIs
   const [kpiData, setKpiData] = useState({
     totalConsumption: { title: "Consumo total", value: "Cargando...", unit: "", change: "", status: "normal" },
     totalGeneration: { title: "Generación total", value: "Cargando...", unit: "", change: "", status: "normal" },
     energyBalance: { title: "Equilibrio energético", value: "Cargando...", unit: "", description: "", status: "normal" },
     activeInverters: { title: "Inversores activos", value: "Cargando...", unit: "", description: "", status: "normal" },
     averageInstantaneousPower: { title: "Pot. instan. promedio", value: "Cargando...", unit: "W", description: "", status: "normal" }, 
-    avgDailyTemp: { title: "Temp. prom. diaria", value: "Cargando...", unit: "°C", description: "Rango normal", status: "normal" }, // Nuevo KPI
+    avgDailyTemp: { title: "Temp. prom. diaria", value: "Cargando...", unit: "°C", description: "Rango normal", status: "normal" },
     relativeHumidity: { title: "Humedad relativa", value: "Cargando...", unit: "%", description: "", status: "normal" },
     windSpeed: { title: "Velocidad del viento", value: "Cargando...", unit: "km/h", description: "Moderado", status: "moderado" },
   });
@@ -135,7 +139,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     ],
   };
 
-  // Opciones genéricas para todos los gráficos
+  // Opciones genéricas para los gráficos (con soporte para zoom/pan y tooltips)
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -194,7 +198,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     },
   };
   
-  // Efecto para cargar datos (actualmente usa datos dummy, pero aquí iría la lógica de la API)
+  // Hook de efecto para cargar datos desde la API (simulado con dummy + delay)
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);

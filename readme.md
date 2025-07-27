@@ -1,8 +1,8 @@
-# MteLumen_App: Plataforma de Visualización de Indicadores Energéticos y Climáticos
+# SIVET: Sistema de Visualización de Energia Transaccional
 
 ## Descripción General del Proyecto
 
-\`MteLumen_App\` es una aplicación web integral diseñada para la visualización de datos históricos e indicadores clave relacionados con el consumo y la generación de energía eléctrica, así como variables climáticas relevantes. Construida con una arquitectura desacoplada utilizando **Django (Python)** para el backend y **React (JavaScript)** para el frontend, la plataforma se integra de forma segura con una API SCADA externa para la ingesta y el procesamiento de datos.
+\`SIVET\` es una aplicación web integral diseñada para la visualización de datos históricos e indicadores clave relacionados con el consumo y la generación de energía eléctrica, así como variables climáticas relevantes. Construida con una arquitectura desacoplada utilizando **Django (Python)** para el backend y **React (JavaScript)** para el frontend, la plataforma se integra de forma segura con una API SCADA externa para la ingesta y el procesamiento de datos.
 
 El objetivo principal es transformar datos complejos en información accionable, proporcionando a analistas y ejecutivos una visión clara y dinámica del comportamiento de los sistemas energéticos y climáticos.
 
@@ -71,14 +71,14 @@ Sigue estos pasos para configurar y ejecutar el proyecto en tu entorno local.
 
 ### 1. Clonar el Repositorio
 
-\`\`\`bash
+```bash
 git clone <URL_DEL_REPOSITORIO>
 cd MteLumen_App # Asegúrate de estar en el directorio raíz del proyecto
-\`\`\`
+```
 
 ### 2. Configuración del Backend (Django)
 
-\`\`\`bash
+```bash
 # Crear y activar un entorno virtual
 python -m venv env_lumen
 .\env_lumen\Scripts\activate # En Windows
@@ -115,14 +115,14 @@ python manage.py shell
 from django.contrib.auth.models import User
 User.objects.create_user(username='testuser', password='testpassword')
 exit()
-\`\`\`
+```
 
 ### 3. Configuración del Frontend (React)
 
-\`\`\`bash
+```bash
 cd frontend # Navega al directorio del frontend
 npm install # O yarn install
-\`\`\`
+```
 
 ### 4. Iniciar Servicios
 
@@ -132,37 +132,37 @@ Asegúrate de que tu instancia de Redis esté ejecutándose.
 
 Abre una nueva terminal y ejecuta:
 
-\`\`\`bash
+```bash
 # Asegúrate de que tu entorno virtual esté activado
 celery -A MteLumen_App worker -l info # Reemplaza MteLumen_App con el nombre de tu proyecto
-\`\`\`
+```
 
 #### b. Iniciar Celery Beat (Scheduler)
 
 Abre otra nueva terminal y ejecuta:
 
-\`\`\`bash
+```bash
 # Asegúrate de que tu entorno virtual esté activado
 celery -A MteLumen_App beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
-\`\`\`
+```
 
 #### c. Iniciar el Servidor de Desarrollo Django
 
 Abre otra terminal y ejecuta:
 
-\`\`\`bash
+```bash
 # Asegúrate de que tu entorno virtual esté activado
 python manage.py runserver
-\`\`\`
+```
 
 #### d. Iniciar el Servidor de Desarrollo React
 
 Abre una última terminal y ejecuta:
 
-\`\`\`bash
+```bash
 cd frontend
 npm start # O yarn start
-\`\`\`
+```
 
 La aplicación frontend se abrirá automáticamente en tu navegador (normalmente en \`http://localhost:3000\`).
 
@@ -175,7 +175,7 @@ La aplicación frontend se abrirá automáticamente en tu navegador (normalmente
 
 ## Estructura del Proyecto
 
-\`\`\`
+```
 MteLumen_App/
 ├── MteLumen_App/           # Directorio principal del proyecto Django
 │   ├── settings.py         # Configuración de Django
@@ -216,7 +216,7 @@ MteLumen_App/
 ├── requirements.txt        # Dependencias de Python
 ├── .env.example            # Ejemplo de archivo de variables de entorno
 └── README.md               # Este archivo
-\`\`\`
+```
 
 ## Próximos Pasos
 
@@ -236,5 +236,3 @@ Las contribuciones son bienvenidas. Por favor, abre un *issue* o envía un *pull
 ## Licencia
 
 Este proyecto está bajo la licencia MIT.
-
-EOF

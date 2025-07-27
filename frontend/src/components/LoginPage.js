@@ -1,103 +1,120 @@
 import React, { useState } from 'react';
-import sivetLogo from './sivet-logo.svg'; 
-import background from './bg.png'; // Importa la imagen de fondo local
+import sivetLogo from './sivet-logo.svg'; // Logo de la aplicación
+import background from './bg.png'; // Imagen de fondo local
 
+// Componente funcional que representa la página de login
 function LoginPage({ onLoginSuccess }) {
+    // Estados para campos del formulario
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    
+    // Estado para mostrar mensajes de éxito/error
     const [message, setMessage] = useState({ text: '', type: '' });
+    
+    // Estado de carga para deshabilitar botón durante la petición
     const [loading, setLoading] = useState(false);
-    const [showAnimation, setShowAnimation] = useState(false); // New state for animation
+    
+    // Controla si se muestra la animación de "iniciando sesión"
+    const [showAnimation, setShowAnimation] = useState(false);
 
+    // Función que se ejecuta al enviar el formulario
     const handleSubmit = async (event) => {
-        event.preventDefault();
-        setMessage({ text: '', type: '' }); // Limpiar mensajes anteriores
-        setLoading(true);
-        setShowAnimation(true); // Mostrar animación al iniciar sesión
+        event.preventDefault(); // Prevenir comportamiento por defecto del form
+        setMessage({ text: '', type: '' }); // Limpia mensajes anteriores
+        setLoading(true); // Activa el estado de carga
+        setShowAnimation(true); // Muestra la animación
 
         try {
-            // Asegúrate que esta es la URL correcta para tu endpoint de login de Django
-            const response = await fetch('/auth/login/', { // Cambiado a /api/auth/login/ según la configuración de Django
+            // Petición POST al backend Django
+            const response = await fetch('/auth/login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ username, password }), // Enviar credenciales
             });
 
             let data;
             try {
+                // Intentar parsear la respuesta a JSON
                 data = await response.json();
             } catch (jsonError) {
+                // Si el backend no responde con JSON válido
                 setMessage({ text: 'Error del servidor: Respuesta inesperada. (¿Está el backend funcionando?)', type: 'error' });
                 console.error('Error parsing JSON:', jsonError);
                 console.error('Server response:', await response.text());
                 setLoading(false);
-                setShowAnimation(false); // Ocultar animación en caso de error de parsing
+                setShowAnimation(false);
                 return;
             }
-            
+
             if (response.ok) {
+                // Si el login fue exitoso
                 setMessage({ text: 'Inicio exitoso. Redireccionando...', type: 'success' });
-                // Simular animación de 1.5 segundos antes de llamar a onLoginSuccess
+                
+                // Espera breve para mostrar animación y luego ejecuta el callback
                 setTimeout(() => {
-                    setShowAnimation(false); // Ocultar animación
-                    // Pasar los datos de autenticación como se espera en App.js
-                    // Asume que la API devuelve data.token, data.username, data.is_superuser
-                    onLoginSuccess(data.token, data.username, data.is_superuser); 
-                }, 1500); 
+                    setShowAnimation(false);
+                    onLoginSuccess(data.token, data.username, data.is_superuser); // Se pasa la data relevante a App.js
+                }, 1500);
             } else {
-                // Manejar errores específicos de la API (ej. credenciales inválidas)
+                // Si la autenticación falló (credenciales incorrectas, etc.)
                 const errorMessage = data.non_field_errors ? data.non_field_errors[0] : 'Credenciales inválidas. Inténtalo de nuevo.';
                 setMessage({ text: errorMessage, type: 'error' });
-                setShowAnimation(false); // Ocultar animación en caso de error de login
+                setShowAnimation(false);
             }
         } catch (error) {
+            // Si hay error de red o de servidor
             setMessage({ text: 'Error de red. Inténtalo de nuevo más tarde.', type: 'error' });
             console.error('Error de login:', error);
-            setShowAnimation(false); // Ocultar animación en caso de error de red
+            setShowAnimation(false);
         } finally {
-            setLoading(false); // Desactivar loading, la animación se maneja por showAnimation
+            setLoading(false); // Apaga el estado de carga siempre al final
         }
     };
 
     return (
-        // Contenedor principal para centrar el formulario.
-        // Usamos flexbox para centrar y min-h-screen para ocupar toda la altura.
-        // Se ha cambiado el fondo a una imagen local usando clases de Tailwind CSS.
+        // Contenedor principal con imagen de fondo
         <div 
             className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 font-inter"
-            style={{ backgroundImage: `url(${background})` }} // Usa el estilo inline para la imagen importada
+            style={{ backgroundImage: `url(${background})` }} // Usa imagen local
         >
-            {/* Aquí se usa la clase 'login-card' de tu index.css */}
+            {/* Card de login con clases personalizadas en CSS */}
             <div className="login-card">
-                <div className="flex justify-center mb-6"> {/* Centra el logo */}
+                {/* Logo centrado */}
+                <div className="flex justify-center mb-6">
                     <img
-                    src={sivetLogo}
-                    alt="SIVET Logo"
-                    className="w-50 h-auto mx-auto"
+                        src={sivetLogo}
+                        alt="SIVET Logo"
+                        className="w-50 h-auto mx-auto"
                     />
                 </div>
-                <p className="text-sm text-gray-500 text-center mb-8">Transparencia energética para un futuro descentralizado</p>
 
+                {/* Lema de la aplicación */}
+                <p className="text-sm text-gray-500 text-center mb-8">
+                    Transparencia energética para un futuro descentralizado
+                </p>
+
+                {/* Formulario de inicio de sesión */}
                 <form onSubmit={handleSubmit}>
+                    {/* Campo de usuario */}
                     <div className="mb-4 text-left">
                         <label htmlFor="username" className="block text-gray-700 text-sm font-medium mb-2">Usuario</label>
-                        {/* Aquí se usa la clase 'input-field' de tu index.css */}
                         <input
                             type="text"
                             id="username"
                             name="username"
                             placeholder="Introduce tu usuario"
-                            className="input-field"
+                            className="input-field" // Clase definida en CSS
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
                         />
                     </div>
+
+                    {/* Campo de contraseña */}
                     <div className="mb-6 text-left">
                         <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-2">Contraseña</label>
-                        {/* Aquí se usa la clase 'input-field' de tu index.css */}
                         <input
                             type="password"
                             id="password"
@@ -109,12 +126,14 @@ function LoginPage({ onLoginSuccess }) {
                             required
                         />
                     </div>
-                    {/* Aquí se usa la clase 'login-button' de tu index.css */}
+
+                    {/* Botón de login */}
                     <button type="submit" className="login-button" disabled={loading}>
                         {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                     </button>
                 </form>
 
+                {/* Mensaje de éxito o error */}
                 {message.text && (
                     <div className={`mt-6 p-3 rounded-md text-sm block ${
                         message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
@@ -123,15 +142,14 @@ function LoginPage({ onLoginSuccess }) {
                     </div>
                 )}
 
+                {/* Enlaces secundarios (no funcionales por ahora) */}
                 <div className="mt-8 flex justify-between text-sm">
-                    {/* Aquí se usa la clase 'secondary-link' de tu index.css */}
                     <a href="#" className="secondary-link">¿Olvidó su contraseña?</a>
-                    {/* Aquí se usa la clase 'secondary-link' de tu index.css */}
                     <a href="#" className="secondary-link">Crear una cuenta</a>
                 </div>
             </div>
 
-            {/* Animación de carga (spinner) */}
+            {/* Overlay de animación al iniciar sesión */}
             {showAnimation && (
                 <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
                     <div className="flex flex-col items-center">

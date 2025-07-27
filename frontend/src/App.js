@@ -1,3 +1,4 @@
+// Importación de hooks y componentes de React
 import React, { useState, useEffect } from 'react';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
@@ -5,24 +6,24 @@ import ElectricalDetails from './components/ElectricalDetails';
 import InverterDetails from './components/InverterDetails';
 import WeatherDetails from './components/WeatherDetails';
 import ExportReports from './components/ExportReports';
-import Sidebar from './components/Sidebar'; // Importa el nuevo componente Sidebar
+import Sidebar from './components/Sidebar'; // Componente de barra lateral
 
 function App() {
-  // Estado para la autenticación
-  const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
-  const [username, setUsername] = useState(localStorage.getItem('username'));
-  const [isSuperuser, setIsSuperuser] = useState(localStorage.getItem('isSuperuser') === 'true');
+  // Estados para gestionar la sesión del usuario
+  const [authToken, setAuthToken] = useState(localStorage.getItem('authToken')); // Token de autenticación
+  const [username, setUsername] = useState(localStorage.getItem('username')); // Nombre de usuario
+  const [isSuperuser, setIsSuperuser] = useState(localStorage.getItem('isSuperuser') === 'true'); // Rol de superusuario
 
-  // Estado para la navegación (qué componente mostrar)
+  // Estado para determinar la vista actual (login, dashboard, etc.)
   const [currentPage, setCurrentPage] = useState(authToken ? 'dashboard' : 'login');
 
-  // Estado para minimizar/expandir la barra lateral (compartido entre todas las páginas)
+  // Estado para controlar si la barra lateral está minimizada
   const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
 
-  // Nuevo estado para controlar la animación de cierre de sesión
+  // Estado para controlar si se debe mostrar la animación de cierre de sesión
   const [showLogoutAnimation, setShowLogoutAnimation] = useState(false);
 
-  // Función para manejar el éxito del login
+  // Maneja el éxito en el login: guarda los datos en el estado y en localStorage
   const handleLoginSuccess = (token, user, superuser) => {
     setAuthToken(token);
     setUsername(user);
@@ -30,10 +31,10 @@ function App() {
     localStorage.setItem('authToken', token);
     localStorage.setItem('username', user);
     localStorage.setItem('isSuperuser', superuser);
-    setCurrentPage('dashboard'); // Navegar al dashboard después del login
+    setCurrentPage('dashboard'); // Redirige al dashboard
   };
 
-  // Función para manejar el logout real (sin animación)
+  // Cierra sesión limpiando los datos de sesión y redirigiendo al login
   const performLogout = () => {
     setAuthToken(null);
     setUsername(null);
@@ -41,36 +42,35 @@ function App() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('username');
     localStorage.removeItem('isSuperuser');
-    setCurrentPage('login'); // Volver a la página de login
+    setCurrentPage('login'); // Redirige a la vista de login
   };
 
-  // Función para manejar el cierre de sesión CON animación
+  // Muestra una animación antes de cerrar sesión definitivamente
   const handleLogoutWithAnimation = () => {
-    setShowLogoutAnimation(true); // Mostrar animación
-    // Después de un tiempo, ejecutar el logout real
+    setShowLogoutAnimation(true); // Activa el overlay animado
     setTimeout(() => {
-      performLogout();
-      setShowLogoutAnimation(false); // Ocultar animación (aunque la página cambiará)
-    }, 1500); // Duración de la animación (ej. 1.5 segundos)
+      performLogout(); // Ejecuta el cierre real de sesión
+      setShowLogoutAnimation(false); // Desactiva el overlay (aunque ya cambia la vista)
+    }, 1500); // Duración de la animación (1.5 segundos)
   };
 
-  // Función para navegar entre páginas
+  // Cambia de vista dentro de la aplicación
   const navigateTo = (page) => {
     setCurrentPage(page);
   };
 
-  // Efecto para verificar el token al cargar la aplicación
+  // Efecto que asegura que si no hay token, se redirige a login
   useEffect(() => {
     if (!authToken) {
       setCurrentPage('login');
     }
   }, [authToken]);
 
-  // Renderizado condicional basado en currentPage
-  const renderPageContent = () => { // Renombrado para evitar confusión con renderPage de la estructura anterior
+  // Función que decide qué componente renderizar según la vista actual
+  const renderPageContent = () => {
     const commonProps = {
       authToken,
-      onLogout: handleLogoutWithAnimation, // Pasa la función con animación
+      onLogout: handleLogoutWithAnimation,
       username,
       isSuperuser,
       navigateTo,
@@ -92,21 +92,21 @@ function App() {
       case 'exportReports':
         return <ExportReports {...commonProps} />;
       default:
-        return <LoginPage onLoginSuccess={handleLoginSuccess} />; // Fallback
+        return <LoginPage onLoginSuccess={handleLoginSuccess} />; // Fallback en caso de error
     }
   };
 
-  // Si la página actual es 'login', solo renderiza LoginPage
+  // Si el usuario está en la página de login, no muestra la barra lateral ni animaciones
   if (currentPage === 'login') {
     return (
       <div className="App">
         {renderPageContent()}
-        {/* La animación de logout no se muestra en la página de login */}
+        {/* La animación de logout no aplica en login */}
       </div>
     );
   }
 
-  // Para todas las demás páginas (dashboard, etc.), renderiza Sidebar y el contenido de la página
+  // Para el resto de vistas, muestra la barra lateral, el contenido y la animación si aplica
   return (
     <div className="flex min-h-screen bg-gray-100 w-full font-inter">
       <Sidebar
@@ -115,15 +115,15 @@ function App() {
         isSidebarMinimized={isSidebarMinimized}
         setIsSidebarMinimized={setIsSidebarMinimized}
         navigateTo={navigateTo}
-        onLogout={handleLogoutWithAnimation} // Pasa la función de logout con animación
-        currentPage={currentPage} // Pasa la página actual para resaltar el elemento activo
+        onLogout={handleLogoutWithAnimation}
+        currentPage={currentPage}
       />
-      {/* Main Content Area */}
+      {/* Contenedor principal de la página */}
       <main className="flex-1 p-8 bg-white rounded-tl-3xl shadow-inner">
-        {renderPageContent()} {/* Renderiza el contenido de la página actual */}
+        {renderPageContent()} {/* Renderiza el componente correspondiente */}
       </main>
 
-      {/* Animation Overlay for Logout (ahora en App.js y solo visible cuando se activa) */}
+      {/* Overlay animado mostrado al cerrar sesión */}
       {showLogoutAnimation && (
           <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
               <div className="flex flex-col items-center">

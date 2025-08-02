@@ -177,40 +177,55 @@ La aplicación frontend se abrirá automáticamente en tu navegador (normalmente
 
 ```
 MteLumen_App/
-├── MteLumen_App/           # Directorio principal del proyecto Django
+├── core/           # Directorio principal del proyecto Django
 │   ├── settings.py         # Configuración de Django
 │   ├── urls.py             # URLs principales del proyecto
+│   ├── celery.py
 │   └── wsgi.py
 ├── authentication/         # Aplicación Django para autenticación
-│   ├── models.py
 │   ├── views.py
+│   ├── serializers.py
+│   ├── urls.py
 │   └── ...
 ├── indicators/             # Aplicación Django para cálculo y gestión de KPIs
 │   ├── models.py           # Modelos para KPIs (MonthlyConsumptionKPI)
 │   ├── tasks.py            # Tareas Celery para el cálculo de KPIs
 │   ├── views.py            # Vista de la API para los KPIs
-│   └── exe.py              # Script de verificación de KPIs (ejecución directa)
+│   └── urls.py
 ├── scada_proxy/            # Aplicación Django para el proxy de la API SCADA
 │   ├── models.py           # Modelos para Device, Measurement, DeviceCategory
 │   ├── scada_client.py     # Lógica para interactuar con la API SCADA externa
-│   ├── views.py
-│   └── ...
+│   ├── serializers.py
+│   ├── tasks.py
+│   ├── urls_local.py
+│   ├── urls_scada.py
+│   ├── urls_task.py
+│   └── views.py
 ├── frontend/               # Directorio del proyecto React
 │   ├── public/
 │   │   ├── index.html
-│   │   └── bg.png          # Imagen de fondo para el login
+│   │   └── favicon.ico
 │   ├── src/
 │   │   ├── App.js          # Componente principal de React
 │   │   ├── index.css       # Estilos globales (incluye clases para login-card, input-field, etc.)
 │   │   ├── index.js
 │   │   ├── components/
+│   │   │   ├── bg.png         # Imagen de fondo para el login
 │   │   │   ├── LoginPage.js   # Componente de la página de login
+│   │   │   ├── ElectricalDetails.js   # Componente de medidores
+│   │   │   ├── ExportReports.js   # Componente de generación de reportes
+│   │   │   ├── InverterDetails.js   # Componente de inversores
 │   │   │   ├── Dashboard.js   # Componente del dashboard
+│   │   │   ├── WeatherDetails # Componente de las estaciones meteorologicas
+│   │   │   ├── Sidebar.js     # Componente de la barra de herramientas
+│   │   │   ├── sivet-logo.svg # Logo de la app
 │   │   │   ├── KPI/           # Componentes para tarjetas KPI y gráficos
 │   │   │   │   ├── KpiCard.js
 │   │   │   │   └── ChartCard.js
-│   │   │   └── ...            # Otros componentes (ElectricalDetails, InverterDetails, WeatherDetails, ExportReports)
-│   │   └── sivet-logo.svg  # Logo de la aplicación
+│   │   │   └── ... 
+│   │   ├── logo.svg
+│   │   └── logo.png  # Logo de la aplicación
+│   ├── tailwind.config.js
 │   └── package.json
 ├── manage.py               # Utilidad de línea de comandos de Django
 ├── requirements.txt        # Dependencias de Python

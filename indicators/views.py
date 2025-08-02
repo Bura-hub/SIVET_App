@@ -1,19 +1,28 @@
+# Importaciones existentes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 import uuid 
-
-# Importa el modelo de indicators
-from .models import MonthlyConsumptionKPI 
-# Importa el cliente SCADA y el modelo DeviceCategory de scada_proxy
-from scada_proxy.scada_client import ScadaConnectorClient 
-from scada_proxy.models import DeviceCategory
 import requests
+import calendar
+
+# Importa los modelos de indicadores
+from .models import MonthlyConsumptionKPI, DailyChartData # Importación de DailyChartData
+# Importa el cliente SCADA y los modelos DeviceCategory, Measurement, Device de scada_proxy
+from scada_proxy.scada_client import ScadaConnectorClient 
+from scada_proxy.models import DeviceCategory, Measurement, Device
+
+# NO son necesarias para el nuevo enfoque de vistas, ya que Celery las hará
+# from django.db.models import Sum, F, FloatField
+# from django.db.models.functions import Cast
+# from django.http import JsonResponse
+# from rest_framework.decorators import api_view
+
 
 logger = logging.getLogger(__name__)
 
@@ -43,15 +52,16 @@ class ConsumptionSummaryView(APIView):
             kpi_record = MonthlyConsumptionKPI.objects.first()
             if not kpi_record:
                 logger.warning("MonthlyConsumptionKPI record not found. Task might not have run yet.")
-                pass 
+                # Si el registro no existe, devolvemos valores por defecto en lugar de un error.
+                kpi_record = MonthlyConsumptionKPI()
 
             # --- Consumo Total ---
-            total_consumption_current_month = kpi_record.total_consumption_current_month if kpi_record else 0.0
-            total_consumption_previous_month = kpi_record.total_consumption_previous_month if kpi_record else 0.0
+            total_consumption_current_month = kpi_record.total_consumption_current_month
+            total_consumption_previous_month = kpi_record.total_consumption_previous_month
             
             # --- Generación Total ---
-            total_generation_current_month = kpi_record.total_generation_current_month if kpi_record else 0.0
-            total_generation_previous_month = kpi_record.total_generation_previous_month if kpi_record else 0.0
+            total_generation_current_month = kpi_record.total_generation_current_month
+            total_generation_previous_month = kpi_record.total_generation_previous_month
 
             # --- Balance Energético (Generación - Consumo) ---
             net_balance_current_month = (total_generation_current_month / 1000.0) - total_consumption_current_month
@@ -60,24 +70,24 @@ class ConsumptionSummaryView(APIView):
             logger.info(f"Retrieved pre-calculated KPIs: Consumption (C:{total_consumption_current_month}, P:{total_consumption_previous_month}), Generation (C:{total_generation_current_month}, P:{total_generation_previous_month}), Balance (C:{net_balance_current_month}, P:{net_balance_previous_month})")
 
             # --- Potencia Instantánea Promedio (Inversores) ---
-            avg_instantaneous_power_current = kpi_record.avg_instantaneous_power_current_month if kpi_record else 0.0
-            avg_instantaneous_power_previous = kpi_record.avg_instantaneous_power_previous_month if kpi_record else 0.0
+            avg_instantaneous_power_current = kpi_record.avg_instantaneous_power_current_month
+            avg_instantaneous_power_previous = kpi_record.avg_instantaneous_power_previous_month
 
             logger.info(f"Avg Instantaneous Power: Current: {avg_instantaneous_power_current} W, Previous: {avg_instantaneous_power_previous} W")
 
             # --- Temperatura Promedio Diaria ---
-            avg_daily_temp_current = kpi_record.avg_daily_temp_current_month if kpi_record else 0.0
-            avg_daily_temp_previous = kpi_record.avg_daily_temp_previous_month if kpi_record else 0.0
+            avg_daily_temp_current = kpi_record.avg_daily_temp_current_month
+            avg_daily_temp_previous = kpi_record.avg_daily_temp_previous_month
             logger.info(f"Avg Daily Temperature: Current: {avg_daily_temp_current} °C, Previous: {avg_daily_temp_previous} °C")
 
             # --- Humedad Relativa Promedio ---
-            avg_relative_humidity_current = kpi_record.avg_relative_humidity_current_month if kpi_record else 0.0
-            avg_relative_humidity_previous = kpi_record.avg_relative_humidity_previous_month if kpi_record else 0.0
+            avg_relative_humidity_current = kpi_record.avg_relative_humidity_current_month
+            avg_relative_humidity_previous = kpi_record.avg_relative_humidity_previous_month
             logger.info(f"Avg Relative Humidity: Current: {avg_relative_humidity_current} %RH, Previous: {avg_relative_humidity_previous} %RH")
 
             # --- Velocidad del Viento Promedio ---
-            avg_wind_speed_current = kpi_record.avg_wind_speed_current_month if kpi_record else 0.0
-            avg_wind_speed_previous = kpi_record.avg_wind_speed_previous_month if kpi_record else 0.0
+            avg_wind_speed_current = kpi_record.avg_wind_speed_current_month
+            avg_wind_speed_previous = kpi_record.avg_wind_speed_previous_month
             logger.info(f"Avg Wind Speed: Current: {avg_wind_speed_current} km/h, Previous: {avg_wind_speed_previous} km/h")
 
 
@@ -159,7 +169,7 @@ class ConsumptionSummaryView(APIView):
                     return f"{value_base_unit:.1f}", "°C" 
                 elif base_unit_name == "%RH": 
                     return f"{value_base_unit:.1f}", "%" 
-                elif base_unit_name == "km/h": # Nueva unidad para velocidad del viento
+                elif base_unit_name == "km/h":
                     return f"{value_base_unit:.1f}", "km/h"
                 return f"{value_base_unit:.2f}", base_unit_name
 
@@ -219,8 +229,7 @@ class ConsumptionSummaryView(APIView):
                         description_text += f" (+{change_percentage:.1f}%)"
                     elif change_percentage < 0:
                         description_text += f" ({change_percentage:.1f}%)"
-                elif is_wind_speed: # Lógica específica para Velocidad del Viento
-                    # Puedes definir rangos para "Moderado", "Alto", "Bajo"
+                elif is_wind_speed:
                     if current_value < 10:
                         description_text = "Bajo"
                         status_text = "normal"
@@ -314,9 +323,9 @@ class ConsumptionSummaryView(APIView):
             avg_wind_speed_kpi = calculate_kpi_metrics(
                 avg_wind_speed_current,
                 avg_wind_speed_previous,
-                "Velocidad del viento", # Título solicitado
-                "km/h", # Unidad base de la DB
-                is_wind_speed=True # Flag para lógica específica de velocidad del viento
+                "Velocidad del viento",
+                "km/h",
+                is_wind_speed=True
             )
 
             # KPI de Inversores Activos
@@ -335,7 +344,7 @@ class ConsumptionSummaryView(APIView):
                 "averageInstantaneousPower": avg_power_kpi,
                 "avgDailyTemp": avg_daily_temp_kpi, 
                 "relativeHumidity": avg_relative_humidity_kpi, 
-                "windSpeed": avg_wind_speed_kpi, # Añadido el nuevo KPI
+                "windSpeed": avg_wind_speed_kpi,
                 "activeInverters": active_inverters_kpi,
             }
             return Response(kpi_data)
@@ -343,3 +352,48 @@ class ConsumptionSummaryView(APIView):
         except Exception as e:
             logger.error(f"Internal error processing KPIs from local DB or SCADA: {e}", exc_info=True)
             return Response({"detail": f"Internal server error: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# --- NUEVA CLASE PARA LOS DATOS DEL GRÁFICO (REEMPLAZA A LA FUNCIÓN) ---
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class ChartDataView(APIView):
+    """
+    Vista que retorna datos diarios de consumo y generación,
+    ideales para gráficos.
+    Los datos provienen del modelo DailyChartData, pre-calculados por Celery.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Obtener parámetros de fecha de la URL, si existen
+            # Por ejemplo: /dashboard/chart-data/?start_date=2023-01-01&end_date=2023-01-31
+            start_date_str = request.query_params.get('start_date')
+            end_date_str = request.query_params.get('end_date')
+
+            # Si no se proporcionan fechas, se usa el último mes por defecto
+            if not start_date_str or not end_date_str:
+                end_date = datetime.now(timezone.utc).date()
+                start_date = end_date - timedelta(days=30)
+            else:
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+
+            # Consultar el modelo DailyChartData para obtener los datos precalculados
+            chart_data = DailyChartData.objects.filter(
+                date__range=(start_date, end_date)
+            ).values('date', 'daily_consumption', 'daily_generation')
+
+            # Formatear el queryset a una lista de diccionarios con fechas en formato string
+            response_data = [
+                {
+                    'date': item['date'].isoformat(),
+                    'daily_consumption': item['daily_consumption'],
+                    'daily_generation': item['daily_generation']
+                }
+                for item in chart_data
+            ]
+            
+            return Response(response_data)
+        except Exception as e:
+            logger.error(f"Error al obtener los datos del gráfico: {e}", exc_info=True)
+            return Response({'error': 'Ocurrió un error inesperado al procesar la solicitud.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

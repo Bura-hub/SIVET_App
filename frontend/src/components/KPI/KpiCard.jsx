@@ -1,31 +1,41 @@
+// KpiCard.jsx
+import React from 'react';
+
 // Diccionario que asigna clases de color de texto según el estado del KPI
 const statusColors = {
-  positivo: "text-green-500",   // Verde para estados positivos
-  negativo: "text-red-500",     // Rojo para estados negativos
-  critico: "text-orange-500",   // Naranja para estados críticos
-  estable: "text-gray-500",     // Gris para estados estables
-  normal: "text-green-500",     // Verde también para estado normal
-  optimo: "text-green-500",     // Verde para estado óptimo
-  moderado: "text-yellow-500",  // Amarillo para estado moderado
+  positivo: "text-green-500",  // Verde para estados positivos
+  negativo: "text-red-500",   // Rojo para estados negativos
+  critico: "text-orange-500",  // Naranja para estados críticos
+  estable: "text-gray-500",   // Gris para estados estables
+  normal: "text-green-500",   // Verde también para estado normal
+  optimo: "text-green-500",   // Verde para estado óptimo
+  moderado: "text-yellow-500", // Amarillo para estado moderado
 };
 
 // Diccionario que asigna clases de color de fondo al círculo indicador del estado
 const dotColors = {
-  positivo: "bg-green-500",     // Fondo verde para estado positivo
-  negativo: "bg-red-500",       // Fondo rojo para estado negativo
-  critico: "bg-orange-500",     // Fondo naranja para estado crítico
-  estable: "bg-green-500",      // Fondo verde para estado estable (posible inconsistencia)
-  normal: "text-green-500",     // Esto parece un error: debería ser `bg-` en vez de `text-`
-  optimo: "text-green-500",     // Lo mismo: clase incorrecta para fondo
-  moderado: "bg-yellow-500",    // Fondo amarillo para estado moderado
+  positivo: "bg-green-500",   // Fondo verde para estado positivo
+  negativo: "bg-red-500",    // Fondo rojo para estado negativo
+  critico: "bg-orange-500",   // Fondo naranja para estado crítico
+  estable: "bg-green-500",   // Fondo verde para estado estable (posible inconsistencia)
+  normal: "bg-green-500",    // Clase corregida para fondo
+  optimo: "bg-green-500",    // Clase corregida para fondo
+  moderado: "bg-yellow-500",  // Fondo amarillo para estado moderado
 };
 
-// Componente funcional que representa una tarjeta KPI con título, valor, unidad, variación y estado
-export const KpiCard = ({ title, value, unit, change, status, description }) => {
+// Componente funcional que representa una tarjeta KPI.
+// Ahora acepta una prop 'icon' para renderizar un icono SVG diferente.
+export const KpiCard = ({ title, value, unit, change, status, description, icon }) => {
   return (
-    <div className="bg-gray-100 p-5 rounded-xl shadow-md flex flex-col justify-between">
-      {/* Título del KPI */}
-      <h3 className="text-gray-600 text-sm mb-3">{title}</h3>
+    <div className="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between">
+      {/* Título del KPI y el icono */}
+      <div className="flex items-center justify-between w-full">
+        <span className="text-sm font-semibold text-gray-500">{title}</span>
+        <div className="p-2 bg-gray-100 rounded-full text-gray-700">
+          {/* Se renderiza el icono pasado como prop */}
+          {icon}
+        </div>
+      </div>
 
       {/* Valor principal del KPI con unidad */}
       <p className="text-3xl font-bold text-gray-900">

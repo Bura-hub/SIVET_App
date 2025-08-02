@@ -20,7 +20,7 @@ export function ChartCard({ title, type = "line", data, options }) {
   return (
     <>
       {/* Contenedor principal de la tarjeta del gráfico */}
-      <div className="bg-gray-100 p-6 rounded-xl shadow-md relative">
+      <div className="bg-white p-6 rounded-xl shadow-md relative">
         {/* Botones de acciones (resetear zoom y maximizar) posicionados arriba a la derecha */}
         <div className="absolute top-2 right-2 flex space-x-2">
           <button

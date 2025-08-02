@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv  # Permite cargar variables de entorno desde un archivo .env
 from datetime import timedelta  # Para definir intervalos de tiempo en Celery
+from celery.schedules import crontab
 
 # Carga las variables de entorno del archivo .env
 load_dotenv()
@@ -193,16 +194,28 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 CELERY_BEAT_SCHEDULE = {
     'fetch-device-metadata-daily': {
+        # Sincroniza los metadatos de los dispositivos diariamente a las 3:00 AM.
         'task': 'scada_proxy.tasks.sync_scada_metadata',
-        'schedule': timedelta(days=1),
+        'schedule': crontab(minute=0, hour=3),
     },
     'fetch-historical-measurements-hourly': {
+        # Busca mediciones históricas cada hora al inicio del minuto 0.
         'task': 'scada_proxy.tasks.fetch_historical_measurements_for_all_devices',
-        'schedule': timedelta(hours=1),
+        'schedule': crontab(minute=0),
         'args': (int(timedelta(hours=2).total_seconds()),),  # Últimas 2 horas
     },
     'calculate-monthly-consumption-kpi-daily': {
+        # Calcula el KPI de consumo mensualmente diariamente a las 3:30 AM.
         'task': 'indicators.tasks.calculate_monthly_consumption_kpi',
+        'schedule': crontab(minute=30, hour=3),
+        'args': (),
+        'kwargs': {},
+        'options': {'queue': 'default'},
+    },
+    'calculate-daily-chart-data': {
+        # ¡NUEVA TAREA! Calcula y guarda los datos diarios del gráfico.
+        # Se ejecuta a las 3:45 AM para asegurarse de que todos los datos del día anterior están disponibles.
+        'task': 'indicators.tasks.calculate_and_save_daily_data',
         'schedule': timedelta(days=1),
         'args': (),
         'kwargs': {},

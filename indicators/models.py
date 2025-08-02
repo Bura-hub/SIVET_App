@@ -32,3 +32,21 @@ class MonthlyConsumptionKPI(models.Model):
 
     def __str__(self):
         return f"KPI Mensual (Actualizado: {self.last_calculated.strftime('%Y-%m-%d %H:%M')})"
+
+
+class DailyChartData(models.Model):
+    """
+    Nuevo modelo para almacenar datos agregados diariamente,
+    ideales para mostrar en gráficos.
+    """
+    date = models.DateField(unique=True, help_text="Fecha del registro.")
+    daily_consumption = models.FloatField(default=0.0, help_text="Consumo total diario en kWh.")
+    daily_generation = models.FloatField(default=0.0, help_text="Generación total diaria en Wh.")
+    
+    class Meta:
+        verbose_name = "Datos Diarios para Gráficos"
+        verbose_name_plural = "Datos Diarios para Gráficos"
+        ordering = ['date'] # Ordenar por fecha por defecto
+
+    def __str__(self):
+        return f"Datos para gráfico del día: {self.date}"

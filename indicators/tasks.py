@@ -193,101 +193,72 @@ def calculate_monthly_consumption_kpi():
         logger.error(f"Error calculating monthly KPIs: {e}", exc_info=True)
         raise
 
-@shared_task
-def calculate_and_save_daily_data(target_date: str = None, start_date_str: str = None, end_date_str: str = None):
+# --- TAREA DE CELERY PARA EL CÁLCULO Y ALMACENAMIENTO DE DATOS DIARIOS ---
+@shared_task(bind=True)
+def calculate_and_save_daily_data(self, start_date_str: str, end_date_str: str):
     """
-    Calcula el consumo y generación diario agregado para una fecha específica o un rango de fechas,
-    y guarda los resultados en DailyChartData.
-    """
-    logger.info(f"Starting calculate_and_save_daily_data task for target_date: {target_date}, range: {start_date_str} to {end_date_str}...")
-
-    if target_date:
-        start_date = datetime.fromisoformat(target_date).date()
-        end_date = start_date # Solo procesa ese día
-        logger.info(f"Processing single day: {start_date}")
-    elif start_date_str and end_date_str:
-        start_date = datetime.fromisoformat(start_date_str).date()
-        end_date = datetime.fromisoformat(end_date_str).date()
-        logger.info(f"Processing date range: {start_date} to {end_date}")
-    else:
-        # Default a hoy si no se especifica nada
-        start_date = datetime.now(timezone.utc).date()
-        end_date = start_date
-        logger.info(f"No date specified, processing current day: {start_date}")
-
-    current_date = start_date
-    while current_date <= end_date:
-        logger.info(f"Calculating daily data for {current_date}")
-
-        electric_meter_ids = Device.objects.filter(category__id=2, is_active=True).values_list('id', flat=True)
-        inverter_ids = Device.objects.filter(category__id=1, is_active=True).values_list('id', flat=True)
-
-        daily_aggregation = Measurement.objects.filter(
-            date__date=current_date
-        ).aggregate(
-            daily_consumption=Sum(
-                Cast(F('data__totalActivePower'), FloatField()),
-                filter=Q(device__in=electric_meter_ids, data__totalActivePower__isnull=False)
-            ),
-            daily_generation=Sum(
-                Cast(F('data__acPower'), FloatField()),
-                filter=Q(device__in=inverter_ids, data__acPower__isnull=False)
-            )
-        )
-        
-        daily_consumption_sum = daily_aggregation.get('daily_consumption') or 0.0
-        daily_generation_sum = daily_aggregation.get('daily_generation') or 0.0
-
-        daily_data_obj, created = DailyChartData.objects.update_or_create(
-            date=current_date,
-            defaults={
-                'daily_consumption': daily_consumption_sum,
-                'daily_generation': daily_generation_sum
-            }
-        )
-        
-        action = "creado" if created else "actualizado"
-        logger.info(f"Dato diario {action} para la fecha {current_date}. Consumo: {daily_consumption_sum}, Generación: {daily_generation_sum}")
-
-        current_date += timedelta(days=1)
+    Calcula el consumo y la generación diaria para un rango de fechas.
+    Se asegura de utilizar la misma lógica para seleccionar medidores
+    y dispositivos que la tarea de KPI mensual.
     
-    logger.info(f"Cálculo diario completado para el rango {start_date} a {end_date}.")
-
-@shared_task
-def post_fetch_calculations_task(results, start_date_str: str, end_date_str: str, orchestration_task_id: str):
+    El cálculo de consumo y generación se realiza en una sola consulta a la
+    base de datos para una mayor eficiencia.
     """
-    Tarea que se ejecuta después de que todas las mediciones históricas han sido guardadas.
-    Dispara las tareas de cálculo de KPIs y datos diarios.
-    `results` es el resultado del chord (una lista, no usada directamente aquí).
-    """
-    logger.info(f"post_fetch_calculations_task iniciada. Todas las mediciones históricas se han obtenido.")
-    
-    # Actualizar el estado de la tarea orquestadora
-    task_progress = None
     try:
-        task_progress = TaskProgress.objects.get(task_id=orchestration_task_id)
-        task_progress.status = 'CALCULATING_KPIS'
-        task_progress.message = 'Mediciones obtenidas. Calculando KPIs y datos diarios...'
-        task_progress.save(update_fields=['status', 'message'])
-    except TaskProgress.DoesNotExist:
-        logger.warning(f"TaskProgress con ID {orchestration_task_id} no encontrado para post_fetch_calculations_task.")
+        # 1. Convertir strings a objetos datetime conscientes de la zona horaria UTC
+        start_date = datetime.fromisoformat(start_date_str).astimezone(timezone.utc)
+        end_date = datetime.fromisoformat(end_date_str).astimezone(timezone.utc)
 
+        logger.info(f"Iniciando cálculo histórico desde {start_date.date()} hasta {end_date.date()}")
+        
+        # 2. Obtener los dispositivos eléctricos y los inversores activos
+        electric_meters: QuerySet[Device] = Device.objects.filter(category__id=2, is_active=True)
+        inverters: QuerySet[Device] = Device.objects.filter(category__id=1, is_active=True)
+        
+        if not electric_meters.exists() and not inverters.exists():
+            logger.warning("No se encontraron medidores eléctricos ni inversores activos.")
+            return
 
-    # Encolar la tarea de cálculo de KPI mensual
-    calculate_monthly_consumption_kpi.delay()
-    logger.info("Tarea calculate_monthly_consumption_kpi encolada.")
+        electric_meter_ids = electric_meters.values_list('id', flat=True)
+        inverter_ids = inverters.values_list('id', flat=True)
 
-    # Encolar la tarea de cálculo de datos diarios para el rango recién sincronizado
-    # Asumiendo que calculate_and_save_daily_data acepta un rango de fechas
-    calculate_and_save_daily_data.delay(
-        start_date_str=start_date_str,
-        end_date_str=end_date_str
-    )
-    logger.info(f"Tarea calculate_and_save_daily_data encolada para rango {start_date_str} a {end_date_str}.")
+        # 3. Iterar día por día en el rango especificado
+        current_date = start_date
+        while current_date <= end_date:
+            single_date = current_date.date()
+            
+            daily_aggregation = Measurement.objects.filter(
+                date__date=single_date,
+                device__in=list(electric_meter_ids) + list(inverter_ids)
+            ).aggregate(
+                daily_consumption=Sum(
+                    Cast(F('data__totalActivePower'), FloatField()),
+                    filter=Q(device__in=electric_meter_ids, data__totalActivePower__isnull=False)
+                ),
+                daily_generation=Sum(
+                    Cast(F('data__acPower'), FloatField()),
+                    filter=Q(device__in=inverter_ids, data__acPower__isnull=False)
+                )
+            )
+            
+            daily_consumption_sum = daily_aggregation.get('daily_consumption') or 0.0
+            daily_generation_sum = daily_aggregation.get('daily_generation') or 0.0
+            
+            daily_data_obj, created = DailyChartData.objects.update_or_create(
+                date=single_date,
+                defaults={
+                    'daily_consumption': daily_consumption_sum,
+                    'daily_generation': daily_generation_sum
+                }
+            )
+            
+            action = "creado" if created else "actualizado"
+            logger.info(f"Dato diario {action} para la fecha {single_date}. Consumo: {daily_consumption_sum}, Generación: {daily_generation_sum}")
 
-    # Finalmente, actualizar el estado de la tarea orquestadora a éxito
-    if task_progress:
-        task_progress.status = 'SUCCESS'
-        task_progress.message = 'Sincronización de datos y cálculos completados exitosamente.'
-        task_progress.save(update_fields=['status', 'message'])
-    logger.info("Todas las tareas de cálculo encoladas. Proceso de sincronización completo.")
+            current_date += timedelta(days=1)
+
+        logger.info("Cálculo histórico completado.")
+
+    except Exception as e:
+        logger.error(f"Error en el cálculo de datos diarios: {e}", exc_info=True)
+        raise

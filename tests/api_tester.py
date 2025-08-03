@@ -17,7 +17,7 @@ django.setup()
 
 # Importa los modelos y tareas de Celery
 from indicators.models import MonthlyConsumptionKPI, DailyChartData
-from indicators.tasks import calculate_monthly_consumption_kpi, calculate_daily_chart_data
+from indicators.tasks import calculate_monthly_consumption_kpi, calculate_and_save_daily_data
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token # Importamos el modelo de Token
 
@@ -82,7 +82,7 @@ def run_test(headers):
         print(f"  ✅ Tarea mensual finalizada: {task_result_monthly}")
 
         print("  -> Ejecutando calculate_daily_chart_data...")
-        task_result_daily = calculate_daily_chart_data()
+        task_result_daily = calculate_and_save_daily_data()
         print(f"  ✅ Tarea diaria finalizada: {task_result_daily}")
     except Exception as e:
         logger.error(f"❌ ERROR: Una de las tareas de Celery falló: {e}")

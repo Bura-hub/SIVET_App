@@ -10,6 +10,9 @@ const statusColors = {
   normal: "text-green-500",   // Verde también para estado normal
   optimo: "text-green-500",   // Verde para estado óptimo
   moderado: "text-yellow-500", // Amarillo para estado moderado
+  loading: "text-blue-500",   // Azul para estado de carga
+  success: "text-green-500",  // Verde para éxito
+  error: "text-red-500",      // Rojo para error
 };
 
 // Diccionario que asigna clases de color de fondo al círculo indicador del estado
@@ -21,13 +24,20 @@ const dotColors = {
   normal: "bg-green-500",    // Clase corregida para fondo
   optimo: "bg-green-500",    // Clase corregida para fondo
   moderado: "bg-yellow-500",  // Fondo amarillo para estado moderado
+  loading: "bg-blue-500",    // Fondo azul para estado de carga
+  success: "bg-green-500",   // Fondo verde para éxito
+  error: "bg-red-500",       // Fondo rojo para error
 };
 
 // Componente funcional que representa una tarjeta KPI.
-// Ahora acepta una prop 'icon' para renderizar un icono SVG diferente.
-export const KpiCard = ({ title, value, unit, change, status, description, icon }) => {
+// Ahora acepta una prop 'icon' para renderizar un icono SVG diferente y 'onClick' para funcionalidad de botón.
+export const KpiCard = ({ title, value, unit, change, status, description, icon, onClick }) => {
+  const cardClasses = onClick 
+    ? "bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer hover:bg-gray-50 active:scale-95"
+    : "bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between";
+
   return (
-    <div className="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between">
+    <div className={cardClasses} onClick={onClick}>
       {/* Título del KPI y el icono */}
       <div className="flex items-center justify-between w-full">
         <span className="text-sm font-semibold text-gray-500">{title}</span>

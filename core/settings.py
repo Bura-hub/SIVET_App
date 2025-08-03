@@ -196,7 +196,7 @@ CELERY_BEAT_SCHEDULE = {
     'fetch-device-metadata-daily': {
         # Sincroniza los metadatos de los dispositivos diariamente a las 3:00 AM.
         'task': 'scada_proxy.tasks.sync_scada_metadata',
-        'schedule': crontab(minute=0, hour=3),
+        'schedule': crontab(minute=0),
     },
     'fetch-historical-measurements-hourly': {
         # Busca mediciones históricas cada hora al inicio del minuto 0.
@@ -207,7 +207,7 @@ CELERY_BEAT_SCHEDULE = {
     'calculate-monthly-consumption-kpi-daily': {
         # Calcula el KPI de consumo mensualmente diariamente a las 3:30 AM.
         'task': 'indicators.tasks.calculate_monthly_consumption_kpi',
-        'schedule': crontab(minute=30, hour=3),
+        'schedule': crontab(minute=0),
         'args': (),
         'kwargs': {},
         'options': {'queue': 'default'},
@@ -216,7 +216,7 @@ CELERY_BEAT_SCHEDULE = {
         # ¡NUEVA TAREA! Calcula y guarda los datos diarios del gráfico.
         # Se ejecuta a las 3:45 AM para asegurarse de que todos los datos del día anterior están disponibles.
         'task': 'indicators.tasks.calculate_and_save_daily_data',
-        'schedule': timedelta(days=1),
+        'schedule': crontab(minute=0),
         'args': (),
         'kwargs': {},
         'options': {'queue': 'default'},
@@ -244,5 +244,66 @@ SPECTACULAR_SETTINGS = {
                 'description': "Formato: **Token <tu_token>**"
             }
         }
+    },
+}
+
+# ========================= Configuración de Logging =========================
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+            'level': 'INFO',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'celery.log',
+            'formatter': 'verbose',
+            'level': 'INFO',
+        },
+    },
+    'loggers': {
+        'indicators.tasks': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'scada_proxy.tasks': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'celery': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'celery.task': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'celery.worker': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
     },
 }

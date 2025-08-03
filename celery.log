@@ -1,0 +1,535 @@
+INFO 2025-08-03 17:44:50,843 connection 7768 32008 Connected to redis://localhost:6379/0
+INFO 2025-08-03 17:44:50,848 mingle 7768 32008 mingle: searching for neighbors
+INFO 2025-08-03 17:44:51,862 mingle 7768 32008 mingle: all alone
+INFO 2025-08-03 17:44:58,790 strategy 7768 32008 Task scada_proxy.tasks.fetch_historical_measurements_for_all_devices[cc80e79a-3d1b-4f6a-86e9-94d599f94df8] received
+INFO 2025-08-03 17:44:58,793 tasks 7768 32008 Iniciando la obtención de mediciones históricas para los últimos 2 days, 0:00:00. Rango: 2025-08-01 17:44:58.793050-05:00 -> 2025-08-03 17:44:58.793050-05:00 (hora local)
+INFO 2025-08-03 17:44:58,822 tasks 17752 29332 === INICIANDO TAREA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 17:44:58,822 tasks 17752 29332 Fecha actual: 2025-08-03, día del mes: 3
+INFO 2025-08-03 17:44:58,822 tasks 17752 29332 Rango mes actual: 2025-08-01 -> 2025-08-03
+INFO 2025-08-03 17:44:58,822 tasks 17752 29332 Rango mes anterior: 2025-07-01 -> 2025-07-03
+INFO 2025-08-03 17:44:58,823 tasks 17752 29332 Dispositivos encontrados:
+INFO 2025-08-03 17:44:58,824 tasks 17752 29332   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 17:44:58,824 tasks 17752 29332   - Inversores: 6 dispositivos
+INFO 2025-08-03 17:44:58,826 tasks 17752 29332   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 17:44:58,826 tasks 17752 29332 Calculando consumo total (medidores eléctricos)...
+INFO 2025-08-03 17:44:58,828 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - Cesmag (3ccb420f-e6a0-4461-8dc6-e8568bd699f0) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,830 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - Cesmag (4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,832 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Cesmag (6ebd34d4-4883-4682-aab3-f3243544a67a) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,834 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - Cesmag (348b47aa-b285-4948-a9fb-a57bc38cedf1) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,835 tasks 7768 32008 Tarea creada para dispositivo Inverter 1 - Cesmag (e96986a9-a127-4139-975d-1a711ae25327) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,837 tasks 7768 32008 Tarea creada para dispositivo Estación San Damian - CESMAG (819dfc27-fe61-42e6-9413-0f8820bea03e) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,839 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - HUDN (ad749299-a3a4-4270-b80d-6251389eabcb) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,840 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - HUDN (673f11ce-77da-4839-8498-a5948d984d8c) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,842 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - HUDN (628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,844 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - HUDN (6ecb37db-ab95-4640-b8ce-c7f8bb91f611) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,846 tasks 7768 32008 Tarea creada para dispositivo Inversor 1 - HUDN (f6893ba9-7175-44ea-8624-a47bf55158c9) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,847 tasks 7768 32008 Tarea creada para dispositivo Estación - HUDN (49435c0b-ada3-4ced-ad15-9418013a30d1) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,849 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - Alvernia (4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,851 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - Alvernia (5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,853 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - Alvernia (b06d770e-ec25-49a0-949d-60c9e169f2bb) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,854 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Alvernia (0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,856 tasks 7768 32008 Tarea creada para dispositivo Fronius - Alvernia (0f962572-fab3-4c09-bffc-465b56a22d8d) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,857 tasks 7768 32008 Tarea creada para dispositivo Estación Alvernia (1fb6c4ae-2e7c-4758-80bf-156c7826fead) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,859 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - UCC (86b9c020-4645-4c39-891a-d1e8a7048c12) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,861 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - UCC (7130f831-d8ca-4fd8-adb5-f02dbc7543b3) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,863 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - UCC (bc80e209-e290-4aaa-a6e8-931e9fb7b803) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,865 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - UCC (d6915dc0-4391-4514-b4c6-58a30f1988f3) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,867 tasks 7768 32008 Tarea creada para dispositivo Fronius - UCC (29630827-0242-492f-9ed0-a48d120da2ac) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,869 tasks 7768 32008 Tarea creada para dispositivo Estación - UCC (74154481-3f6c-4827-a8d7-ea6fbae62fd9) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,871 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 3 (19934344-9c79-482f-b74f-50dde3a6079c) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,873 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 1 (7ba9fa00-7ef9-4246-8c30-85ea56088e0d) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,875 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Udenar (0f7648d7-7575-4419-8192-a4f80b55309b) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,877 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 2 (1da46bc5-1655-4ba1-82c2-0b283370a97b) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,879 tasks 7768 32008 Tarea creada para dispositivo inverter2 (37f796af-7caa-459f-bc86-3e2f7936a879) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,881 tasks 7768 32008 Tarea creada para dispositivo inverter1 (ada64a56-331c-4489-a02c-7aac55d54111) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,883 tasks 7768 32008 Tarea creada para dispositivo estación (46094855-4fe6-4c10-afe3-444a101719e2) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,885 tasks 7768 32008 Tarea creada para dispositivo Prueba (3a5eca15-cd03-4a83-8981-b432d2217344) desde 2025-08-01 17:44:58.793050-05:00 hasta 2025-08-03 17:44:58.793050-05:00 (hora local).
+INFO 2025-08-03 17:44:58,886 tasks 7768 32008 Todas las subtareas para obtener mediciones han sido encoladas.
+INFO 2025-08-03 17:44:58,889 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[be5b3582-f323-4902-97f8-06a0327dead3] received
+INFO 2025-08-03 17:45:00,856 tasks 7768 32008 Dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0: 4 nuevas, 1434 actualizadas
+INFO 2025-08-03 17:45:00,859 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[9d2defb8-613f-4089-98f5-10cac33aac49] received
+INFO 2025-08-03 17:45:01,147 tasks 17752 29332 Consumo total - Mes actual: 19935.37 Wh, Mes anterior: 24224.63 Wh
+INFO 2025-08-03 17:45:01,147 tasks 17752 29332 Calculando generación total (inversores)...
+INFO 2025-08-03 17:45:02,736 tasks 7768 32008 Dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02: 4 nuevas, 1434 actualizadas
+INFO 2025-08-03 17:45:02,740 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[659386c7-118b-4804-a311-1935677b1558] received
+INFO 2025-08-03 17:45:03,307 tasks 17752 29332 Generación total - Mes actual: 20768340.00 Wh, Mes anterior: 28132490.00 Wh
+INFO 2025-08-03 17:45:03,308 tasks 17752 29332 Calculando potencia instantánea promedio (inversores)...
+INFO 2025-08-03 17:45:04,613 tasks 7768 32008 Dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a: 4 nuevas, 1434 actualizadas
+INFO 2025-08-03 17:45:04,617 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[409525b8-a320-43cb-bebe-bc2e7f0d2181] received
+INFO 2025-08-03 17:45:05,223 tasks 17752 29332 Potencia instantánea promedio - Mes actual: 2541.71 W, Mes anterior: 3111.66 W
+INFO 2025-08-03 17:45:05,223 tasks 17752 29332 Calculando temperatura promedio diaria (estaciones meteorológicas)...
+INFO 2025-08-03 17:45:06,522 tasks 7768 32008 Dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1: 4 nuevas, 1433 actualizadas
+INFO 2025-08-03 17:45:06,525 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[11ecd619-a411-4a57-b1d5-e9a04a920524] received
+INFO 2025-08-03 17:45:07,410 tasks 17752 29332 Temperatura promedio diaria - Mes actual: 14.75 °C, Mes anterior: 14.50 °C
+INFO 2025-08-03 17:45:07,410 tasks 17752 29332 Calculando humedad relativa promedio (estaciones meteorológicas)...
+INFO 2025-08-03 17:45:07,413 tasks 7768 32008 Dispositivo e96986a9-a127-4139-975d-1a711ae25327: 4 nuevas, 784 actualizadas
+INFO 2025-08-03 17:45:07,416 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[acd40f1b-e199-4204-b70a-198f68d37e68] received
+INFO 2025-08-03 17:45:08,784 tasks 7768 32008 Dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e: 4 nuevas, 1357 actualizadas
+INFO 2025-08-03 17:45:08,786 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3a0eee5b-7b49-4af5-9f76-8361d2ede8ff] received
+INFO 2025-08-03 17:45:09,491 tasks 17752 29332 Humedad relativa promedio - Mes actual: 73.19 %RH, Mes anterior: 76.78 %RH
+INFO 2025-08-03 17:45:09,491 tasks 17752 29332 Calculando velocidad del viento promedio (estaciones meteorológicas)...
+INFO 2025-08-03 17:45:10,653 tasks 7768 32008 Dispositivo ad749299-a3a4-4270-b80d-6251389eabcb: 4 nuevas, 1431 actualizadas
+INFO 2025-08-03 17:45:10,656 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[61719e62-0dfd-4b75-b66b-f2da461b02e5] received
+INFO 2025-08-03 17:45:11,805 tasks 17752 29332 Velocidad del viento promedio - Mes actual: 1.27 km/h, Mes anterior: 1.40 km/h
+INFO 2025-08-03 17:45:11,805 tasks 17752 29332 Guardando KPIs mensuales en la base de datos...
+INFO 2025-08-03 17:45:11,807 tasks 17752 29332 === TAREA COMPLETADA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 17:45:11,807 tasks 17752 29332 Todos los KPIs mensuales han sido calculados y actualizados exitosamente.
+INFO 2025-08-03 17:45:11,839 tasks 17752 15260 === INICIANDO TAREA: calculate_and_save_daily_data ===
+INFO 2025-08-03 17:45:11,839 tasks 17752 15260 Rango de fechas a procesar: 2025-07-31 -> 2025-08-03
+INFO 2025-08-03 17:45:11,840 tasks 17752 15260 Dispositivos encontrados para cálculo diario:
+INFO 2025-08-03 17:45:11,842 tasks 17752 15260   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 17:45:11,842 tasks 17752 15260   - Inversores: 6 dispositivos
+INFO 2025-08-03 17:45:11,842 tasks 17752 15260   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 17:45:11,843 tasks 17752 15260 Iniciando procesamiento de 4 días...
+INFO 2025-08-03 17:45:11,843 tasks 17752 15260 Procesando fecha: 2025-07-31
+INFO 2025-08-03 17:45:12,544 tasks 7768 32008 Dispositivo 673f11ce-77da-4839-8498-a5948d984d8c: 4 nuevas, 1432 actualizadas
+INFO 2025-08-03 17:45:12,547 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[59522896-d379-4087-b519-1edb50615feb] received
+INFO 2025-08-03 17:45:13,897 tasks 17752 15260   Dato diario actualizado para 2025-07-31:
+INFO 2025-08-03 17:45:13,898 tasks 17752 15260     - Consumo: 10239.41 Wh
+INFO 2025-08-03 17:45:13,898 tasks 17752 15260     - Generación: 8201196.00 Wh
+INFO 2025-08-03 17:45:13,898 tasks 17752 15260     - Balance: -2038.22 kWh
+INFO 2025-08-03 17:45:13,898 tasks 17752 15260     - Temperatura promedio: 13.69 °C
+INFO 2025-08-03 17:45:13,898 tasks 17752 15260 Procesando fecha: 2025-08-01
+INFO 2025-08-03 17:45:14,433 tasks 7768 32008 Dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9: 4 nuevas, 1431 actualizadas
+INFO 2025-08-03 17:45:14,438 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7f8e108e-453c-4973-9487-06056a7da8ee] received
+INFO 2025-08-03 17:45:16,068 tasks 17752 15260   Dato diario actualizado para 2025-08-01:
+INFO 2025-08-03 17:45:16,069 tasks 17752 15260     - Consumo: 11100.57 Wh
+INFO 2025-08-03 17:45:16,069 tasks 17752 15260     - Generación: 6309032.00 Wh
+INFO 2025-08-03 17:45:16,069 tasks 17752 15260     - Balance: -4791.54 kWh
+INFO 2025-08-03 17:45:16,069 tasks 17752 15260     - Temperatura promedio: 14.00 °C
+INFO 2025-08-03 17:45:16,069 tasks 17752 15260 Procesando fecha: 2025-08-02
+INFO 2025-08-03 17:45:16,363 tasks 7768 32008 Dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611: 4 nuevas, 1432 actualizadas
+INFO 2025-08-03 17:45:16,367 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1d99ea56-7960-4e60-834c-95ee2d293b7d] received
+INFO 2025-08-03 17:45:17,320 tasks 7768 32008 Dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9: 4 nuevas, 783 actualizadas
+INFO 2025-08-03 17:45:17,322 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[dd8b30b1-c9f8-4e88-8e54-5e81b0430413] received
+INFO 2025-08-03 17:45:18,375 tasks 17752 15260   Dato diario actualizado para 2025-08-02:
+INFO 2025-08-03 17:45:18,375 tasks 17752 15260     - Consumo: 6659.41 Wh
+INFO 2025-08-03 17:45:18,375 tasks 17752 15260     - Generación: 7985725.00 Wh
+INFO 2025-08-03 17:45:18,375 tasks 17752 15260     - Balance: 1326.32 kWh
+INFO 2025-08-03 17:45:18,375 tasks 17752 15260     - Temperatura promedio: 15.32 °C
+INFO 2025-08-03 17:45:18,375 tasks 17752 15260 Procesando fecha: 2025-08-03
+INFO 2025-08-03 17:45:18,860 tasks 7768 32008 Dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1: 4 nuevas, 1331 actualizadas
+INFO 2025-08-03 17:45:18,862 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[35c82c90-0642-41bf-9bb6-2f1979d5b706] received
+INFO 2025-08-03 17:45:20,704 tasks 17752 15260   Dato diario actualizado para 2025-08-03:
+INFO 2025-08-03 17:45:20,704 tasks 17752 15260     - Consumo: 2194.96 Wh
+INFO 2025-08-03 17:45:20,704 tasks 17752 15260     - Generación: 6477144.00 Wh
+INFO 2025-08-03 17:45:20,704 tasks 17752 15260     - Balance: 4282.19 kWh
+INFO 2025-08-03 17:45:20,704 tasks 17752 15260     - Temperatura promedio: 15.05 °C
+INFO 2025-08-03 17:45:20,704 tasks 17752 15260 === RESUMEN DE PROCESAMIENTO ===
+INFO 2025-08-03 17:45:20,704 tasks 17752 15260 Días procesados: 4
+INFO 2025-08-03 17:45:20,704 tasks 17752 15260 Registros creados: 0
+INFO 2025-08-03 17:45:20,705 tasks 17752 15260 Registros actualizados: 4
+INFO 2025-08-03 17:45:20,705 tasks 17752 15260 === TAREA COMPLETADA: calculate_and_save_daily_data ===
+INFO 2025-08-03 17:45:20,712 tasks 7768 32008 Dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a: 4 nuevas, 1433 actualizadas
+INFO 2025-08-03 17:45:20,715 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a6d00722-e45e-42ee-a1ad-fbb116d815ff] received
+INFO 2025-08-03 17:45:22,511 tasks 7768 32008 Dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c: 4 nuevas, 1434 actualizadas
+INFO 2025-08-03 17:45:22,514 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[faaca8e6-9ca9-4415-b75b-e33d7ffa57b0] received
+INFO 2025-08-03 17:45:24,176 tasks 7768 32008 Dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb: 4 nuevas, 1433 actualizadas
+INFO 2025-08-03 17:45:24,179 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[93281023-bcb4-417b-aba5-48b0799d8e88] received
+INFO 2025-08-03 17:45:25,812 tasks 7768 32008 Dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385: 4 nuevas, 1434 actualizadas
+INFO 2025-08-03 17:45:25,815 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7b4cae5c-8367-40ec-b395-6b0fbea69813] received
+INFO 2025-08-03 17:45:26,609 tasks 7768 32008 Dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d: 4 nuevas, 786 actualizadas
+INFO 2025-08-03 17:45:26,612 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[0861dbdb-544a-453f-883e-410e45a43e5e] received
+INFO 2025-08-03 17:45:27,854 tasks 7768 32008 Dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead: 5 nuevas, 1360 actualizadas
+INFO 2025-08-03 17:45:27,857 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7250008a-c864-48d1-a76e-9ed1c9d9171e] received
+INFO 2025-08-03 17:45:30,189 tasks 7768 32008 Dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12: 0 nuevas, 1139 actualizadas
+INFO 2025-08-03 17:45:30,192 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[44a4895c-73f5-4197-91db-c1b95c58c6ff] received
+INFO 2025-08-03 17:45:32,167 tasks 7768 32008 Dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3: 0 nuevas, 1139 actualizadas
+INFO 2025-08-03 17:45:32,170 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1d9f406e-676d-48eb-93ea-4780a3120492] received
+INFO 2025-08-03 17:45:33,520 tasks 7768 32008 Dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803: 0 nuevas, 1140 actualizadas
+INFO 2025-08-03 17:45:33,524 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[779fb060-8706-4b6f-b2b9-778dbe166ad4] received
+INFO 2025-08-03 17:45:34,864 tasks 7768 32008 Dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3: 0 nuevas, 1140 actualizadas
+INFO 2025-08-03 17:45:34,867 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[247a3890-4d09-4e7f-890d-42e4c1c4e0db] received
+INFO 2025-08-03 17:45:35,459 tasks 7768 32008 Dispositivo 29630827-0242-492f-9ed0-a48d120da2ac: 0 nuevas, 492 actualizadas
+INFO 2025-08-03 17:45:35,462 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1bd0c148-f6a0-4722-9a49-ba9f25428786] received
+INFO 2025-08-03 17:45:36,418 tasks 7768 32008 Dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9: 0 nuevas, 1039 actualizadas
+INFO 2025-08-03 17:45:36,421 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b8109bea-53b2-4238-b2a7-682aecbfbc19] received
+INFO 2025-08-03 17:45:38,105 tasks 7768 32008 Dispositivo 19934344-9c79-482f-b74f-50dde3a6079c: 4 nuevas, 1414 actualizadas
+INFO 2025-08-03 17:45:38,108 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[18764141-d238-421d-b365-e3cf49344735] received
+INFO 2025-08-03 17:45:39,783 tasks 7768 32008 Dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d: 4 nuevas, 1411 actualizadas
+INFO 2025-08-03 17:45:39,787 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7540b838-225a-4e63-bf3b-6e963288af7e] received
+INFO 2025-08-03 17:45:41,500 tasks 7768 32008 Dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b: 4 nuevas, 1414 actualizadas
+INFO 2025-08-03 17:45:41,504 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[34e18319-83fc-45a5-99c8-46a0ffd739f6] received
+INFO 2025-08-03 17:45:43,080 tasks 7768 32008 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 4 nuevas, 1413 actualizadas
+INFO 2025-08-03 17:45:43,084 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c4a0d252-b9ba-4245-ba04-dc4c4b61d2b0] received
+INFO 2025-08-03 17:45:44,442 tasks 7768 32008 Dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879: 4 nuevas, 1413 actualizadas
+INFO 2025-08-03 17:45:44,445 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1bbc23df-acea-423c-95bf-87918b504c34] received
+INFO 2025-08-03 17:45:45,802 tasks 7768 32008 Dispositivo ada64a56-331c-4489-a02c-7aac55d54111: 4 nuevas, 1414 actualizadas
+INFO 2025-08-03 17:45:45,806 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[6decbd7d-1ced-4949-87a9-de6e17e2c5d4] received
+INFO 2025-08-03 17:45:47,961 tasks 7768 32008 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 0 nuevas, 2552 actualizadas
+INFO 2025-08-03 17:45:47,964 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[6840a55a-c0b9-4930-bd73-20c3362fa58b] received
+INFO 2025-08-03 17:45:48,048 tasks 7768 32008 Dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 17:52:21,732 strategy 7768 32008 Task scada_proxy.tasks.fetch_historical_measurements_for_all_devices[608a5a2d-ad93-4277-91d4-9f5b208f8b18] received
+INFO 2025-08-03 17:52:21,733 tasks 7768 32008 Iniciando la obtención de mediciones históricas para los últimos 2 days, 0:00:00. Rango: 2025-08-01 17:52:21.733276-05:00 -> 2025-08-03 17:52:21.733276-05:00 (hora local)
+INFO 2025-08-03 17:52:21,760 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - Cesmag (4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,763 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - Cesmag (3ccb420f-e6a0-4461-8dc6-e8568bd699f0) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,764 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - Cesmag (348b47aa-b285-4948-a9fb-a57bc38cedf1) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,766 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Cesmag (6ebd34d4-4883-4682-aab3-f3243544a67a) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,767 tasks 17752 34824 === INICIANDO TAREA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 17:52:21,767 tasks 17752 34824 Fecha actual: 2025-08-03, día del mes: 3
+INFO 2025-08-03 17:52:21,767 tasks 17752 34824 Rango mes actual: 2025-08-01 -> 2025-08-03
+INFO 2025-08-03 17:52:21,767 tasks 17752 34824 Rango mes anterior: 2025-07-01 -> 2025-07-03
+INFO 2025-08-03 17:52:21,768 tasks 17752 34824 Dispositivos encontrados:
+INFO 2025-08-03 17:52:21,768 tasks 7768 32008 Tarea creada para dispositivo Inverter 1 - Cesmag (e96986a9-a127-4139-975d-1a711ae25327) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,770 tasks 17752 34824   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 17:52:21,770 tasks 17752 34824   - Inversores: 6 dispositivos
+INFO 2025-08-03 17:52:21,770 tasks 7768 32008 Tarea creada para dispositivo Estación San Damian - CESMAG (819dfc27-fe61-42e6-9413-0f8820bea03e) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,772 tasks 17752 34824   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 17:52:21,772 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - HUDN (628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,772 tasks 17752 34824 Calculando consumo total (medidores eléctricos)...
+INFO 2025-08-03 17:52:21,774 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - HUDN (ad749299-a3a4-4270-b80d-6251389eabcb) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,776 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - HUDN (673f11ce-77da-4839-8498-a5948d984d8c) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,778 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - HUDN (6ecb37db-ab95-4640-b8ce-c7f8bb91f611) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,779 tasks 7768 32008 Tarea creada para dispositivo Inversor 1 - HUDN (f6893ba9-7175-44ea-8624-a47bf55158c9) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,782 tasks 7768 32008 Tarea creada para dispositivo Estación - HUDN (49435c0b-ada3-4ced-ad15-9418013a30d1) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,784 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - Alvernia (4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,785 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - Alvernia (5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,788 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - Alvernia (b06d770e-ec25-49a0-949d-60c9e169f2bb) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,790 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Alvernia (0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,791 tasks 7768 32008 Tarea creada para dispositivo Fronius - Alvernia (0f962572-fab3-4c09-bffc-465b56a22d8d) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,794 tasks 7768 32008 Tarea creada para dispositivo Estación Alvernia (1fb6c4ae-2e7c-4758-80bf-156c7826fead) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,796 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - UCC (d6915dc0-4391-4514-b4c6-58a30f1988f3) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,798 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - UCC (bc80e209-e290-4aaa-a6e8-931e9fb7b803) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,800 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - UCC (86b9c020-4645-4c39-891a-d1e8a7048c12) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,803 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - UCC (7130f831-d8ca-4fd8-adb5-f02dbc7543b3) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,805 tasks 7768 32008 Tarea creada para dispositivo Fronius - UCC (29630827-0242-492f-9ed0-a48d120da2ac) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,807 tasks 7768 32008 Tarea creada para dispositivo Estación - UCC (74154481-3f6c-4827-a8d7-ea6fbae62fd9) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,809 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 3 (19934344-9c79-482f-b74f-50dde3a6079c) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,811 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 2 (1da46bc5-1655-4ba1-82c2-0b283370a97b) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,813 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Udenar (0f7648d7-7575-4419-8192-a4f80b55309b) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,815 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 1 (7ba9fa00-7ef9-4246-8c30-85ea56088e0d) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,817 tasks 7768 32008 Tarea creada para dispositivo inverter1 (ada64a56-331c-4489-a02c-7aac55d54111) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,820 tasks 7768 32008 Tarea creada para dispositivo inverter2 (37f796af-7caa-459f-bc86-3e2f7936a879) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,822 tasks 7768 32008 Tarea creada para dispositivo Prueba (3a5eca15-cd03-4a83-8981-b432d2217344) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,824 tasks 7768 32008 Tarea creada para dispositivo estación (46094855-4fe6-4c10-afe3-444a101719e2) desde 2025-08-01 17:52:21.733276-05:00 hasta 2025-08-03 17:52:21.733276-05:00 (hora local).
+INFO 2025-08-03 17:52:21,825 tasks 7768 32008 Todas las subtareas para obtener mediciones han sido encoladas.
+INFO 2025-08-03 17:52:21,828 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1b6155f5-a78c-4fe0-bca4-d90319b8f4f6] received
+INFO 2025-08-03 17:52:23,734 tasks 7768 32008 Dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02: 4 nuevas, 1435 actualizadas
+INFO 2025-08-03 17:52:23,737 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8f9088f1-070a-4037-b668-2c7dd2edba0b] received
+INFO 2025-08-03 17:52:24,584 tasks 17752 34824 Consumo total - Mes actual: 19960.50 Wh, Mes anterior: 24224.63 Wh
+INFO 2025-08-03 17:52:24,584 tasks 17752 34824 Calculando generación total (inversores)...
+INFO 2025-08-03 17:52:25,643 tasks 7768 32008 Dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0: 4 nuevas, 1435 actualizadas
+INFO 2025-08-03 17:52:25,645 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b7a51b2b-a8bb-40b0-80c7-e8b1d5571994] received
+INFO 2025-08-03 17:52:26,751 tasks 17752 34824 Generación total - Mes actual: 20776809.00 Wh, Mes anterior: 28132490.00 Wh
+INFO 2025-08-03 17:52:26,752 tasks 17752 34824 Calculando potencia instantánea promedio (inversores)...
+INFO 2025-08-03 17:52:27,543 tasks 7768 32008 Dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1: 4 nuevas, 1434 actualizadas
+INFO 2025-08-03 17:52:27,546 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[59a36e3c-e113-42db-a968-f82413ed3c5e] received
+INFO 2025-08-03 17:52:28,505 tasks 17752 34824 Potencia instantánea promedio - Mes actual: 2536.54 W, Mes anterior: 3111.66 W
+INFO 2025-08-03 17:52:28,505 tasks 17752 34824 Calculando temperatura promedio diaria (estaciones meteorológicas)...
+INFO 2025-08-03 17:52:29,384 tasks 7768 32008 Dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a: 4 nuevas, 1435 actualizadas
+INFO 2025-08-03 17:52:29,387 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c6e87995-4af0-4fd0-9586-896990cb13ff] received
+INFO 2025-08-03 17:52:30,282 tasks 7768 32008 Dispositivo e96986a9-a127-4139-975d-1a711ae25327: 4 nuevas, 785 actualizadas
+INFO 2025-08-03 17:52:30,284 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[abc5e1d6-344e-4b69-9c5d-26a5743d9b6c] received
+INFO 2025-08-03 17:52:30,393 tasks 17752 34824 Temperatura promedio diaria - Mes actual: 14.75 °C, Mes anterior: 14.50 °C
+INFO 2025-08-03 17:52:30,393 tasks 17752 34824 Calculando humedad relativa promedio (estaciones meteorológicas)...
+INFO 2025-08-03 17:52:31,672 tasks 7768 32008 Dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e: 4 nuevas, 1358 actualizadas
+INFO 2025-08-03 17:52:31,675 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c761ae80-e209-47e1-b364-ea5afe10283d] received
+INFO 2025-08-03 17:52:32,216 tasks 17752 34824 Humedad relativa promedio - Mes actual: 73.19 %RH, Mes anterior: 76.78 %RH
+INFO 2025-08-03 17:52:32,216 tasks 17752 34824 Calculando velocidad del viento promedio (estaciones meteorológicas)...
+INFO 2025-08-03 17:52:33,634 tasks 7768 32008 Dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9: 4 nuevas, 1432 actualizadas
+INFO 2025-08-03 17:52:33,637 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8da2718e-56ad-4e0c-9dc9-a2d69b421b68] received
+INFO 2025-08-03 17:52:34,384 tasks 17752 34824 Velocidad del viento promedio - Mes actual: 1.27 km/h, Mes anterior: 1.40 km/h
+INFO 2025-08-03 17:52:34,384 tasks 17752 34824 Guardando KPIs mensuales en la base de datos...
+INFO 2025-08-03 17:52:34,387 tasks 17752 34824 === TAREA COMPLETADA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 17:52:34,387 tasks 17752 34824 Todos los KPIs mensuales han sido calculados y actualizados exitosamente.
+INFO 2025-08-03 17:52:34,423 tasks 17752 692 === INICIANDO TAREA: calculate_and_save_daily_data ===
+INFO 2025-08-03 17:52:34,423 tasks 17752 692 Rango de fechas a procesar: 2025-07-31 -> 2025-08-03
+INFO 2025-08-03 17:52:34,423 tasks 17752 692 Dispositivos encontrados para cálculo diario:
+INFO 2025-08-03 17:52:34,425 tasks 17752 692   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 17:52:34,426 tasks 17752 692   - Inversores: 6 dispositivos
+INFO 2025-08-03 17:52:34,426 tasks 17752 692   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 17:52:34,426 tasks 17752 692 Iniciando procesamiento de 4 días...
+INFO 2025-08-03 17:52:34,427 tasks 17752 692 Procesando fecha: 2025-07-31
+INFO 2025-08-03 17:52:35,493 tasks 7768 32008 Dispositivo ad749299-a3a4-4270-b80d-6251389eabcb: 4 nuevas, 1432 actualizadas
+INFO 2025-08-03 17:52:35,497 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3a9e27c9-888f-400d-8cf9-48d9aa72858b] received
+INFO 2025-08-03 17:52:36,848 tasks 17752 692   Dato diario actualizado para 2025-07-31:
+INFO 2025-08-03 17:52:36,849 tasks 17752 692     - Consumo: 10239.41 Wh
+INFO 2025-08-03 17:52:36,849 tasks 17752 692     - Generación: 8201196.00 Wh
+INFO 2025-08-03 17:52:36,849 tasks 17752 692     - Balance: -2038.22 kWh
+INFO 2025-08-03 17:52:36,849 tasks 17752 692     - Temperatura promedio: 13.69 °C
+INFO 2025-08-03 17:52:36,849 tasks 17752 692 Procesando fecha: 2025-08-01
+INFO 2025-08-03 17:52:37,295 tasks 7768 32008 Dispositivo 673f11ce-77da-4839-8498-a5948d984d8c: 4 nuevas, 1433 actualizadas
+INFO 2025-08-03 17:52:37,297 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[0c4429c9-14da-4e92-8f70-cca9206779a6] received
+INFO 2025-08-03 17:52:38,729 tasks 17752 692   Dato diario actualizado para 2025-08-01:
+INFO 2025-08-03 17:52:38,729 tasks 17752 692     - Consumo: 11100.57 Wh
+INFO 2025-08-03 17:52:38,729 tasks 17752 692     - Generación: 6309032.00 Wh
+INFO 2025-08-03 17:52:38,729 tasks 17752 692     - Balance: -4791.54 kWh
+INFO 2025-08-03 17:52:38,730 tasks 17752 692     - Temperatura promedio: 14.00 °C
+INFO 2025-08-03 17:52:38,730 tasks 17752 692 Procesando fecha: 2025-08-02
+INFO 2025-08-03 17:52:39,116 tasks 7768 32008 Dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611: 4 nuevas, 1433 actualizadas
+INFO 2025-08-03 17:52:39,119 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5a460b10-c313-459c-82f0-a32e8f0556d7] received
+INFO 2025-08-03 17:52:39,994 tasks 7768 32008 Dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9: 4 nuevas, 784 actualizadas
+INFO 2025-08-03 17:52:39,998 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[4d8b32c5-0ba9-4246-b4ec-c76483ccf64c] received
+INFO 2025-08-03 17:52:40,583 tasks 17752 692   Dato diario actualizado para 2025-08-02:
+INFO 2025-08-03 17:52:40,583 tasks 17752 692     - Consumo: 6659.41 Wh
+INFO 2025-08-03 17:52:40,583 tasks 17752 692     - Generación: 7985725.00 Wh
+INFO 2025-08-03 17:52:40,583 tasks 17752 692     - Balance: 1326.32 kWh
+INFO 2025-08-03 17:52:40,583 tasks 17752 692     - Temperatura promedio: 15.32 °C
+INFO 2025-08-03 17:52:40,583 tasks 17752 692 Procesando fecha: 2025-08-03
+INFO 2025-08-03 17:52:41,457 tasks 7768 32008 Dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1: 4 nuevas, 1331 actualizadas
+INFO 2025-08-03 17:52:41,460 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[89835a56-f7ad-4069-8880-e3479fe7a4c5] received
+INFO 2025-08-03 17:52:42,477 tasks 17752 692   Dato diario actualizado para 2025-08-03:
+INFO 2025-08-03 17:52:42,477 tasks 17752 692     - Consumo: 2220.40 Wh
+INFO 2025-08-03 17:52:42,477 tasks 17752 692     - Generación: 6484699.00 Wh
+INFO 2025-08-03 17:52:42,477 tasks 17752 692     - Balance: 4264.30 kWh
+INFO 2025-08-03 17:52:42,477 tasks 17752 692     - Temperatura promedio: 15.05 °C
+INFO 2025-08-03 17:52:42,477 tasks 17752 692 === RESUMEN DE PROCESAMIENTO ===
+INFO 2025-08-03 17:52:42,478 tasks 17752 692 Días procesados: 4
+INFO 2025-08-03 17:52:42,478 tasks 17752 692 Registros creados: 0
+INFO 2025-08-03 17:52:42,478 tasks 17752 692 Registros actualizados: 4
+INFO 2025-08-03 17:52:42,478 tasks 17752 692 === TAREA COMPLETADA: calculate_and_save_daily_data ===
+INFO 2025-08-03 17:52:43,188 tasks 7768 32008 Dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a: 4 nuevas, 1434 actualizadas
+INFO 2025-08-03 17:52:43,192 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[d9e1dc73-522f-4ffe-9b1d-bfdd50d9ca9e] received
+INFO 2025-08-03 17:52:44,868 tasks 7768 32008 Dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c: 4 nuevas, 1435 actualizadas
+INFO 2025-08-03 17:52:44,871 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a0eff759-8a18-4c0d-b104-03aff3b0b86f] received
+INFO 2025-08-03 17:52:46,651 tasks 7768 32008 Dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb: 4 nuevas, 1434 actualizadas
+INFO 2025-08-03 17:52:46,654 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[eec5fabb-ea3d-4919-bc0c-3c074b21b85e] received
+INFO 2025-08-03 17:52:48,355 tasks 7768 32008 Dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385: 4 nuevas, 1435 actualizadas
+INFO 2025-08-03 17:52:48,357 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[eb82a5de-197b-4285-9426-9f605b4c6cb5] received
+INFO 2025-08-03 17:52:49,208 tasks 7768 32008 Dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d: 4 nuevas, 787 actualizadas
+INFO 2025-08-03 17:52:49,211 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[bab6edfc-03ce-41ad-ab80-b9c7c04cda53] received
+INFO 2025-08-03 17:52:50,591 tasks 7768 32008 Dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead: 3 nuevas, 1362 actualizadas
+INFO 2025-08-03 17:52:50,593 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a8533e79-ee30-4ace-9dbc-f3595c526dcf] received
+INFO 2025-08-03 17:52:51,988 tasks 7768 32008 Dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3: 0 nuevas, 1137 actualizadas
+INFO 2025-08-03 17:52:51,991 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[d1cd3248-6810-40ab-9449-f80b1c484209] received
+INFO 2025-08-03 17:52:53,371 tasks 7768 32008 Dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803: 0 nuevas, 1137 actualizadas
+INFO 2025-08-03 17:52:53,374 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[134a619d-62a7-4b8b-853c-5dc64cd088f3] received
+INFO 2025-08-03 17:52:54,783 tasks 7768 32008 Dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12: 0 nuevas, 1136 actualizadas
+INFO 2025-08-03 17:52:54,786 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[250478ff-1e16-47b0-86b6-01a13cddddb4] received
+INFO 2025-08-03 17:52:56,248 tasks 7768 32008 Dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3: 0 nuevas, 1136 actualizadas
+INFO 2025-08-03 17:52:56,252 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8c2f238b-4c35-43ef-ab49-65533d5d4fe8] received
+INFO 2025-08-03 17:52:56,816 tasks 7768 32008 Dispositivo 29630827-0242-492f-9ed0-a48d120da2ac: 0 nuevas, 489 actualizadas
+INFO 2025-08-03 17:52:56,819 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[918d4f22-c353-4f0e-88eb-09417794d965] received
+INFO 2025-08-03 17:52:57,838 tasks 7768 32008 Dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9: 0 nuevas, 1036 actualizadas
+INFO 2025-08-03 17:52:57,840 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5177e963-112b-4c2c-b4d7-d0d4b4dbf800] received
+INFO 2025-08-03 17:52:59,485 tasks 7768 32008 Dispositivo 19934344-9c79-482f-b74f-50dde3a6079c: 4 nuevas, 1414 actualizadas
+INFO 2025-08-03 17:52:59,488 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1f381335-997d-41c8-80f5-db1600383555] received
+INFO 2025-08-03 17:53:01,211 tasks 7768 32008 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 4 nuevas, 1413 actualizadas
+INFO 2025-08-03 17:53:01,214 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[6262ef5c-de6a-455e-aa33-b9fee559de3d] received
+INFO 2025-08-03 17:53:02,873 tasks 7768 32008 Dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b: 4 nuevas, 1414 actualizadas
+INFO 2025-08-03 17:53:02,876 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[f1a39738-3ebe-4180-9907-288ccd440a3b] received
+INFO 2025-08-03 17:53:04,581 tasks 7768 32008 Dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d: 4 nuevas, 1411 actualizadas
+INFO 2025-08-03 17:53:04,584 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2dafac9e-47a2-46cc-af39-baed7233d638] received
+INFO 2025-08-03 17:53:06,078 tasks 7768 32008 Dispositivo ada64a56-331c-4489-a02c-7aac55d54111: 4 nuevas, 1414 actualizadas
+INFO 2025-08-03 17:53:06,082 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2510bb1c-2a6d-4892-a33c-1309a0ebe924] received
+INFO 2025-08-03 17:53:07,523 tasks 7768 32008 Dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879: 4 nuevas, 1413 actualizadas
+INFO 2025-08-03 17:53:07,525 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[0f0b6930-4df1-4d5f-baa5-972d2a54f492] received
+INFO 2025-08-03 17:53:07,612 tasks 7768 32008 Dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 17:53:07,615 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[44784a54-164a-4f4c-9865-987e69a23c07] received
+INFO 2025-08-03 17:53:09,894 tasks 7768 32008 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 0 nuevas, 2544 actualizadas
+INFO 2025-08-03 18:00:00,086 strategy 7768 32008 Task scada_proxy.tasks.fetch_historical_measurements_for_all_devices[95f8903f-7a72-4d72-8762-9b63feacd4c7] received
+INFO 2025-08-03 18:00:00,087 tasks 7768 32008 Iniciando la obtención de mediciones históricas para los últimos 2:00:00. Rango: 2025-08-03 16:00:00.087240-05:00 -> 2025-08-03 18:00:00.087240-05:00 (hora local)
+INFO 2025-08-03 18:00:00,115 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - Cesmag (4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,116 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - Cesmag (3ccb420f-e6a0-4461-8dc6-e8568bd699f0) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,116 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - Cesmag (348b47aa-b285-4948-a9fb-a57bc38cedf1) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,117 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Cesmag (6ebd34d4-4883-4682-aab3-f3243544a67a) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,118 tasks 7768 32008 Tarea creada para dispositivo Inverter 1 - Cesmag (e96986a9-a127-4139-975d-1a711ae25327) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,118 tasks 7768 32008 Tarea creada para dispositivo Estación San Damian - CESMAG (819dfc27-fe61-42e6-9413-0f8820bea03e) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,119 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - HUDN (628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,120 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - HUDN (ad749299-a3a4-4270-b80d-6251389eabcb) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,121 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - HUDN (673f11ce-77da-4839-8498-a5948d984d8c) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,121 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - HUDN (6ecb37db-ab95-4640-b8ce-c7f8bb91f611) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,122 tasks 7768 32008 Tarea creada para dispositivo Inversor 1 - HUDN (f6893ba9-7175-44ea-8624-a47bf55158c9) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,122 tasks 7768 32008 Tarea creada para dispositivo Estación - HUDN (49435c0b-ada3-4ced-ad15-9418013a30d1) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,123 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - Alvernia (4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,124 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - Alvernia (5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,124 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - Alvernia (b06d770e-ec25-49a0-949d-60c9e169f2bb) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,125 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Alvernia (0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,125 tasks 7768 32008 Tarea creada para dispositivo Fronius - Alvernia (0f962572-fab3-4c09-bffc-465b56a22d8d) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,126 tasks 7768 32008 Tarea creada para dispositivo Estación Alvernia (1fb6c4ae-2e7c-4758-80bf-156c7826fead) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,127 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - UCC (d6915dc0-4391-4514-b4c6-58a30f1988f3) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,127 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - UCC (bc80e209-e290-4aaa-a6e8-931e9fb7b803) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,128 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - UCC (86b9c020-4645-4c39-891a-d1e8a7048c12) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,129 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - UCC (7130f831-d8ca-4fd8-adb5-f02dbc7543b3) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,129 tasks 7768 32008 Tarea creada para dispositivo Fronius - UCC (29630827-0242-492f-9ed0-a48d120da2ac) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,130 tasks 7768 32008 Tarea creada para dispositivo Estación - UCC (74154481-3f6c-4827-a8d7-ea6fbae62fd9) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,130 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 3 (19934344-9c79-482f-b74f-50dde3a6079c) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,131 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 2 (1da46bc5-1655-4ba1-82c2-0b283370a97b) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,132 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Udenar (0f7648d7-7575-4419-8192-a4f80b55309b) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,133 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 1 (7ba9fa00-7ef9-4246-8c30-85ea56088e0d) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,133 tasks 7768 32008 Tarea creada para dispositivo inverter1 (ada64a56-331c-4489-a02c-7aac55d54111) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,134 tasks 7768 32008 Tarea creada para dispositivo inverter2 (37f796af-7caa-459f-bc86-3e2f7936a879) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,134 tasks 7768 32008 Tarea creada para dispositivo Prueba (3a5eca15-cd03-4a83-8981-b432d2217344) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,135 tasks 7768 32008 Tarea creada para dispositivo estación (46094855-4fe6-4c10-afe3-444a101719e2) desde 2025-08-03 16:00:00.087240-05:00 hasta 2025-08-03 18:00:00.087240-05:00 (hora local).
+INFO 2025-08-03 18:00:00,135 tasks 7768 32008 Todas las subtareas para obtener mediciones han sido encoladas.
+INFO 2025-08-03 18:00:00,137 strategy 7768 32008 Task scada_proxy.tasks.sync_scada_metadata[75444619-880d-4d42-b44c-afd2d2730f42] received
+INFO 2025-08-03 18:00:00,252 tasks 7768 32008 Sincronizadas 5 instituciones.
+INFO 2025-08-03 18:00:00,335 tasks 7768 32008 Sincronizadas 3 categorías de dispositivos.
+INFO 2025-08-03 18:00:00,452 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[81c88976-165b-4049-a1e1-fd3f953f4743] received
+INFO 2025-08-03 18:00:00,677 tasks 7768 32008 Dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02: 3 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:00,680 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[cc851c7d-6b34-409b-b918-838fca1b3d2d] received
+INFO 2025-08-03 18:00:00,904 tasks 7768 32008 Dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0: 3 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:00,907 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[92489316-2034-49bf-901c-3be984ad3ba2] received
+INFO 2025-08-03 18:00:01,110 tasks 7768 32008 Dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:01,112 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[4079ba2d-0111-4440-ae9f-b07c75b31cc9] received
+INFO 2025-08-03 18:00:01,332 tasks 7768 32008 Dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:01,334 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1838bb74-8da6-400d-b92f-43a2f0c808af] received
+INFO 2025-08-03 18:00:01,498 tasks 7768 32008 Dispositivo e96986a9-a127-4139-975d-1a711ae25327: 3 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:01,501 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b15ff8f2-5102-40f4-a208-dcfa84352597] received
+INFO 2025-08-03 18:00:01,650 tasks 7768 32008 Dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e: 4 nuevas, 55 actualizadas
+INFO 2025-08-03 18:00:01,653 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a8889420-ab02-4d9a-acc7-99df097f7a56] received
+INFO 2025-08-03 18:00:01,861 tasks 7768 32008 Dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:01,863 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b0eb0b3c-5530-43bb-8a6d-5c1b6a46e647] received
+INFO 2025-08-03 18:00:02,093 tasks 7768 32008 Dispositivo ad749299-a3a4-4270-b80d-6251389eabcb: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:02,095 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8c611d45-0651-44c3-b46f-49f87db1817e] received
+INFO 2025-08-03 18:00:02,298 tasks 7768 32008 Dispositivo 673f11ce-77da-4839-8498-a5948d984d8c: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:02,301 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[e51d81d5-e89a-4819-911d-2fa4d5c952d3] received
+INFO 2025-08-03 18:00:02,530 tasks 7768 32008 Dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:02,533 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[52b4dda8-2d69-4e3d-bf39-59c461ad24df] received
+INFO 2025-08-03 18:00:02,700 tasks 7768 32008 Dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9: 3 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:02,703 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[73cae44f-7a57-40cf-acd7-7460bf48d155] received
+INFO 2025-08-03 18:00:02,872 tasks 7768 32008 Dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1: 3 nuevas, 50 actualizadas
+INFO 2025-08-03 18:00:02,874 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[9adf1290-7f28-46af-b317-d497a0c735e8] received
+INFO 2025-08-03 18:00:03,079 tasks 7768 32008 Dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:03,081 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[f9f0a871-82f3-482a-b265-c637e3ae6500] received
+INFO 2025-08-03 18:00:03,296 tasks 7768 32008 Dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:03,300 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[af629ac2-3b2c-4056-b119-d7af8de51bab] received
+INFO 2025-08-03 18:00:03,515 tasks 7768 32008 Dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:03,518 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c994bea3-80f5-4f65-af21-38e80c3671dc] received
+INFO 2025-08-03 18:00:03,723 tasks 7768 32008 Dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:03,725 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5e6b6c48-d8cc-479b-8a68-4fcdd9cb184b] received
+INFO 2025-08-03 18:00:03,893 tasks 7768 32008 Dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d: 3 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:03,895 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[ac98af95-8277-44ed-880a-d9430d9a43b1] received
+INFO 2025-08-03 18:00:04,041 tasks 7768 32008 Dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead: 4 nuevas, 56 actualizadas
+INFO 2025-08-03 18:00:04,044 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[72d25d51-0030-4e3c-bc1e-263feeedfea5] received
+INFO 2025-08-03 18:00:04,124 tasks 7768 32008 Dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 18:00:04,128 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[20922f17-378a-4bad-a297-ac7a2959c0b5] received
+INFO 2025-08-03 18:00:04,211 tasks 7768 32008 Dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 18:00:04,214 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[98a65e61-f3a6-42ea-be83-a6e394333d74] received
+INFO 2025-08-03 18:00:04,309 tasks 7768 32008 Dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 18:00:04,314 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[e3ae458e-7103-475b-a097-249c1c0fc1bc] received
+INFO 2025-08-03 18:00:04,399 tasks 7768 32008 Dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 18:00:04,404 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2421610a-9bce-4db3-aeaa-055337731c85] received
+INFO 2025-08-03 18:00:04,514 tasks 7768 32008 Dispositivo 29630827-0242-492f-9ed0-a48d120da2ac: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 18:00:04,517 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7692ac48-696f-40ad-b29d-425c2776d83b] received
+INFO 2025-08-03 18:00:04,603 tasks 7768 32008 Dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 18:00:04,610 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c6215d7d-ec6c-4842-8f8a-f9791bae7bea] received
+INFO 2025-08-03 18:00:04,863 tasks 7768 32008 Dispositivo 19934344-9c79-482f-b74f-50dde3a6079c: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:04,865 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[44a6489b-96db-4ac3-8644-87c9d546d946] received
+INFO 2025-08-03 18:00:05,060 tasks 7768 32008 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:05,063 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3106d7e4-6c56-44a6-b60a-318cb3133050] received
+INFO 2025-08-03 18:00:05,260 tasks 7768 32008 Dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:05,263 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c64f7b88-cc5e-42b8-ab3e-65978c964484] received
+INFO 2025-08-03 18:00:05,466 tasks 7768 32008 Dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d: 4 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:05,469 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2c79f844-63ab-454e-abe7-d1d0cfb4c891] received
+INFO 2025-08-03 18:00:05,647 tasks 7768 32008 Dispositivo ada64a56-331c-4489-a02c-7aac55d54111: 3 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:05,650 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[f330a129-35ba-4706-a1bf-2e1956e6ffcb] received
+INFO 2025-08-03 18:00:05,822 tasks 7768 32008 Dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879: 3 nuevas, 57 actualizadas
+INFO 2025-08-03 18:00:05,824 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[14ed8ce6-9a44-4e89-a5c0-d5018add254c] received
+INFO 2025-08-03 18:00:05,907 tasks 7768 32008 Dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 18:00:05,911 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[fb15626e-21e9-4009-9af3-7e8cecd4741c] received
+INFO 2025-08-03 18:00:05,989 tasks 7768 32008 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 18:13:52,014 strategy 7768 32008 Task scada_proxy.tasks.fetch_historical_measurements_for_all_devices[e02f321f-48f6-47c6-a18f-08ec143908d7] received
+INFO 2025-08-03 18:13:52,015 tasks 7768 32008 Iniciando la obtención de mediciones históricas para los últimos 2 days, 0:00:00. Rango: 2025-08-01 18:13:52.015195-05:00 -> 2025-08-03 18:13:52.015195-05:00 (hora local)
+INFO 2025-08-03 18:13:52,042 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - Cesmag (3ccb420f-e6a0-4461-8dc6-e8568bd699f0) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,043 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Cesmag (6ebd34d4-4883-4682-aab3-f3243544a67a) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,044 tasks 17752 23940 === INICIANDO TAREA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 18:13:52,044 tasks 17752 23940 Fecha actual: 2025-08-03, día del mes: 3
+INFO 2025-08-03 18:13:52,044 tasks 17752 23940 Rango mes actual: 2025-08-01 -> 2025-08-03
+INFO 2025-08-03 18:13:52,044 tasks 17752 23940 Rango mes anterior: 2025-07-01 -> 2025-07-03
+INFO 2025-08-03 18:13:52,044 tasks 17752 23940 Dispositivos encontrados:
+INFO 2025-08-03 18:13:52,045 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - Cesmag (4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,046 tasks 17752 23940   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 18:13:52,046 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - Cesmag (348b47aa-b285-4948-a9fb-a57bc38cedf1) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,047 tasks 17752 23940   - Inversores: 6 dispositivos
+INFO 2025-08-03 18:13:52,048 tasks 7768 32008 Tarea creada para dispositivo Inverter 1 - Cesmag (e96986a9-a127-4139-975d-1a711ae25327) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,049 tasks 17752 23940   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 18:13:52,049 tasks 17752 23940 Calculando consumo total (medidores eléctricos)...
+INFO 2025-08-03 18:13:52,049 tasks 7768 32008 Tarea creada para dispositivo Estación San Damian - CESMAG (819dfc27-fe61-42e6-9413-0f8820bea03e) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,050 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - HUDN (ad749299-a3a4-4270-b80d-6251389eabcb) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,052 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - HUDN (628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,053 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - HUDN (673f11ce-77da-4839-8498-a5948d984d8c) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,054 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - HUDN (6ecb37db-ab95-4640-b8ce-c7f8bb91f611) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,056 tasks 7768 32008 Tarea creada para dispositivo Inversor 1 - HUDN (f6893ba9-7175-44ea-8624-a47bf55158c9) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,057 tasks 7768 32008 Tarea creada para dispositivo Estación - HUDN (49435c0b-ada3-4ced-ad15-9418013a30d1) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,058 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Alvernia (0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,060 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - Alvernia (5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,061 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - Alvernia (b06d770e-ec25-49a0-949d-60c9e169f2bb) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,062 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - Alvernia (4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,064 tasks 7768 32008 Tarea creada para dispositivo Fronius - Alvernia (0f962572-fab3-4c09-bffc-465b56a22d8d) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,065 tasks 7768 32008 Tarea creada para dispositivo Estación Alvernia (1fb6c4ae-2e7c-4758-80bf-156c7826fead) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,066 tasks 7768 32008 Tarea creada para dispositivo Medidor 3 - UCC (d6915dc0-4391-4514-b4c6-58a30f1988f3) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,068 tasks 7768 32008 Tarea creada para dispositivo Medidor 1 - UCC (86b9c020-4645-4c39-891a-d1e8a7048c12) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,069 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - UCC (7130f831-d8ca-4fd8-adb5-f02dbc7543b3) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,070 tasks 7768 32008 Tarea creada para dispositivo Medidor 2 - UCC (bc80e209-e290-4aaa-a6e8-931e9fb7b803) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,072 tasks 7768 32008 Tarea creada para dispositivo Fronius - UCC (29630827-0242-492f-9ed0-a48d120da2ac) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,073 tasks 7768 32008 Tarea creada para dispositivo Estación - UCC (74154481-3f6c-4827-a8d7-ea6fbae62fd9) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,075 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 3 (19934344-9c79-482f-b74f-50dde3a6079c) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,076 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 2 (1da46bc5-1655-4ba1-82c2-0b283370a97b) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,078 tasks 7768 32008 Tarea creada para dispositivo Bloque Nuevo - Medidor 1 (7ba9fa00-7ef9-4246-8c30-85ea56088e0d) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,079 tasks 7768 32008 Tarea creada para dispositivo Medidor 4 - Udenar (0f7648d7-7575-4419-8192-a4f80b55309b) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,081 tasks 7768 32008 Tarea creada para dispositivo inverter2 (37f796af-7caa-459f-bc86-3e2f7936a879) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,082 tasks 7768 32008 Tarea creada para dispositivo inverter1 (ada64a56-331c-4489-a02c-7aac55d54111) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,084 tasks 7768 32008 Tarea creada para dispositivo estación (46094855-4fe6-4c10-afe3-444a101719e2) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,085 tasks 7768 32008 Tarea creada para dispositivo Prueba (3a5eca15-cd03-4a83-8981-b432d2217344) desde 2025-08-01 18:13:52.015195-05:00 hasta 2025-08-03 18:13:52.015195-05:00 (hora local).
+INFO 2025-08-03 18:13:52,086 tasks 7768 32008 Todas las subtareas para obtener mediciones han sido encoladas.
+INFO 2025-08-03 18:13:52,088 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[f20f4591-73f7-4ae4-af73-740948c4850f] received
+INFO 2025-08-03 18:13:53,968 tasks 7768 32008 Dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0: 7 nuevas, 1433 actualizadas
+INFO 2025-08-03 18:13:53,972 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5ac4d9e0-897f-4780-a9a6-712d26c5423e] received
+INFO 2025-08-03 18:13:55,801 tasks 7768 32008 Dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a: 6 nuevas, 1434 actualizadas
+INFO 2025-08-03 18:13:55,804 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b125353c-e620-4c2e-898b-d41ed3ef23ab] received
+INFO 2025-08-03 18:13:57,514 tasks 7768 32008 Dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02: 7 nuevas, 1433 actualizadas
+INFO 2025-08-03 18:13:57,518 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[57e67b0f-7cec-42af-b301-9795a1b15032] received
+INFO 2025-08-03 18:13:59,291 tasks 7768 32008 Dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1: 6 nuevas, 1433 actualizadas
+INFO 2025-08-03 18:13:59,294 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[57b6b498-e9b0-4be0-ad20-4c2bd8ea556b] received
+INFO 2025-08-03 18:14:00,119 tasks 7768 32008 Dispositivo e96986a9-a127-4139-975d-1a711ae25327: 7 nuevas, 783 actualizadas
+INFO 2025-08-03 18:14:00,122 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c9cc7a60-96fa-4657-a4ec-ab98ac0775b4] received
+INFO 2025-08-03 18:14:01,578 tasks 7768 32008 Dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e: 7 nuevas, 1356 actualizadas
+INFO 2025-08-03 18:14:01,582 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[bc15b469-ed1b-45ef-9ca0-12bc52579607] received
+INFO 2025-08-03 18:14:03,376 tasks 7768 32008 Dispositivo ad749299-a3a4-4270-b80d-6251389eabcb: 6 nuevas, 1431 actualizadas
+INFO 2025-08-03 18:14:03,379 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b8723c65-c5fa-4f2c-8b25-1370a83721bf] received
+INFO 2025-08-03 18:14:05,143 tasks 7768 32008 Dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9: 6 nuevas, 1431 actualizadas
+INFO 2025-08-03 18:14:05,146 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[0440cedb-0d2b-4aa3-8108-3eec7afa2f47] received
+INFO 2025-08-03 18:14:06,869 tasks 7768 32008 Dispositivo 673f11ce-77da-4839-8498-a5948d984d8c: 6 nuevas, 1432 actualizadas
+INFO 2025-08-03 18:14:06,872 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[ad6987ab-c733-4d1a-b09f-35fd4d642ff9] received
+INFO 2025-08-03 18:14:08,649 tasks 7768 32008 Dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611: 6 nuevas, 1432 actualizadas
+INFO 2025-08-03 18:14:08,652 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[34dd1d7d-cd4c-4fdc-be16-c0316d5a5c69] received
+INFO 2025-08-03 18:14:09,500 tasks 7768 32008 Dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9: 7 nuevas, 782 actualizadas
+INFO 2025-08-03 18:14:09,503 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8114ebcf-dc6a-4933-b64f-7c3ad28f1fad] received
+INFO 2025-08-03 18:14:10,748 tasks 7768 32008 Dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1: 6 nuevas, 1329 actualizadas
+INFO 2025-08-03 18:14:10,751 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b4df39da-7b33-40d8-9df4-0ccdbd9172a4] received
+INFO 2025-08-03 18:14:12,431 tasks 7768 32008 Dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385: 6 nuevas, 1434 actualizadas
+INFO 2025-08-03 18:14:12,434 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[05279222-0478-4f61-9e1f-b2e8bbcd67c9] received
+INFO 2025-08-03 18:14:14,298 tasks 7768 32008 Dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c: 6 nuevas, 1434 actualizadas
+INFO 2025-08-03 18:14:14,301 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b3d32ea5-9602-4ec7-9069-5e4989fbec5a] received
+INFO 2025-08-03 18:14:15,996 tasks 7768 32008 Dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb: 6 nuevas, 1433 actualizadas
+INFO 2025-08-03 18:14:15,999 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5515502f-eb72-4071-b48d-ef11917886d5] received
+INFO 2025-08-03 18:14:17,780 tasks 7768 32008 Dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a: 6 nuevas, 1433 actualizadas
+INFO 2025-08-03 18:14:17,783 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[41257918-3dac-45cb-acb6-c42ade7f241d] received
+INFO 2025-08-03 18:14:18,618 tasks 7768 32008 Dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d: 7 nuevas, 785 actualizadas
+INFO 2025-08-03 18:14:18,621 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2f9ca74e-eaa1-48cc-9cfa-f0bce39c76a3] received
+INFO 2025-08-03 18:14:19,868 tasks 7768 32008 Dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead: 7 nuevas, 1359 actualizadas
+INFO 2025-08-03 18:14:19,871 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2c8675c1-7d52-40bc-927e-7085d776cf05] received
+INFO 2025-08-03 18:14:21,430 tasks 7768 32008 Dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3: 0 nuevas, 1128 actualizadas
+INFO 2025-08-03 18:14:21,432 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3f777b83-18c2-4f17-b311-3dfd3bf6d753] received
+INFO 2025-08-03 18:14:22,833 tasks 7768 32008 Dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12: 0 nuevas, 1127 actualizadas
+INFO 2025-08-03 18:14:22,836 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[08ab25f5-0452-4bad-9f1d-67b04bc52d17] received
+INFO 2025-08-03 18:14:24,317 tasks 7768 32008 Dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3: 0 nuevas, 1127 actualizadas
+INFO 2025-08-03 18:14:24,320 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[d3d8aa06-3cfd-4d97-989d-de80a7d77d7f] received
+INFO 2025-08-03 18:14:25,723 tasks 7768 32008 Dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803: 0 nuevas, 1128 actualizadas
+INFO 2025-08-03 18:14:25,726 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1dabec4c-c8ee-438c-a99c-dcaf5b6f4947] received
+INFO 2025-08-03 18:14:26,336 tasks 7768 32008 Dispositivo 29630827-0242-492f-9ed0-a48d120da2ac: 0 nuevas, 480 actualizadas
+INFO 2025-08-03 18:14:26,338 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[f00a3a6e-1bd2-41c2-b9af-fe63045df40c] received
+INFO 2025-08-03 18:14:27,365 tasks 7768 32008 Dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9: 0 nuevas, 1027 actualizadas
+INFO 2025-08-03 18:14:27,367 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[23dd8f9c-54e3-4505-b80d-5de816f24bf6] received
+INFO 2025-08-03 18:14:29,154 tasks 7768 32008 Dispositivo 19934344-9c79-482f-b74f-50dde3a6079c: 6 nuevas, 1412 actualizadas
+INFO 2025-08-03 18:14:29,157 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c9c34f97-5039-4514-a115-e19569657d17] received
+INFO 2025-08-03 18:14:30,807 tasks 7768 32008 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 6 nuevas, 1411 actualizadas
+INFO 2025-08-03 18:14:30,811 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[073662fe-e2b4-4a05-8c11-136d3e4dd8bf] received
+INFO 2025-08-03 18:14:32,632 tasks 7768 32008 Dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d: 6 nuevas, 1409 actualizadas
+INFO 2025-08-03 18:14:32,634 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[0508af4c-0c1c-4ff3-898b-e1859dc11dd3] received
+INFO 2025-08-03 18:14:34,526 tasks 7768 32008 Dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b: 6 nuevas, 1412 actualizadas
+INFO 2025-08-03 18:14:34,528 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[929d0fa2-9372-46c0-81be-8d450f4bf227] received
+INFO 2025-08-03 18:14:36,060 tasks 7768 32008 Dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879: 7 nuevas, 1410 actualizadas
+INFO 2025-08-03 18:14:36,063 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1d669a46-5379-45ee-90a4-afe485510941] received
+INFO 2025-08-03 18:14:37,616 tasks 7768 32008 Dispositivo ada64a56-331c-4489-a02c-7aac55d54111: 7 nuevas, 1411 actualizadas
+INFO 2025-08-03 18:14:37,618 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c198952e-ce8b-4101-8063-887825eda519] received
+INFO 2025-08-03 18:14:39,879 tasks 7768 32008 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 0 nuevas, 2526 actualizadas
+INFO 2025-08-03 18:14:39,882 strategy 7768 32008 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a0758df8-99fe-40bf-9258-978eea6fe956] received
+INFO 2025-08-03 18:14:39,961 tasks 7768 32008 Dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344: 0 nuevas, 0 actualizadas
+INFO 2025-08-03 18:18:58,433 connection 7644 32164 Connected to redis://localhost:6379/0
+INFO 2025-08-03 18:18:58,436 mingle 7644 32164 mingle: searching for neighbors
+[2025-08-03 18:18:58,656: INFO/SpawnPoolWorker-1] child process 14740 calling self.run()
+INFO 2025-08-03 18:19:00,436 mingle 7644 32164 mingle: all alone
+INFO 2025-08-03 18:22:20,673 strategy 7644 32164 Task indicators.tasks.calculate_monthly_consumption_kpi[4281f779-8ec1-4838-a3ff-83bdd4e84705] received
+INFO 2025-08-03 18:22:20,674 strategy 7644 32164 Task indicators.tasks.calculate_monthly_consumption_kpi[245bbebf-0af9-4e4b-8203-615e72ae0f39] received

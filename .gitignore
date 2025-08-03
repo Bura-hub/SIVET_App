@@ -4,3 +4,4 @@ env_lumen
 __pycache__
 scada-connector-client-main
 test.js
+.cursor

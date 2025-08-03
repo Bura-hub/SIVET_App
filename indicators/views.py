@@ -16,6 +16,8 @@ from .models import MonthlyConsumptionKPI, DailyChartData # Importación de Dail
 # Importa el cliente SCADA y los modelos DeviceCategory, Measurement, Device de scada_proxy
 from scada_proxy.scada_client import ScadaConnectorClient 
 from scada_proxy.models import DeviceCategory, Measurement, Device
+# Importa las tareas de Celery
+from .tasks import calculate_monthly_consumption_kpi, calculate_and_save_daily_data
 
 logger = logging.getLogger(__name__)
 
@@ -391,3 +393,75 @@ class ChartDataView(APIView):
         except Exception as e:
             logger.error(f"Error al obtener los datos del gráfico: {e}", exc_info=True)
             return Response({'error': 'Ocurrió un error inesperado al procesar la solicitud.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# --- NUEVAS VISTAS PARA EJECUTAR TAREAS MANUALMENTE ---
+
+class CalculateKPIsView(APIView):
+    """
+    Vista para ejecutar manualmente la tarea de cálculo de KPIs mensuales
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            logger.info("=== INICIANDO CÁLCULO MANUAL DE KPIs ===")
+            
+            # Ejecutar la tarea de cálculo de KPIs
+            task_result = calculate_monthly_consumption_kpi()
+            
+            logger.info("=== CÁLCULO MANUAL DE KPIs COMPLETADO ===")
+            
+            return Response({
+                "message": "Cálculo de KPIs mensuales iniciado exitosamente",
+                "task_result": task_result,
+                "status": "success"
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error al ejecutar cálculo de KPIs: {e}", exc_info=True)
+            return Response({
+                "message": f"Error al ejecutar cálculo de KPIs: {str(e)}",
+                "status": "error"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CalculateDailyDataView(APIView):
+    """
+    Vista para ejecutar manualmente la tarea de cálculo de datos diarios
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            logger.info("=== INICIANDO CÁLCULO MANUAL DE DATOS DIARIOS ===")
+            
+            # Obtener parámetros del request
+            days_back = request.data.get('days_back', 3)  # Por defecto 3 días
+            
+            # Calcular fechas
+            end_date = datetime.now(timezone.utc)
+            start_date = end_date - timedelta(days=days_back)
+            
+            logger.info(f"Calculando datos diarios desde {start_date.date()} hasta {end_date.date()}")
+            
+            # Ejecutar la tarea de cálculo de datos diarios
+            task_result = calculate_and_save_daily_data(
+                start_date_str=start_date.isoformat(),
+                end_date_str=end_date.isoformat()
+            )
+            
+            logger.info("=== CÁLCULO MANUAL DE DATOS DIARIOS COMPLETADO ===")
+            
+            return Response({
+                "message": f"Cálculo de datos diarios iniciado exitosamente para los últimos {days_back} días",
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "task_result": task_result,
+                "status": "success"
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error al ejecutar cálculo de datos diarios: {e}", exc_info=True)
+            return Response({
+                "message": f"Error al ejecutar cálculo de datos diarios: {str(e)}",
+                "status": "error"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -42,11 +42,13 @@ class DailyChartData(models.Model):
     date = models.DateField(unique=True, help_text="Fecha del registro.")
     daily_consumption = models.FloatField(default=0.0, help_text="Consumo total diario en kWh.")
     daily_generation = models.FloatField(default=0.0, help_text="Generación total diaria en Wh.")
-    
-    class Meta:
-        verbose_name = "Datos Diarios para Gráficos"
-        verbose_name_plural = "Datos Diarios para Gráficos"
-        ordering = ['date'] # Ordenar por fecha por defecto
+    daily_balance = models.FloatField(default=0.0, help_text="Balance energético diario (Generación en kWh - Consumo en kWh).")
+    # Nuevo campo para la temperatura promedio diaria
+    avg_daily_temp = models.FloatField(default=0.0, help_text="Temperatura promedio diaria en °C.")
 
+    class Meta:
+        verbose_name = "Datos Diarios de Gráfico"
+        verbose_name_plural = "Datos Diarios de Gráfico"
+    
     def __str__(self):
-        return f"Datos para gráfico del día: {self.date}"
+        return f"Datos para {self.date.isoformat()}"

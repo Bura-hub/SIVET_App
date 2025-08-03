@@ -17,13 +17,6 @@ from .models import MonthlyConsumptionKPI, DailyChartData # Importación de Dail
 from scada_proxy.scada_client import ScadaConnectorClient 
 from scada_proxy.models import DeviceCategory, Measurement, Device
 
-# NO son necesarias para el nuevo enfoque de vistas, ya que Celery las hará
-# from django.db.models import Sum, F, FloatField
-# from django.db.models.functions import Cast
-# from django.http import JsonResponse
-# from rest_framework.decorators import api_view
-
-
 logger = logging.getLogger(__name__)
 
 scada_client = ScadaConnectorClient() 
@@ -354,41 +347,42 @@ class ConsumptionSummaryView(APIView):
             return Response({"detail": f"Internal server error: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # --- NUEVA CLASE PARA LOS DATOS DEL GRÁFICO (REEMPLAZA A LA FUNCIÓN) ---
-@method_decorator(cache_page(60 * 5), name='dispatch')
+
+@method_decorator(cache_page(60 * 5), name='dispatch') # Cachear la respuesta por 5 minutos
 class ChartDataView(APIView):
-    """
-    Vista que retorna datos diarios de consumo y generación,
-    ideales para gráficos.
-    Los datos provienen del modelo DailyChartData, pre-calculados por Celery.
-    """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
+        """
+        Retorna los datos diarios de consumo, generación, balance y temperatura
+        para un rango de fechas. Por defecto, retorna los datos de los últimos 60 días.
+        """
         try:
-            # Obtener parámetros de fecha de la URL, si existen
-            # Por ejemplo: /dashboard/chart-data/?start_date=2023-01-01&end_date=2023-01-31
             start_date_str = request.query_params.get('start_date')
             end_date_str = request.query_params.get('end_date')
 
-            # Si no se proporcionan fechas, se usa el último mes por defecto
+            # Si no se proporcionan fechas, se usa los últimos 60 días por defecto
             if not start_date_str or not end_date_str:
                 end_date = datetime.now(timezone.utc).date()
-                start_date = end_date - timedelta(days=30)
+                start_date = end_date - timedelta(days=60)
             else:
                 end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
                 start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
 
             # Consultar el modelo DailyChartData para obtener los datos precalculados
+            # Se incluyen los nuevos campos 'daily_balance' y 'avg_daily_temp'
             chart_data = DailyChartData.objects.filter(
                 date__range=(start_date, end_date)
-            ).values('date', 'daily_consumption', 'daily_generation')
+            ).values('date', 'daily_consumption', 'daily_generation', 'daily_balance', 'avg_daily_temp')
 
             # Formatear el queryset a una lista de diccionarios con fechas en formato string
             response_data = [
                 {
                     'date': item['date'].isoformat(),
                     'daily_consumption': item['daily_consumption'],
-                    'daily_generation': item['daily_generation']
+                    'daily_generation': item['daily_generation'],
+                    'daily_balance': item['daily_balance'],
+                    'avg_daily_temp': item['avg_daily_temp'] # Nuevo campo en la respuesta
                 }
                 for item in chart_data
             ]

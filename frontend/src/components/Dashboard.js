@@ -165,7 +165,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
             labels: currentMonthLabels,
             datasets: [
               {
-                label: 'Consumo (Este mes)',
+                label: 'Actual (MWh)',
                 data: dailyConsumptionCurrentMonth,
                 borderColor: '#3B82F6',
                 backgroundColor: 'rgba(59, 130, 246, 0.2)',
@@ -174,7 +174,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                 pointRadius: 3,
               },
               {
-                label: 'Consumo (Mes pasado)',
+                label: 'Anterior (MWh)',
                 data: dailyConsumptionPrevMonth,
                 borderColor: '#A1A1AA',
                 backgroundColor: 'rgba(161, 161, 170, 0.2)',
@@ -184,31 +184,51 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
               },
             ],
           });
+          
+          const dailyGenerationCurrentMonth = currentMonthChartsData.map(item => item.daily_generation / 1000000);
+
+          // Datos de generación del mes pasado (AÑADE ESTA LÍNEA)
+          const dailyGenerationPrevMonth = prevMonthChartsData.map(item => item.daily_generation / 1000000); // MWh
 
           // 2. Datos para Generación de los inversores (gráfico de barras)
-          const dailyGenerationData = currentMonthChartsData.map(item => item.daily_generation / 1000000);
           setInverterGenerationData({
             labels: currentMonthLabels,
             datasets: [
               {
-                label: 'Generación (MWh)',
-                data: dailyGenerationData,
-                backgroundColor: '#10B981',
+                label: 'Actual (MWh)', // Cambiar la etiqueta
+                data: dailyGenerationCurrentMonth,
+                backgroundColor: '#10B981', // Verde para el mes actual
                 borderColor: '#059669',
                 borderWidth: 1,
                 borderRadius: 5,
+              },
+              {
+                label: 'Anterior (MWh)', // Nuevo dataset para el mes pasado
+                data: dailyGenerationPrevMonth, // Usa los datos del mes pasado
+                backgroundColor: 'rgba(161, 161, 170, 0.6)', // Un color diferente, por ejemplo, gris con transparencia
+                borderColor: 'rgba(161, 161, 170, 1)',
+                borderWidth: 1,
+                borderRadius: 5,
+                // Si quieres que sea una línea en lugar de barra para el mes pasado, descomenta la siguiente línea:
+                // type: 'line',
+                // tension: 0.4,
+                // pointRadius: 3,
               },
             ],
           });
 
           // 3. Datos para el Balance de energía (gráfico de líneas) - No se modifica
-          const dailyEnergyBalanceData = currentMonthChartsData.map(item => (item.daily_generation / 1000) - (item.daily_consumption / 1000)); // Balance en MWh
+          // Datos para el balance de energía (gráfico de líneas)
+          const dailyEnergyBalanceDataCurrent = currentMonthChartsData.map(item => item.daily_balance / 1000); // Balance en MWh
+          const dailyEnergyBalanceDataPrevious = prevMonthChartsData.map(item => item.daily_balance / 1000); // Balance en MWh
+
+          // Se configura el estado del gráfico de balance de energía con dos datasets
           setEnergyBalanceData({
             labels: currentMonthLabels,
             datasets: [
               {
-                label: 'Balance (MWh)',
-                data: dailyEnergyBalanceData,
+                label: 'Actual (MWh)',
+                data: dailyEnergyBalanceDataCurrent,
                 borderColor: '#8B5CF6',
                 backgroundColor: (context) => {
                   const chart = context.chart;
@@ -223,24 +243,41 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                 fill: true,
                 tension: 0.4,
               },
+              {
+                label: 'Anterior (MWh)',
+                data: dailyEnergyBalanceDataPrevious,
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                fill: false,
+                tension: 0.4,
+              },
             ],
           });
 
           // 4. Datos para Temperatura (gráfico de líneas) - No se modifica
           // Se mantiene la data simulada para que el componente no falle.
           // Se debe crear un nuevo endpoint en la API para obtener esta data.
+          const dailyTempDataCurrent = currentMonthChartsData.map(item => item.avg_daily_temp);
+          const dailyTempDataPrevious = prevMonthChartsData.map(item => item.avg_daily_temp);
+
           setTemperatureTrendsData({
-            labels: ['Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6', 'Día 7'],
+            labels: currentMonthLabels,
             datasets: [
               {
-                label: 'Temp. Prom. (°C)',
-                data: [28, 29, 30, 32, 31, 29, 28],
-                borderColor: '#EF4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                fill: true,
+                label: 'Actual (°C)',
+                data: dailyTempDataCurrent,
+                borderColor: 'rgb(255, 159, 64)',
+                backgroundColor: 'rgba(255, 159, 64, 0.5)',
                 tension: 0.4,
-                pointRadius: 3,
-                pointBackgroundColor: '#EF4444',
+                fill: false,
+              },
+              {
+                label: 'Anterior (°C)',
+                data: dailyTempDataPrevious,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                tension: 0.4,
+                fill: false,
               },
             ],
           });
@@ -406,7 +443,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         />
         {/* Este gráfico usa datos simulados ya que la API no proporciona un endpoint de series de tiempo de temperatura */}
         <ChartCard
-          title="Tendencias de la temperatura media diaria (Simulado)"
+          title="Tendencias de la temperatura media diaria"
           type="line"
           data={temperatureTrendsData}
           options={chartOptions}

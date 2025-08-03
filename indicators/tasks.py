@@ -193,16 +193,11 @@ def calculate_monthly_consumption_kpi():
         logger.error(f"Error calculating monthly KPIs: {e}", exc_info=True)
         raise
 
-# --- TAREA DE CELERY PARA EL CÁLCULO Y ALMACENAMIENTO DE DATOS DIARIOS ---
 @shared_task(bind=True)
 def calculate_and_save_daily_data(self, start_date_str: str, end_date_str: str):
     """
-    Calcula el consumo y la generación diaria para un rango de fechas.
-    Se asegura de utilizar la misma lógica para seleccionar medidores
-    y dispositivos que la tarea de KPI mensual.
-    
-    El cálculo de consumo y generación se realiza en una sola consulta a la
-    base de datos para una mayor eficiencia.
+    Calcula el consumo, la generación, el balance de energía y la temperatura promedio diaria 
+    para un rango de fechas.
     """
     try:
         # 1. Convertir strings a objetos datetime conscientes de la zona horaria UTC
@@ -211,22 +206,26 @@ def calculate_and_save_daily_data(self, start_date_str: str, end_date_str: str):
 
         logger.info(f"Iniciando cálculo histórico desde {start_date.date()} hasta {end_date.date()}")
         
-        # 2. Obtener los dispositivos eléctricos y los inversores activos
+        # 2. Obtener los dispositivos eléctricos, inversores y estaciones meteorológicas
         electric_meters: QuerySet[Device] = Device.objects.filter(category__id=2, is_active=True)
         inverters: QuerySet[Device] = Device.objects.filter(category__id=1, is_active=True)
+        # Se asume que el id de la categoría para estaciones meteorológicas es 3
+        weather_stations: QuerySet[Device] = Device.objects.filter(category__id=3, is_active=True)
         
-        if not electric_meters.exists() and not inverters.exists():
-            logger.warning("No se encontraron medidores eléctricos ni inversores activos.")
+        if not electric_meters.exists() and not inverters.exists() and not weather_stations.exists():
+            logger.warning("No se encontraron medidores eléctricos, inversores ni estaciones meteorológicas activas.")
             return
 
         electric_meter_ids = electric_meters.values_list('id', flat=True)
         inverter_ids = inverters.values_list('id', flat=True)
+        weather_station_ids = weather_stations.values_list('id', flat=True)
 
         # 3. Iterar día por día en el rango especificado
         current_date = start_date
         while current_date <= end_date:
             single_date = current_date.date()
             
+            # Agregación para consumo y generación
             daily_aggregation = Measurement.objects.filter(
                 date__date=single_date,
                 device__in=list(electric_meter_ids) + list(inverter_ids)
@@ -240,20 +239,36 @@ def calculate_and_save_daily_data(self, start_date_str: str, end_date_str: str):
                     filter=Q(device__in=inverter_ids, data__acPower__isnull=False)
                 )
             )
+
+            # Agregación para la temperatura media diaria
+            daily_temp_aggregation = Measurement.objects.filter(
+                date__date=single_date,
+                device__in=weather_station_ids,
+                data__temperature__isnull=False # CAMBIO: Se usa el campo 'temperature'
+            ).aggregate(
+                avg_daily_temp=Avg(Cast(F('data__temperature'), FloatField())) # CAMBIO: Se usa el campo 'temperature'
+            )
             
             daily_consumption_sum = daily_aggregation.get('daily_consumption') or 0.0
             daily_generation_sum = daily_aggregation.get('daily_generation') or 0.0
+            daily_temp_avg = daily_temp_aggregation.get('avg_daily_temp') or 0.0
             
+            # Se convierte la generación de Wh a kWh antes de la resta para uniformar las unidades
+            daily_generation_in_kwh = daily_generation_sum / 1000.0
+            daily_balance_sum = daily_generation_in_kwh - daily_consumption_sum
+
             daily_data_obj, created = DailyChartData.objects.update_or_create(
                 date=single_date,
                 defaults={
                     'daily_consumption': daily_consumption_sum,
-                    'daily_generation': daily_generation_sum
+                    'daily_generation': daily_generation_sum,
+                    'daily_balance': daily_balance_sum,
+                    'avg_daily_temp': daily_temp_avg # Nuevo campo
                 }
             )
             
             action = "creado" if created else "actualizado"
-            logger.info(f"Dato diario {action} para la fecha {single_date}. Consumo: {daily_consumption_sum}, Generación: {daily_generation_sum}")
+            logger.info(f"Dato diario {action} para la fecha {single_date}. Consumo: {daily_consumption_sum}, Generación: {daily_generation_sum}, Balance: {daily_balance_sum}, Temp: {daily_temp_avg}")
 
             current_date += timedelta(days=1)
 

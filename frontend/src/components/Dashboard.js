@@ -47,25 +47,33 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
   const [taskExecuting, setTaskExecuting] = useState(false);
   const [taskStatus, setTaskStatus] = useState('');
 
-  // SVG de los iconos para cada tarjeta. Se definen aquí para pasarlos como props.
-  const boltIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lightbulb" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>;
-  const solarPanelIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>;
-  const scaleIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-scale" aria-hidden="true"><path d="M12 3V19"></path><path d="M6 15H18"></path><path d="M14 11V19"></path><path d="M10 11V19"></path><path d="M12 19L19 12L22 15L12 19"></path><path d="M12 19L5 12L2 15L12 19"></path></svg>;
-  const inverterIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 11-12h-9l1-8z"></path></svg>;
+  // Iconos mejorados más acordes a cada título
+  const consumptionIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 11-12h-9l1-8z"></path></svg>;
+  
+  const generationIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-solar-panel" aria-hidden="true"><path d="M12 2v20"></path><path d="M2 12h20"></path><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"></path><path d="M4 12V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8"></path><path d="M12 6v4"></path><path d="M8 8h8"></path></svg>;
+  
+  const balanceIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-scale" aria-hidden="true"><path d="M12 3V19"></path><path d="M6 15H18"></path><path d="M14 11V19"></path><path d="M10 11V19"></path><path d="M12 19L19 12L22 15L12 19"></path><path d="M12 19L5 12L2 15L12 19"></path></svg>;
+  
+  const invertersIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-cpu" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 1v3"></path><path d="M15 1v3"></path><path d="M9 21v3"></path><path d="M15 21v3"></path><path d="M1 9h3"></path><path d="M1 15h3"></path><path d="M21 9h3"></path><path d="M21 15h3"></path></svg>;
+  
   const powerIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-power" aria-hidden="true"><path d="M12 2v5"></path><path d="M18 13v-2"></path><path d="M6 13v-2"></path><path d="M4.9 16.5l3.5-3.5"></path><path d="M19.1 16.5l-3.5-3.5"></path><path d="M12 19v3"></path><path d="M12 12v4"></path></svg>;
-  const thermometerIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-cloud-rain" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg>;
-  const humidityIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-drizzle" aria-hidden="true"><path d="M8 6v10" strokeDasharray="2 2"></path><path d="M16 6v10" strokeDasharray="2 2"></path><path d="M12 10v12" strokeDasharray="2 2"></path><path d="M4 10v12" strokeDasharray="2 2"></path></svg>;
+  
+  const temperatureIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-thermometer" aria-hidden="true"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"></path></svg>;
+  
+  const humidityIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-droplets" aria-hidden="true"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg>;
+  
   const windIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wind" aria-hidden="true"><path d="M5 8h10"></path><path d="M4 12h16"></path><path d="M8 16h8"></path></svg>;
+  
   const taskIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play-circle" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polygon points="10,8 16,12 10,16"></polygon></svg>;
 
   // Estado con datos simulados para los KPIs
   const [kpiData, setKpiData] = useState({
-    totalConsumption: { title: "Consumo total", value: "Cargando...", unit: "", change: "", status: "normal", icon: boltIcon },
-    totalGeneration: { title: "Generación total", value: "Cargando...", unit: "", change: "", status: "normal", icon: solarPanelIcon },
-    energyBalance: { title: "Equilibrio energético", value: "Cargando...", unit: "", description: "", status: "normal", icon: scaleIcon },
-    activeInverters: { title: "Inversores activos", value: "Cargando...", unit: "", description: "", status: "normal", icon: inverterIcon },
+    totalConsumption: { title: "Consumo total", value: "Cargando...", unit: "", change: "", status: "normal", icon: consumptionIcon },
+    totalGeneration: { title: "Generación total", value: "Cargando...", unit: "", change: "", status: "normal", icon: generationIcon },
+    energyBalance: { title: "Equilibrio energético", value: "Cargando...", unit: "", description: "", status: "normal", icon: balanceIcon },
+    activeInverters: { title: "Inversores activos", value: "Cargando...", unit: "", description: "", status: "normal", icon: invertersIcon },
     averageInstantaneousPower: { title: "Pot. instan. promedio", value: "Cargando...", unit: "W", description: "", status: "normal", icon: powerIcon },
-    avgDailyTemp: { title: "Temp. prom. diaria", value: "Cargando...", unit: "°C", description: "Rango normal", status: "normal", icon: thermometerIcon },
+    avgDailyTemp: { title: "Temp. prom. diaria", value: "Cargando...", unit: "°C", description: "Rango normal", status: "normal", icon: temperatureIcon },
     relativeHumidity: { title: "Humedad relativa", value: "Cargando...", unit: "%", description: "", status: "normal", icon: humidityIcon },
     windSpeed: { title: "Velocidad del viento", value: "Cargando...", unit: "km/h", description: "Moderado", status: "moderado", icon: windIcon },
     taskExecution: { 
@@ -209,22 +217,19 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       }
 
       // --- CALCULAR FECHAS PARA LAS LLAMADAS A LA API ---
-      // Se formatea la fecha como 'YYYY-MM-DD' para la API
       const formatDate = (date) => date.toISOString().split('T')[0];
 
       const today = new Date();
-
-      // Fechas para el mes actual
+      
+      // CORREGIR: Usar solo fechas pasadas y actuales, no futuras
       const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      const currentMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      const currentMonthEnd = today; // Usar hoy en lugar del último día del mes
 
       // Fechas para el mes pasado
       const prevMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       const prevMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
 
-      // --- REALIZAR LLAMADAS A LA API CON MANEJO DE ERRORES INDIVIDUAL ---
-      // Se usa Promise.allSettled para que todas las promesas se resuelvan
-      // sin que un error en una de ellas detenga la ejecución.
+      // --- REALIZAR LLAMADAS A LA API ---
       const [kpisResponse, currentMonthChartsResponse, prevMonthChartsResponse] = await Promise.allSettled([
         fetch(KPI_API_URL, { headers: { 'Authorization': `Token ${authToken}` } }),
         fetch(`${CHART_API_URL}?start_date=${formatDate(currentMonthStart)}&end_date=${formatDate(currentMonthEnd)}`, { headers: { 'Authorization': `Token ${authToken}` } }),
@@ -238,14 +243,14 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         const kpisDataFetched = await kpisResponse.value.json();
         setKpiData(prevKpiData => ({
           ...prevKpiData,
-          totalConsumption: { ...kpisDataFetched.totalConsumption, icon: boltIcon },
-          totalGeneration: { ...kpisDataFetched.totalGeneration, icon: solarPanelIcon },
-          energyBalance: { ...kpisDataFetched.energyBalance, icon: scaleIcon },
+          totalConsumption: { ...kpisDataFetched.totalConsumption, icon: consumptionIcon },
+          totalGeneration: { ...kpisDataFetched.totalGeneration, icon: generationIcon },
+          energyBalance: { ...kpisDataFetched.energyBalance, icon: balanceIcon },
           averageInstantaneousPower: { ...kpisDataFetched.averageInstantaneousPower, icon: powerIcon },
-          avgDailyTemp: { ...kpisDataFetched.avgDailyTemp, icon: thermometerIcon },
+          avgDailyTemp: { ...kpisDataFetched.avgDailyTemp, icon: temperatureIcon },
           relativeHumidity: { ...kpisDataFetched.relativeHumidity, icon: humidityIcon },
           windSpeed: { ...kpisDataFetched.windSpeed, icon: windIcon },
-          activeInverters: { ...kpisDataFetched.activeInverters, icon: inverterIcon },
+          activeInverters: { ...kpisDataFetched.activeInverters, icon: invertersIcon },
           taskExecution: { 
             ...prevKpiData.taskExecution,
             onClick: executeAllTasks,
@@ -265,18 +270,20 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         const prevMonthChartsData = await prevMonthChartsResponse.value.json();
 
         // --- PROCESAMIENTO DE DATOS PARA GRÁFICOS ---
+        // CORREGIR: Ordenar los datos por fecha antes de procesarlos
+        const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
+        const sortedCurrentMonthData = currentMonthChartsData.sort(sortByDate);
+        const sortedPrevMonthData = prevMonthChartsData.sort(sortByDate);
+
         // Extraemos los labels (fechas) y los valores para los datasets
-        const currentMonthLabels = currentMonthChartsData.map(item => {
-          const parts = item.date.split('-'); // item.date es una cadena 'YYYY-MM-DD'
+        const currentMonthLabels = sortedCurrentMonthData.map(item => {
+          const parts = item.date.split('-');
           const year = parseInt(parts[0]);
-          const month = parseInt(parts[1]) - 1; // El mes es base 0 en el constructor de Date
+          const month = parseInt(parts[1]) - 1;
           const day = parseInt(parts[2]);
           
-          // Crear un objeto Date en la zona horaria LOCAL del usuario
-          const date = new Date(year, month, day); 
+          const date = new Date(year, month, day);
           
-          // Formatear como 'DD/MM/YYYY' para la visualización
-          // Aseguramos que el día y el mes tengan dos dígitos
           const formattedDay = String(date.getDate()).padStart(2, '0');
           const formattedMonth = String(date.getMonth() + 1).padStart(2, '0');
           const formattedYear = date.getFullYear();
@@ -284,11 +291,11 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
           return `${formattedDay}/${formattedMonth}/${formattedYear}`;
         });
 
-        // Datos de consumo del mes actual
-        const dailyConsumptionCurrentMonth = currentMonthChartsData.map(item => item.daily_consumption / 1000);
+        // Datos de consumo del mes actual (usar datos ordenados)
+        const dailyConsumptionCurrentMonth = sortedCurrentMonthData.map(item => item.daily_consumption / 1000);
 
-        // Datos de consumo del mes pasado
-        const dailyConsumptionPrevMonth = prevMonthChartsData.map(item => item.daily_consumption / 1000);
+        // Datos de consumo del mes pasado (usar datos ordenados)
+        const dailyConsumptionPrevMonth = sortedPrevMonthData.map(item => item.daily_consumption / 1000);
 
         // 1. Datos para Consumo comparativo (gráfico de líneas)
         setElectricityConsumptionData({
@@ -315,44 +322,37 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
           ],
         });
         
-        const dailyGenerationCurrentMonth = currentMonthChartsData.map(item => item.daily_generation / 1000000);
-
-        // Datos de generación del mes pasado (AÑADE ESTA LÍNEA)
-        const dailyGenerationPrevMonth = prevMonthChartsData.map(item => item.daily_generation / 1000000); // MWh
+        // Usar datos ordenados para generación también
+        const dailyGenerationCurrentMonth = sortedCurrentMonthData.map(item => item.daily_generation / 1000000);
+        const dailyGenerationPrevMonth = sortedPrevMonthData.map(item => item.daily_generation / 1000000);
 
         // 2. Datos para Generación de los inversores (gráfico de barras)
         setInverterGenerationData({
           labels: currentMonthLabels,
           datasets: [
             {
-              label: 'Actual (MWh)', // Cambiar la etiqueta
+              label: 'Actual (MWh)',
               data: dailyGenerationCurrentMonth,
-              backgroundColor: '#10B981', // Verde para el mes actual
+              backgroundColor: '#10B981',
               borderColor: '#059669',
               borderWidth: 1,
               borderRadius: 5,
             },
             {
-              label: 'Anterior (MWh)', // Nuevo dataset para el mes pasado
-              data: dailyGenerationPrevMonth, // Usa los datos del mes pasado
-              backgroundColor: 'rgba(161, 161, 170, 0.6)', // Un color diferente, por ejemplo, gris con transparencia
+              label: 'Anterior (MWh)',
+              data: dailyGenerationPrevMonth,
+              backgroundColor: 'rgba(161, 161, 170, 0.6)',
               borderColor: 'rgba(161, 161, 170, 1)',
               borderWidth: 1,
               borderRadius: 5,
-              // Si quieres que sea una línea en lugar de barra para el mes pasado, descomenta la siguiente línea:
-              // type: 'line',
-              // tension: 0.4,
-              // pointRadius: 3,
             },
           ],
         });
 
-        // 3. Datos para el Balance de energía (gráfico de líneas) - No se modifica
-        // Datos para el balance de energía (gráfico de líneas)
-        const dailyEnergyBalanceDataCurrent = currentMonthChartsData.map(item => item.daily_balance / 1000); // Balance en MWh
-        const dailyEnergyBalanceDataPrevious = prevMonthChartsData.map(item => item.daily_balance / 1000); // Balance en MWh
+        // 3. Datos para el Balance de energía (usar datos ordenados)
+        const dailyEnergyBalanceDataCurrent = sortedCurrentMonthData.map(item => item.daily_balance / 1000);
+        const dailyEnergyBalanceDataPrevious = sortedPrevMonthData.map(item => item.daily_balance / 1000);
 
-        // Se configura el estado del gráfico de balance de energía con dos datasets
         setEnergyBalanceData({
           labels: currentMonthLabels,
           datasets: [
@@ -384,11 +384,9 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
           ],
         });
 
-        // 4. Datos para Temperatura (gráfico de líneas) - No se modifica
-        // Se mantiene la data simulada para que el componente no falle.
-        // Se debe crear un nuevo endpoint en la API para obtener esta data.
-        const dailyTempDataCurrent = currentMonthChartsData.map(item => item.avg_daily_temp);
-        const dailyTempDataPrevious = prevMonthChartsData.map(item => item.avg_daily_temp);
+        // 4. Datos para Temperatura (usar datos ordenados)
+        const dailyTempDataCurrent = sortedCurrentMonthData.map(item => item.avg_daily_temp);
+        const dailyTempDataPrevious = sortedPrevMonthData.map(item => item.avg_daily_temp);
 
         setTemperatureTrendsData({
           labels: currentMonthLabels,
@@ -427,7 +425,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       setError(e.message);
       console.error("Error al cargar datos del dashboard:", e);
     } finally {
-      setLoading(false); // Asegurar que loading se establezca en false
+      setLoading(false);
     }
   };
 
@@ -443,7 +441,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
 }, []); // Se ejecuta solo al montar el componente
 
 
-  // Opciones genéricas para los gráficos (con soporte para zoom/pan y tooltips)
+  // Opciones genéricas para los gráficos (con soporte para zoom/pan y tooltips mejorados)
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -451,6 +449,15 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       legend: {
         display: true,
         position: 'bottom',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: {
+            size: 12,
+            weight: '500'
+          },
+          color: '#374151'
+        }
       },
       title: {
         display: false,
@@ -459,6 +466,14 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         enabled: true,
         mode: 'index',
         intersect: false,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        cornerRadius: 12,
+        padding: 16,
+        displayColors: true,
         callbacks: {
           label: function(context) {
             let label = context.dataset.label || '';
@@ -466,9 +481,15 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
               label += ': ';
             }
             if (context.parsed.y !== null) {
-              label += new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(context.parsed.y);
+              label += new Intl.NumberFormat('es-ES', { 
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+              }).format(context.parsed.y);
             }
             return label;
+          },
+          title: function(context) {
+            return `Fecha: ${context[0].label}`;
           }
         }
       },
@@ -476,31 +497,100 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         pan: {
           enabled: true,
           mode: 'x',
+          modifierKey: 'ctrl',
         },
         zoom: {
           wheel: {
             enabled: true,
+            speed: 0.1,
           },
           pinch: {
             enabled: true
           },
           mode: 'x',
+          drag: {
+            enabled: true,
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderColor: 'rgba(59, 130, 246, 0.3)',
+            borderWidth: 1,
+          }
         }
       }
     },
     scales: {
       x: {
-        type: 'category', // <-- ¡IMPORTANTE! Asegúrate de que esto sea 'category'
+        type: 'category',
         grid: {
-          display: false,
+          display: true,
+          color: 'rgba(0, 0, 0, 0.03)',
+          drawBorder: false,
         },
+        ticks: {
+          color: '#6B7280',
+          font: {
+            size: 11,
+            weight: '500'
+          },
+          maxRotation: 45,
+          minRotation: 0
+        },
+        border: {
+          display: false
+        }
       },
       y: {
         grid: {
-          color: 'rgba(200, 200, 200, 0.1)',
+          color: 'rgba(0, 0, 0, 0.03)',
+          drawBorder: false,
         },
+        ticks: {
+          color: '#6B7280',
+          font: {
+            size: 11,
+            weight: '500'
+          },
+          callback: function(value) {
+            return new Intl.NumberFormat('es-ES', {
+              maximumFractionDigits: 1
+            }).format(value);
+          }
+        },
+        border: {
+          display: false
+        }
       },
     },
+    elements: {
+      point: {
+        hoverRadius: 6,
+        radius: 4,
+        borderWidth: 2,
+      },
+      line: {
+        borderWidth: 3,
+        tension: 0.4,
+      },
+      bar: {
+        borderRadius: 6,
+      }
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false,
+    },
+    animation: {
+      duration: 1000,
+      easing: 'easeInOutQuart',
+    },
+    transitions: {
+      zoom: {
+        animation: {
+          duration: 300,
+          easing: 'easeInOutQuart',
+        }
+      }
+    }
   };
 
   // Si está cargando, muestra un spinner o mensaje
@@ -542,20 +632,23 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       <header className="flex p-8 justify-between items-center mb-2 bg-gray-100 p-4 -mx-8 -mt-8">
         <h1 className="text-3xl font-bold text-gray-800">Visión General</h1>
         <div className="flex items-center space-x-4">
-          <button className="flex items-center bg-white text-gray-800 px-4 py-2 rounded-full text-sm font-medium transition hover:bg-gray-200 shadow-sm">
-            <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+          {/* Aviso estático para período de tiempo */}
+          <div className="flex items-center bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
+            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="9" stroke="currentColor" />
               <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Últimos 30 días
-          </button>
-          <button className="flex items-center bg-white text-gray-800 px-4 py-2 rounded-full text-sm font-medium transition hover:bg-gray-200 shadow-sm">
+          </div>
+          
+          {/* Aviso estático para dispositivos */}
+          <div className="flex items-center bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
             <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
               <rect x="5" y="3" width="14" height="18" rx="2" ry="2" />
               <path d="M9 19h6" strokeLinecap="round" />
             </svg>
             Todos los Dispositivos
-          </button>
+          </div>
         </div>
       </header>
 
@@ -568,33 +661,51 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         })}
       </section>
 
-      {/* Charts Section */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard
-          title="Consumo de Electricidad"
-          type="line"
-          data={electricityConsumptionData}
-          options={chartOptions}
-        />
-        <ChartCard
-          title="Generación de los inversores"
-          type="bar"
-          data={inverterGenerationData}
-          options={chartOptions}
-        />
-        <ChartCard
-          title="Balance de energía"
-          type="line"
-          data={energyBalanceData}
-          options={chartOptions}
-        />
-        {/* Este gráfico usa datos simulados ya que la API no proporciona un endpoint de series de tiempo de temperatura */}
-        <ChartCard
-          title="Tendencias de la temperatura media diaria"
-          type="line"
-          data={temperatureTrendsData}
-          options={chartOptions}
-        />
+      {/* Charts Section con diseño mejorado */}
+      <section className="space-y-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+            <svg className="w-6 h-6 mr-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Análisis de Datos
+          </h2>
+          <div className="text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-full border border-gray-200">
+            <span className="flex items-center">
+              <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Hover sobre los gráficos para ver controles
+            </span>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ChartCard
+            title="Consumo de Electricidad"
+            type="line"
+            data={electricityConsumptionData}
+            options={chartOptions}
+          />
+          <ChartCard
+            title="Generación de los inversores"
+            type="bar"
+            data={inverterGenerationData}
+            options={chartOptions}
+          />
+          <ChartCard
+            title="Balance de energía"
+            type="line"
+            data={energyBalanceData}
+            options={chartOptions}
+          />
+          <ChartCard
+            title="Temperatura media"
+            type="line"
+            data={temperatureTrendsData}
+            options={chartOptions}
+          />
+        </div>
       </section>
     </div>
   );

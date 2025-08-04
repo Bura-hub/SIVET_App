@@ -372,10 +372,10 @@ class ChartDataView(APIView):
                 start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
 
             # Consultar el modelo DailyChartData para obtener los datos precalculados
-            # Se incluyen los nuevos campos 'daily_balance' y 'avg_daily_temp'
+            # AÑADIR ORDENAMIENTO POR FECHA
             chart_data = DailyChartData.objects.filter(
                 date__range=(start_date, end_date)
-            ).values('date', 'daily_consumption', 'daily_generation', 'daily_balance', 'avg_daily_temp')
+            ).order_by('date').values('date', 'daily_consumption', 'daily_generation', 'daily_balance', 'avg_daily_temp')
 
             # Formatear el queryset a una lista de diccionarios con fechas en formato string
             response_data = [
@@ -384,7 +384,7 @@ class ChartDataView(APIView):
                     'daily_consumption': item['daily_consumption'],
                     'daily_generation': item['daily_generation'],
                     'daily_balance': item['daily_balance'],
-                    'avg_daily_temp': item['avg_daily_temp'] # Nuevo campo en la respuesta
+                    'avg_daily_temp': item['avg_daily_temp']
                 }
                 for item in chart_data
             ]

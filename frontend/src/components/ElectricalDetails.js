@@ -13,6 +13,7 @@ import {
   Filler // Importar Filler para áreas de gráfico
 } from 'chart.js';
 import zoomPlugin from 'chartjs-plugin-zoom'
+import TransitionOverlay from './TransitionOverlay';
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -32,6 +33,11 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(localStorage.getItem('electricalDetailsActiveTab') || 'consumptionTrends');
+  
+  // Estados para la animación de transición
+  const [showTransition, setShowTransition] = useState(false);
+  const [transitionType, setTransitionType] = useState('info');
+  const [transitionMessage, setTransitionMessage] = useState('');
   
   useEffect(() => {
     localStorage.setItem('electricalDetailsActiveTab', activeTab);
@@ -184,8 +190,27 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     );
   }
 
+  // Función para mostrar transición
+  const showTransitionAnimation = (type = 'info', message = '', duration = 2000) => {
+    setTransitionType(type);
+    setTransitionMessage(message);
+    setShowTransition(true);
+    
+    setTimeout(() => {
+      setShowTransition(false);
+    }, duration);
+  };
+
+  // Modificar onLogout para incluir animación
+  const handleLogout = () => {
+    showTransitionAnimation('logout', 'Cerrando sesión...', 1500);
+    setTimeout(() => {
+      onLogout();
+    }, 1500);
+  };
+
   return (
-    <div className="flex-1 bg-white rounded-tl-3xl shadow-inner">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="flex p-8 justify-between items-center mb-2 bg-white p-4 -mx-8 -mt-8">
         <h1 className="text-3xl font-bold text-gray-800">Detalles Eléctricos</h1> {/* Updated title */}
@@ -298,6 +323,13 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
           Contenido para Balance Energético
         </div>
       )}
+
+      {/* Overlay de transición */}
+      <TransitionOverlay 
+        show={showTransition}
+        type={transitionType}
+        message={transitionMessage}
+      />
     </div>
   );
 }

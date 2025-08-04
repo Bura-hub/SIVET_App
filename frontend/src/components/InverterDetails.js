@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import TransitionOverlay from './TransitionOverlay';
 
 // Register Chart.js components
 ChartJS.register(
@@ -29,12 +30,36 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(localStorage.getItem('inverterDetailsActiveTab') || 'monthlyGeneration');
 
+  // Estados para la animación de transición
+  const [showTransition, setShowTransition] = useState(false);
+  const [transitionType, setTransitionType] = useState('info');
+  const [transitionMessage, setTransitionMessage] = useState('');
+
   const profileMenuRef = useRef(null);
 
   // Save activeTab to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('inverterDetailsActiveTab', activeTab);
   }, [activeTab]);
+
+  // Función para mostrar transición
+  const showTransitionAnimation = (type = 'info', message = '', duration = 2000) => {
+    setTransitionType(type);
+    setTransitionMessage(message);
+    setShowTransition(true);
+    
+    setTimeout(() => {
+      setShowTransition(false);
+    }, duration);
+  };
+
+  // Modificar onLogout para incluir animación
+  const handleLogout = () => {
+    showTransitionAnimation('logout', 'Cerrando sesión...', 1500);
+    setTimeout(() => {
+      onLogout();
+    }, 1500);
+  };
 
   // Dummy data for charts in Inverter Details
   const monthlyGenerationData = {
@@ -155,7 +180,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
   }
 
   return (
-    <div className="flex-1 bg-white rounded-tl-3xl shadow-inner">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="flex p-8 justify-between items-center mb-2 bg-white p-4 -mx-8 -mt-8">
         <h1 className="text-3xl font-bold text-gray-800">Detalles de Inversores</h1> {/* Updated title */}
@@ -344,6 +369,13 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
           </div>
         </div>
       </section>
+      
+      {/* Overlay de transición */}
+      <TransitionOverlay 
+        show={showTransition}
+        type={transitionType}
+        message={transitionMessage}
+      />
     </div>
   );
 }

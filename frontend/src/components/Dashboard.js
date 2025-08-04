@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { KpiCard } from "./KPI/KpiCard";
 import { ChartCard } from "./KPI/ChartCard";
+import TransitionOverlay from './TransitionOverlay';
 
 // Importaciones desde Chart.js y el plugin de zoom
 import {
@@ -46,6 +47,11 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
   // Estados para el botón de ejecución de tareas
   const [taskExecuting, setTaskExecuting] = useState(false);
   const [taskStatus, setTaskStatus] = useState('');
+
+  // Estado para la animación de transición
+  const [showTransition, setShowTransition] = useState(false);
+  const [transitionType, setTransitionType] = useState('info');
+  const [transitionMessage, setTransitionMessage] = useState('');
 
   // Iconos mejorados más acordes a cada título
   const consumptionIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 11-12h-9l1-8z"></path></svg>;
@@ -107,6 +113,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
 
     setTaskExecuting(true);
     setTaskStatus('Iniciando sincronización...');
+    showTransitionAnimation('info', 'Ejecutando tareas de sincronización...', 3000);
 
     try {
       // 1. Sincronizar metadatos de SCADA (instituciones, categorías, dispositivos)
@@ -171,7 +178,9 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         throw new Error(`Error al calcular datos diarios: ${dailyDataResponse.status}`);
       }
 
-      setTaskStatus(`Todas las tareas iniciadas exitosamente`);
+      // Mostrar éxito
+      showTransitionAnimation('success', 'Tareas ejecutadas exitosamente', 2000);
+      setTaskStatus('Tareas completadas exitosamente');
 
       // 5. Actualizar el estado del KPI
       setKpiData(prevKpiData => ({
@@ -191,7 +200,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
 
     } catch (error) {
       console.error('Error ejecutando tareas:', error);
-      setTaskStatus(`Error: ${error.message}`);
+      showTransitionAnimation('error', 'Error al ejecutar las tareas', 3000);
+      setTaskStatus('Error al ejecutar las tareas');
       
       setKpiData(prevKpiData => ({
         ...prevKpiData,
@@ -440,6 +450,24 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
   }
 }, []); // Se ejecuta solo al montar el componente
 
+  // Función para mostrar transición
+  const showTransitionAnimation = (type = 'info', message = '', duration = 2000) => {
+    setTransitionType(type);
+    setTransitionMessage(message);
+    setShowTransition(true);
+    
+    setTimeout(() => {
+      setShowTransition(false);
+    }, duration);
+  };
+
+  // Modificar onLogout para incluir animación
+  const handleLogout = () => {
+    showTransitionAnimation('logout', 'Cerrando sesión...', 1500);
+    setTimeout(() => {
+      onLogout();
+    }, 1500);
+  };
 
   // Opciones genéricas para los gráficos (con soporte para zoom/pan y tooltips mejorados)
   const chartOptions = {
@@ -628,8 +656,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
   }
 
   return (
-    <div className="flex-1 bg-gray-100 rounded-tl-3xl shadow-inner">
-      <header className="flex p-8 justify-between items-center mb-2 bg-gray-100 p-4 -mx-8 -mt-8">
+    <div className="min-h-screen bg-gray-50">
+      <header className="flex p-8 justify-between items-center bg-gray-100 p-4 -mx-8 -mt-8">
         <h1 className="text-3xl font-bold text-gray-800">Visión General</h1>
         <div className="flex items-center space-x-4">
           {/* Aviso estático para período de tiempo */}
@@ -707,6 +735,12 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
           />
         </div>
       </section>
+      {/* Overlay de transición */}
+      <TransitionOverlay 
+        show={showTransition}
+        type={transitionType}
+        message={transitionMessage}
+      />
     </div>
   );
 }

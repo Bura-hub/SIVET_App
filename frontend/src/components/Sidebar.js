@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import sivetLogo from './sivet-logo.svg';
+import TransitionOverlay from './TransitionOverlay';
 
 function Sidebar({
   username,
@@ -13,6 +14,11 @@ function Sidebar({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
 
+  // Estado para la animación de transición
+  const [showTransition, setShowTransition] = useState(false);
+  const [transitionType, setTransitionType] = useState('info');
+  const [transitionMessage, setTransitionMessage] = useState('');
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
@@ -24,6 +30,17 @@ function Sidebar({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [profileMenuRef]);
+
+  // Función para mostrar transición
+  const showTransitionAnimation = (type = 'info', message = '', duration = 2000) => {
+    setTransitionType(type);
+    setTransitionMessage(message);
+    setShowTransition(true);
+    
+    setTimeout(() => {
+      setShowTransition(false);
+    }, duration);
+  };
 
   const navItems = [
     { 
@@ -108,6 +125,11 @@ function Sidebar({
       inactiveClasses: 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-purple-600'
     },
   ];
+
+  const handleLogoutClick = () => {
+    // La animación se maneja en el componente padre
+    onLogout();
+  };
 
   return (
     <aside className={`bg-white border-r border-gray-200 shadow-lg flex flex-col justify-between transition-all duration-500 ease-in-out ${isSidebarMinimized ? 'w-20' : 'w-72'}`}>
@@ -250,7 +272,7 @@ function Sidebar({
                     <div className="border-t border-slate-200/50 my-3 mx-6"></div>
                     
                     <button 
-                      onClick={onLogout} 
+                      onClick={handleLogoutClick} 
                       className="group flex items-center w-full text-left px-6 py-3 text-sm text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 transition-all duration-300"
                     >
                       <div className="w-10 h-10 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center mr-4 group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300 shadow-sm">
@@ -267,6 +289,12 @@ function Sidebar({
           </div>
         </nav>
       </div>
+      {/* Overlay de transición */}
+      <TransitionOverlay 
+        show={showTransition}
+        type={transitionType}
+        message={transitionMessage}
+      />
     </aside>
   );
 }

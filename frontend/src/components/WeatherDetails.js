@@ -7,11 +7,12 @@ import {
   PointElement,
   LineElement,
   BarElement,
-  ArcElement, // For Doughnut/Pie charts
+  ArcElement,
   Title,
   Tooltip,
   Legend,
 } from 'chart.js';
+import TransitionOverlay from './TransitionOverlay';
 
 // Register Chart.js components
 ChartJS.register(
@@ -20,7 +21,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
-  ArcElement, // Register ArcElement
+  ArcElement,
   Title,
   Tooltip,
   Legend
@@ -31,10 +32,34 @@ function WeatherDetails({ authToken, onLogout, username, isSuperuser, navigateTo
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(localStorage.getItem('weatherDetailsActiveTab') || 'temperatureTrends');
 
+  // Estados para la animación de transición
+  const [showTransition, setShowTransition] = useState(false);
+  const [transitionType, setTransitionType] = useState('info');
+  const [transitionMessage, setTransitionMessage] = useState('');
+
   // Save activeTab to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('weatherDetailsActiveTab', activeTab);
   }, [activeTab]);
+
+  // Función para mostrar transición
+  const showTransitionAnimation = (type = 'info', message = '', duration = 2000) => {
+    setTransitionType(type);
+    setTransitionMessage(message);
+    setShowTransition(true);
+    
+    setTimeout(() => {
+      setShowTransition(false);
+    }, duration);
+  };
+
+  // Modificar onLogout para incluir animación
+  const handleLogout = () => {
+    showTransitionAnimation('logout', 'Cerrando sesión...', 1500);
+    setTimeout(() => {
+      onLogout();
+    }, 1500);
+  };
 
   // Dummy data for charts in Weather Details
   const hourlyTemperatureData = {
@@ -183,7 +208,7 @@ function WeatherDetails({ authToken, onLogout, username, isSuperuser, navigateTo
   }
 
   return (
-    <div className="flex-1 bg-white rounded-tl-3xl shadow-inner">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="flex p-8 justify-between items-center mb-2 bg-white p-4 -mx-8 -mt-8">
         <h1 className="text-3xl font-bold text-gray-800">Detalles del Clima</h1> {/* Updated title */}
@@ -273,6 +298,13 @@ function WeatherDetails({ authToken, onLogout, username, isSuperuser, navigateTo
           </div>
         </div>
       </section>
+      
+      {/* Overlay de transición */}
+      <TransitionOverlay 
+        show={showTransition}
+        type={transitionType}
+        message={transitionMessage}
+      />
     </div>
   );
 }

@@ -560,7 +560,11 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
             weight: '500'
           },
           maxRotation: 45,
-          minRotation: 0
+          minRotation: 0,
+          // Mostrar todas las fechas en el eje X
+          callback: function(value, index, values) {
+            return value;
+          }
         },
         border: {
           display: false

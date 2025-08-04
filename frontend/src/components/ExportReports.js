@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import TransitionOverlay from './TransitionOverlay';
 
 function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo, isSidebarMinimized, setIsSidebarMinimized }) {
-  const [loading, setLoading] = useState(false); // No data fetching for now, so default to false
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
  
   // States for report generation form
@@ -24,6 +24,8 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
     { type: 'Electrical Summary', date: '2023-10-26 10:30 AM', format: 'CSV', status: 'Completed' },
     { type: 'Inverter Log', date: '2023-10-25 04:15 PM', format: 'PDF', status: 'Completed' },
     { type: 'Weather Overview', date: '2023-10-25 09:00 AM', format: 'CSV', status: 'Pending' },
+    { type: 'Energy Balance Report', date: '2023-10-24 02:30 PM', format: 'Excel', status: 'Completed' },
+    { type: 'System Performance', date: '2023-10-23 11:45 AM', format: 'PDF', status: 'Completed' },
   ];
 
   const handleExport = (format) => {
@@ -61,31 +63,20 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
       <header className="flex p-8 justify-between items-center bg-gray-100 p-4 -mx-8 -mt-8">
         <h1 className="text-3xl font-bold text-gray-800">Exportar Reportes</h1>
         <div className="flex items-center space-x-4">
-          {/* Aviso estático para período de tiempo */}
-          <div className="flex items-center bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
-            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" />
-              <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Últimos 30 días
-          </div>
-          
-          {/* Aviso estático para ubicación */}
-          <div className="flex items-center bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
-            <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-              <circle cx="12" cy="9" r="2.5" fill="currentColor" />
-            </svg>
-            Ubicación: Todas
-          </div>
-
-          {/* Aviso estático para dispositivos */}
+          {/* Aviso estático para el generador de reportes */}
           <div className="flex items-center bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 text-purple-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
             <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <rect x="5" y="3" width="14" height="18" rx="2" ry="2" />
-              <path d="M9 19h6" strokeLinecap="round" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Dispositivo: Todos
+            Generador de Reportes
+          </div>
+          
+          {/* Aviso estático para formatos disponibles */}
+          <div className="flex items-center bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
+            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Formatos: CSV, PDF, Excel
           </div>
         </div>
       </header>
@@ -112,6 +103,8 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
                 <option>Electrical Summary</option>
                 <option>Inverter Log</option>
                 <option>Weather Overview</option>
+                <option>Energy Balance Report</option>
+                <option>System Performance</option>
                 <option>Custom Report</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -290,13 +283,13 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
                   Estado
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
-                  Descargar
+                  Acciones
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {previousExports.map((exportItem, index) => (
-                <tr key={index} className="hover:bg-gray-50">
+                <tr key={index} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {exportItem.type}
                   </td>
@@ -304,7 +297,13 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
                     {exportItem.date}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {exportItem.format}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      exportItem.format === 'CSV' ? 'bg-green-100 text-green-800' :
+                      exportItem.format === 'PDF' ? 'bg-red-100 text-red-800' :
+                      'bg-blue-100 text-blue-800'
+                    }`}>
+                      {exportItem.format}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -314,7 +313,18 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <a href="#" className="text-purple-600 hover:text-purple-900 transition-colors">Descargar</a>
+                    <div className="flex space-x-2">
+                      <button className="text-purple-600 hover:text-purple-900 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      </button>
+                      <button className="text-gray-600 hover:text-gray-900 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

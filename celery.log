@@ -588,3 +588,121 @@ INFO 2025-08-03 20:16:07,007 tasks 33528 25820 Días procesados: 4
 INFO 2025-08-03 20:16:07,007 tasks 33528 25820 Registros creados: 0
 INFO 2025-08-03 20:16:07,008 tasks 33528 25820 Registros actualizados: 4
 INFO 2025-08-03 20:16:07,008 tasks 33528 25820 === TAREA COMPLETADA: calculate_and_save_daily_data ===
+INFO 2025-08-03 20:46:47,293 tasks 33528 21304 === INICIANDO TAREA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 20:46:47,294 tasks 33528 21304 Fecha actual: 2025-08-04, día del mes: 4
+INFO 2025-08-03 20:46:47,294 tasks 33528 21304 Rango mes actual: 2025-08-01 -> 2025-08-04
+INFO 2025-08-03 20:46:47,294 tasks 33528 21304 Rango mes anterior: 2025-07-01 -> 2025-07-04
+INFO 2025-08-03 20:46:47,294 tasks 33528 21304 Dispositivos encontrados:
+INFO 2025-08-03 20:46:47,296 tasks 33528 21304   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 20:46:47,296 tasks 33528 21304   - Inversores: 6 dispositivos
+INFO 2025-08-03 20:46:47,298 tasks 33528 21304   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 20:46:47,298 tasks 33528 21304 Calculando consumo total (medidores eléctricos)...
+INFO 2025-08-03 20:46:49,551 tasks 33528 21304 Consumo total - Mes actual: 20060.65 Wh, Mes anterior: 30993.65 Wh
+INFO 2025-08-03 20:46:49,551 tasks 33528 21304 Calculando generación total (inversores)...
+INFO 2025-08-03 20:46:51,742 tasks 33528 21304 Generación total - Mes actual: 20787006.00 Wh, Mes anterior: 38507226.00 Wh
+INFO 2025-08-03 20:46:51,743 tasks 33528 21304 Calculando potencia instantánea promedio (inversores)...
+INFO 2025-08-03 20:46:54,004 tasks 33528 21304 Potencia instantánea promedio - Mes actual: 2516.28 W, Mes anterior: 3192.71 W
+INFO 2025-08-03 20:46:54,004 tasks 33528 21304 Calculando temperatura promedio diaria (estaciones meteorológicas)...
+INFO 2025-08-03 20:46:55,769 tasks 33528 21304 Temperatura promedio diaria - Mes actual: 14.75 °C, Mes anterior: 14.45 °C
+INFO 2025-08-03 20:46:55,769 tasks 33528 21304 Calculando humedad relativa promedio (estaciones meteorológicas)...
+INFO 2025-08-03 20:46:57,818 tasks 33528 21304 Humedad relativa promedio - Mes actual: 73.21 %RH, Mes anterior: 75.20 %RH
+INFO 2025-08-03 20:46:57,819 tasks 33528 21304 Calculando velocidad del viento promedio (estaciones meteorológicas)...
+INFO 2025-08-03 20:46:59,719 tasks 33528 21304 Velocidad del viento promedio - Mes actual: 1.27 km/h, Mes anterior: 1.53 km/h
+INFO 2025-08-03 20:46:59,720 tasks 33528 21304 Guardando KPIs mensuales en la base de datos...
+INFO 2025-08-03 20:46:59,732 tasks 33528 21304 === TAREA COMPLETADA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 20:46:59,732 tasks 33528 21304 Todos los KPIs mensuales han sido calculados y actualizados exitosamente.
+INFO 2025-08-03 20:46:59,763 tasks 33528 3680 === INICIANDO TAREA: calculate_and_save_daily_data ===
+INFO 2025-08-03 20:46:59,764 tasks 33528 3680 Rango de fechas a procesar: 2025-08-01 -> 2025-08-04
+INFO 2025-08-03 20:46:59,764 tasks 33528 3680 Dispositivos encontrados para cálculo diario:
+INFO 2025-08-03 20:46:59,765 tasks 33528 3680   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 20:46:59,766 tasks 33528 3680   - Inversores: 6 dispositivos
+INFO 2025-08-03 20:46:59,766 tasks 33528 3680   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 20:46:59,767 tasks 33528 3680 Iniciando procesamiento de 4 días...
+INFO 2025-08-03 20:46:59,767 tasks 33528 3680 Procesando fecha: 2025-08-01
+INFO 2025-08-03 20:47:01,493 tasks 33528 3680   Dato diario actualizado para 2025-08-01:
+INFO 2025-08-03 20:47:01,493 tasks 33528 3680     - Consumo: 11100.57 Wh
+INFO 2025-08-03 20:47:01,494 tasks 33528 3680     - Generación: 6309032.00 Wh
+INFO 2025-08-03 20:47:01,494 tasks 33528 3680     - Balance: -4791.54 kWh
+INFO 2025-08-03 20:47:01,494 tasks 33528 3680     - Temperatura promedio: 14.00 °C
+INFO 2025-08-03 20:47:01,494 tasks 33528 3680 Procesando fecha: 2025-08-02
+INFO 2025-08-03 20:47:03,366 tasks 33528 3680   Dato diario actualizado para 2025-08-02:
+INFO 2025-08-03 20:47:03,366 tasks 33528 3680     - Consumo: 6659.41 Wh
+INFO 2025-08-03 20:47:03,366 tasks 33528 3680     - Generación: 7985725.00 Wh
+INFO 2025-08-03 20:47:03,367 tasks 33528 3680     - Balance: 1326.32 kWh
+INFO 2025-08-03 20:47:03,367 tasks 33528 3680     - Temperatura promedio: 15.32 °C
+INFO 2025-08-03 20:47:03,367 tasks 33528 3680 Procesando fecha: 2025-08-03
+INFO 2025-08-03 20:47:05,234 tasks 33528 3680   Dato diario actualizado para 2025-08-03:
+INFO 2025-08-03 20:47:05,235 tasks 33528 3680     - Consumo: 2300.68 Wh
+INFO 2025-08-03 20:47:05,235 tasks 33528 3680     - Generación: 6492249.00 Wh
+INFO 2025-08-03 20:47:05,235 tasks 33528 3680     - Balance: 4191.57 kWh
+INFO 2025-08-03 20:47:05,235 tasks 33528 3680     - Temperatura promedio: 15.03 °C
+INFO 2025-08-03 20:47:05,235 tasks 33528 3680 Procesando fecha: 2025-08-04
+INFO 2025-08-03 20:47:07,035 tasks 33528 3680   Dato diario actualizado para 2025-08-04:
+INFO 2025-08-03 20:47:07,035 tasks 33528 3680     - Consumo: 0.00 Wh
+INFO 2025-08-03 20:47:07,035 tasks 33528 3680     - Generación: 0.00 Wh
+INFO 2025-08-03 20:47:07,035 tasks 33528 3680     - Balance: 0.00 kWh
+INFO 2025-08-03 20:47:07,036 tasks 33528 3680     - Temperatura promedio: 0.00 °C
+INFO 2025-08-03 20:47:07,036 tasks 33528 3680 === RESUMEN DE PROCESAMIENTO ===
+INFO 2025-08-03 20:47:07,036 tasks 33528 3680 Días procesados: 4
+INFO 2025-08-03 20:47:07,036 tasks 33528 3680 Registros creados: 0
+INFO 2025-08-03 20:47:07,036 tasks 33528 3680 Registros actualizados: 4
+INFO 2025-08-03 20:47:07,036 tasks 33528 3680 === TAREA COMPLETADA: calculate_and_save_daily_data ===
+INFO 2025-08-03 21:02:52,689 tasks 33528 34140 === INICIANDO TAREA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 21:02:52,689 tasks 33528 34140 Fecha actual: 2025-08-04, día del mes: 4
+INFO 2025-08-03 21:02:52,690 tasks 33528 34140 Rango mes actual: 2025-08-01 -> 2025-08-04
+INFO 2025-08-03 21:02:52,690 tasks 33528 34140 Rango mes anterior: 2025-07-01 -> 2025-07-04
+INFO 2025-08-03 21:02:52,691 tasks 33528 34140 Dispositivos encontrados:
+INFO 2025-08-03 21:02:52,692 tasks 33528 34140   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 21:02:52,693 tasks 33528 34140   - Inversores: 6 dispositivos
+INFO 2025-08-03 21:02:52,694 tasks 33528 34140   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 21:02:52,694 tasks 33528 34140 Calculando consumo total (medidores eléctricos)...
+INFO 2025-08-03 21:02:54,581 tasks 33528 34140 Consumo total - Mes actual: 20060.65 Wh, Mes anterior: 30993.65 Wh
+INFO 2025-08-03 21:02:54,581 tasks 33528 34140 Calculando generación total (inversores)...
+INFO 2025-08-03 21:02:56,337 tasks 33528 34140 Generación total - Mes actual: 20787006.00 Wh, Mes anterior: 38507226.00 Wh
+INFO 2025-08-03 21:02:56,337 tasks 33528 34140 Calculando potencia instantánea promedio (inversores)...
+INFO 2025-08-03 21:02:58,212 tasks 33528 34140 Potencia instantánea promedio - Mes actual: 2516.28 W, Mes anterior: 3192.71 W
+INFO 2025-08-03 21:02:58,212 tasks 33528 34140 Calculando temperatura promedio diaria (estaciones meteorológicas)...
+INFO 2025-08-03 21:03:00,008 tasks 33528 34140 Temperatura promedio diaria - Mes actual: 14.75 °C, Mes anterior: 14.45 °C
+INFO 2025-08-03 21:03:00,008 tasks 33528 34140 Calculando humedad relativa promedio (estaciones meteorológicas)...
+INFO 2025-08-03 21:03:01,769 tasks 33528 34140 Humedad relativa promedio - Mes actual: 73.21 %RH, Mes anterior: 75.20 %RH
+INFO 2025-08-03 21:03:01,769 tasks 33528 34140 Calculando velocidad del viento promedio (estaciones meteorológicas)...
+INFO 2025-08-03 21:03:03,519 tasks 33528 34140 Velocidad del viento promedio - Mes actual: 1.27 km/h, Mes anterior: 1.53 km/h
+INFO 2025-08-03 21:03:03,520 tasks 33528 34140 Guardando KPIs mensuales en la base de datos...
+INFO 2025-08-03 21:03:03,531 tasks 33528 34140 === TAREA COMPLETADA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 21:03:03,532 tasks 33528 34140 Todos los KPIs mensuales han sido calculados y actualizados exitosamente.
+INFO 2025-08-03 21:03:03,565 tasks 33528 23500 === INICIANDO TAREA: calculate_and_save_daily_data ===
+INFO 2025-08-03 21:03:03,565 tasks 33528 23500 Rango de fechas a procesar: 2025-08-01 -> 2025-08-04
+INFO 2025-08-03 21:03:03,566 tasks 33528 23500 Dispositivos encontrados para cálculo diario:
+INFO 2025-08-03 21:03:03,567 tasks 33528 23500   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 21:03:03,568 tasks 33528 23500   - Inversores: 6 dispositivos
+INFO 2025-08-03 21:03:03,568 tasks 33528 23500   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 21:03:03,569 tasks 33528 23500 Iniciando procesamiento de 4 días...
+INFO 2025-08-03 21:03:03,569 tasks 33528 23500 Procesando fecha: 2025-08-01
+INFO 2025-08-03 21:03:05,298 tasks 33528 23500   Dato diario actualizado para 2025-08-01:
+INFO 2025-08-03 21:03:05,299 tasks 33528 23500     - Consumo: 11100.57 Wh
+INFO 2025-08-03 21:03:05,299 tasks 33528 23500     - Generación: 6309032.00 Wh
+INFO 2025-08-03 21:03:05,299 tasks 33528 23500     - Balance: -4791.54 kWh
+INFO 2025-08-03 21:03:05,299 tasks 33528 23500     - Temperatura promedio: 14.00 °C
+INFO 2025-08-03 21:03:05,299 tasks 33528 23500 Procesando fecha: 2025-08-02
+INFO 2025-08-03 21:03:07,197 tasks 33528 23500   Dato diario actualizado para 2025-08-02:
+INFO 2025-08-03 21:03:07,197 tasks 33528 23500     - Consumo: 6659.41 Wh
+INFO 2025-08-03 21:03:07,197 tasks 33528 23500     - Generación: 7985725.00 Wh
+INFO 2025-08-03 21:03:07,198 tasks 33528 23500     - Balance: 1326.32 kWh
+INFO 2025-08-03 21:03:07,198 tasks 33528 23500     - Temperatura promedio: 15.32 °C
+INFO 2025-08-03 21:03:07,198 tasks 33528 23500 Procesando fecha: 2025-08-03
+INFO 2025-08-03 21:03:09,069 tasks 33528 23500   Dato diario actualizado para 2025-08-03:
+INFO 2025-08-03 21:03:09,070 tasks 33528 23500     - Consumo: 2300.68 Wh
+INFO 2025-08-03 21:03:09,070 tasks 33528 23500     - Generación: 6492249.00 Wh
+INFO 2025-08-03 21:03:09,070 tasks 33528 23500     - Balance: 4191.57 kWh
+INFO 2025-08-03 21:03:09,071 tasks 33528 23500     - Temperatura promedio: 15.03 °C
+INFO 2025-08-03 21:03:09,071 tasks 33528 23500 Procesando fecha: 2025-08-04
+INFO 2025-08-03 21:03:11,122 tasks 33528 23500   Dato diario actualizado para 2025-08-04:
+INFO 2025-08-03 21:03:11,122 tasks 33528 23500     - Consumo: 0.00 Wh
+INFO 2025-08-03 21:03:11,122 tasks 33528 23500     - Generación: 0.00 Wh
+INFO 2025-08-03 21:03:11,122 tasks 33528 23500     - Balance: 0.00 kWh
+INFO 2025-08-03 21:03:11,122 tasks 33528 23500     - Temperatura promedio: 0.00 °C
+INFO 2025-08-03 21:03:11,122 tasks 33528 23500 === RESUMEN DE PROCESAMIENTO ===
+INFO 2025-08-03 21:03:11,123 tasks 33528 23500 Días procesados: 4
+INFO 2025-08-03 21:03:11,123 tasks 33528 23500 Registros creados: 0
+INFO 2025-08-03 21:03:11,123 tasks 33528 23500 Registros actualizados: 4
+INFO 2025-08-03 21:03:11,123 tasks 33528 23500 === TAREA COMPLETADA: calculate_and_save_daily_data ===

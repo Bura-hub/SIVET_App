@@ -1,4 +1,6 @@
+// Importaciones necesarias de React y componentes personalizados
 import React, { useState, useEffect, useRef } from 'react';
+import TransitionOverlay from './TransitionOverlay';
 
 function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo, isSidebarMinimized, setIsSidebarMinimized }) {
   const [loading, setLoading] = useState(false); // No data fetching for now, so default to false
@@ -11,6 +13,11 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
   const [location, setLocation] = useState('All Locations');
   const [device, setDevice] = useState('All Devices');
   const [userRole, setUserRole] = useState('All Roles');
+
+  // Estados para la animación de transición
+  const [showTransition, setShowTransition] = useState(false);
+  const [transitionType, setTransitionType] = useState('info');
+  const [transitionMessage, setTransitionMessage] = useState('');
 
   // Dummy data for previous exports
   const previousExports = [
@@ -26,23 +33,71 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
     setTimeout(() => {
       setLoading(false);
       // In a real app, you would trigger a backend export and potentially download the file
-      alert(`Reporte de ${reportType} exportado como ${format}! (Simulado)`);
+      showTransitionAnimation('success', `Reporte de ${reportType} exportado como ${format}!`, 2000);
+    }, 1500);
+  };
+
+  // Función para mostrar transición
+  const showTransitionAnimation = (type = 'info', message = '', duration = 2000) => {
+    setTransitionType(type);
+    setTransitionMessage(message);
+    setShowTransition(true);
+    
+    setTimeout(() => {
+      setShowTransition(false);
+    }, duration);
+  };
+
+  // Modificar onLogout para incluir animación
+  const handleLogout = () => {
+    showTransitionAnimation('logout', 'Cerrando sesión...', 1500);
+    setTimeout(() => {
+      onLogout();
     }, 1500);
   };
 
   return (
-    <div className="flex-1 bg-white rounded-tl-3xl shadow-inner">
-      {/* Header */}
-      <header className="flex p-8 justify-between items-center mb-8 bg-white p-4 -mx-8 -mt-8">
-        <h1 className="text-3xl font-bold text-gray-800">Exportar Reportes</h1> {/* Updated title */}
+    <div className="min-h-screen bg-gray-50">
+      <header className="flex p-8 justify-between items-center bg-gray-100 p-4 -mx-8 -mt-8">
+        <h1 className="text-3xl font-bold text-gray-800">Exportar Reportes</h1>
         <div className="flex items-center space-x-4">
-          {/* No specific filters shown in mockup for export reports header, so keeping it clean */}
+          {/* Aviso estático para período de tiempo */}
+          <div className="flex items-center bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
+            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" />
+              <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Últimos 30 días
+          </div>
+          
+          {/* Aviso estático para ubicación */}
+          <div className="flex items-center bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
+            <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+              <circle cx="12" cy="9" r="2.5" fill="currentColor" />
+            </svg>
+            Ubicación: Todas
+          </div>
+
+          {/* Aviso estático para dispositivos */}
+          <div className="flex items-center bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 text-purple-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
+            <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+              <rect x="5" y="3" width="14" height="18" rx="2" ry="2" />
+              <path d="M9 19h6" strokeLinecap="round" />
+            </svg>
+            Dispositivo: Todos
+          </div>
         </div>
       </header>
 
       {/* Generate New Report Section */}
       <section className="bg-gray-100 p-6 rounded-xl shadow-md mb-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Generar Nuevo Reporte</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+          <svg className="w-6 h-6 mr-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Generar Nuevo Reporte
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           {/* Report Type */}
           <div>
@@ -50,7 +105,7 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
             <div className="relative">
               <select
                 id="reportType"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md shadow-sm"
                 value={reportType}
                 onChange={(e) => setReportType(e.target.value)}
               >
@@ -74,7 +129,7 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
               <input
                 type="date"
                 id="startDate"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md shadow-sm"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
@@ -93,7 +148,7 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
               <input
                 type="date"
                 id="endDate"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md shadow-sm"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
               />
@@ -111,13 +166,14 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
             <div className="relative">
               <select
                 id="location"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md shadow-sm"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
               >
                 <option>All Locations</option>
-                <option>Site A</option>
-                <option>Site B</option>
+                <option>Location A</option>
+                <option>Location B</option>
+                <option>Location C</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                 <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -133,13 +189,14 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
             <div className="relative">
               <select
                 id="device"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md shadow-sm"
                 value={device}
                 onChange={(e) => setDevice(e.target.value)}
               >
                 <option>All Devices</option>
-                <option>Inverter 1</option>
-                <option>Meter 1</option>
+                <option>Device 1</option>
+                <option>Device 2</option>
+                <option>Device 3</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                 <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -155,13 +212,14 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
             <div className="relative">
               <select
                 id="userRole"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md shadow-sm"
                 value={userRole}
                 onChange={(e) => setUserRole(e.target.value)}
               >
                 <option>All Roles</option>
                 <option>Admin</option>
                 <option>Operator</option>
+                <option>Viewer</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                 <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -172,58 +230,80 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
           </div>
         </div>
 
+        {/* Export Buttons */}
         <div className="flex space-x-4">
           <button
             onClick={() => handleExport('CSV')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-md"
             disabled={loading}
+            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? 'Exportando...' : 'Exportar como CSV'}
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            {loading ? 'Exportando...' : 'Exportar CSV'}
           </button>
           <button
             onClick={() => handleExport('PDF')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-md"
             disabled={loading}
+            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? 'Exportando...' : 'Exportar como PDF'}
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            {loading ? 'Exportando...' : 'Exportar PDF'}
+          </button>
+          <button
+            onClick={() => handleExport('Excel')}
+            disabled={loading}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            {loading ? 'Exportando...' : 'Exportar Excel'}
           </button>
         </div>
       </section>
 
       {/* Previous Exports Section */}
       <section className="bg-gray-100 p-6 rounded-xl shadow-md">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Exportaciones Anteriores</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+          <svg className="w-6 h-6 mr-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Exportaciones Anteriores
+        </h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-100">
+            <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
                   Tipo de Reporte
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
                   Fecha
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
                   Formato
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
                   Estado
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
                   Descargar
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-gray-100 divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-200">
               {previousExports.map((exportItem, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-normal text-gray-900">
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {exportItem.type}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-normal">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {exportItem.date}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-normal">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {exportItem.format}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -234,7 +314,7 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <a href="#" className="text-blue-600 hover:text-blue-900">Descargar</a>
+                    <a href="#" className="text-purple-600 hover:text-purple-900 transition-colors">Descargar</a>
                   </td>
                 </tr>
               ))}
@@ -242,6 +322,13 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
           </table>
         </div>
       </section>
+
+      {/* Overlay de transición */}
+      <TransitionOverlay 
+        show={showTransition}
+        type={transitionType}
+        message={transitionMessage}
+      />
     </div>
   );
 }

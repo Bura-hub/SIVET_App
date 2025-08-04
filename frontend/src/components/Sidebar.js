@@ -1,34 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import sivetLogo from './sivet-logo.svg'; // Importa el logo de la aplicación
+import sivetLogo from './sivet-logo.svg';
 
-// Componente Sidebar que recibe props para gestionar estado y navegación
 function Sidebar({
   username,
   isSuperuser,
   isSidebarMinimized,
   setIsSidebarMinimized,
   navigateTo,
-  onLogout, // onLogout ahora incluye la animación desde App.js
-  currentPage // Para determinar qué elemento de navegación está activo
+  onLogout,
+  currentPage
 }) {
-  // Estado para mostrar u ocultar el menú de perfil
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const profileMenuRef = useRef(null); // Referencia para detectar clics fuera del menú
+  const profileMenuRef = useRef(null);
 
-  // Hook para cerrar el menú de perfil si se hace clic fuera de él
   useEffect(() => {
     function handleClickOutside(event) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-        setShowProfileMenu(false); // Cierra el menú si se clickea fuera
+        setShowProfileMenu(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside); // Añade listener
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside); // Limpia listener
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [profileMenuRef]);
 
-  // Elementos de navegación con nombre, página asociada, ícono y clases
   const navItems = [
     { 
       name: 'Inicio', 
@@ -38,8 +34,8 @@ function Sidebar({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
         </svg>
       ),
-      activeClasses: 'bg-blue-100 text-blue-600 font-semibold hover:text-blue-700',
-      inactiveClasses: 'text-gray-600 hover:bg-gray-50 hover:text-blue-700'
+      activeClasses: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25',
+      inactiveClasses: 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-blue-600'
     },
     { 
       name: 'Medidores', 
@@ -49,8 +45,8 @@ function Sidebar({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
         </svg>
       ),
-      activeClasses: 'bg-green-100 text-green-600 font-semibold hover:text-green-700',
-      inactiveClasses: 'text-gray-600 hover:bg-gray-50 hover:text-green-700'
+      activeClasses: 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/25',
+      inactiveClasses: 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-green-600'
     },
     { 
       name: 'Inversores', 
@@ -72,8 +68,8 @@ function Sidebar({
           <path d="M17 8h.01"></path>
         </svg>
       ),
-      activeClasses: 'bg-red-100 text-red-600 font-semibold hover:text-red-700',
-      inactiveClasses: 'text-gray-600 hover:bg-gray-50 hover:text-red-700'
+      activeClasses: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25',
+      inactiveClasses: 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-red-600'
     },
     { 
       name: 'Estaciones', 
@@ -97,8 +93,8 @@ function Sidebar({
           <path d="M4 10a8 8 0 0116 0"></path>
         </svg>
       ),
-      activeClasses: 'bg-orange-100 text-orange-600 font-semibold hover:text-orange-700',
-      inactiveClasses: 'text-gray-600 hover:bg-gray-50 hover:text-orange-700'
+      activeClasses: 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25',
+      inactiveClasses: 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-orange-600'
     },
     { 
       name: 'Exportar Reportes', 
@@ -108,114 +104,168 @@ function Sidebar({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg>
       ),
-      activeClasses: 'bg-blue-100 text-blue-600 font-semibold hover:text-blue-700',
-      inactiveClasses: 'text-gray-600 hover:bg-gray-50 hover:text-blue-700'
+      activeClasses: 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25',
+      inactiveClasses: 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-purple-600'
     },
   ];
 
-
   return (
-    // Contenedor principal del sidebar
-    <aside className={`bg-white p-6 shadow-lg flex flex-col justify-between transition-all duration-300 ${isSidebarMinimized ? 'w-20 items-center overflow-hidden' : 'w-64'}`}>
-      <div>
-        {/* Logo y botón de minimizado */}
-        <div className={`flex items-center mb-3 w-full transition-all duration-300 ${isSidebarMinimized ? 'justify-center' : 'justify-between'}`}>
+    <aside className={`bg-white border-r border-gray-200 shadow-lg flex flex-col justify-between transition-all duration-500 ease-in-out ${isSidebarMinimized ? 'w-20' : 'w-72'}`}>
+      {/* Header con logo y botón de toggle */}
+      <div className="p-6 border-b border-gray-100">
+        <div className={`flex items-center transition-all duration-300 ${isSidebarMinimized ? 'justify-center' : 'justify-between'}`}>
           {!isSidebarMinimized && (
-            <img
-              src={sivetLogo}
-              alt="SIVET Logo"
-              className="max-w-[190px] h-auto object-contain"
-            />
+            <div className="flex items-center space-x-3">
+              <img
+                src={sivetLogo}
+                alt="SIVET Logo"
+                className="max-w-[200px] h-auto object-contain"
+              />
+            </div>
           )}
           <button
             onClick={() => setIsSidebarMinimized(!isSidebarMinimized)}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 hover:shadow-md"
             title={isSidebarMinimized ? "Expandir menú" : "Minimizar menú"}
           >
             {isSidebarMinimized ? (
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M6 5l7 7-7 7"></path></svg>
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M6 5l7 7-7 7"></path>
+              </svg>
             ) : (
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+              </svg>
             )}
           </button>
         </div>
+      </div>
 
-        {/* Navegación */}
+      {/* Navegación principal */}
+      <div className="flex-1 px-4 py-6">
         <nav>
-          <ul>
+          <div className="space-y-2">
             {navItems.map((item) => (
-              <li key={item.page} className="mb-2">
+              <div key={item.page} className="relative">
                 <a
                   href="#"
-                  className={`flex items-center p-3 rounded-xl transition-colors ${isSidebarMinimized ? 'justify-center' : ''} ${
+                  className={`flex items-center p-4 rounded-xl transition-all duration-300 transform hover:scale-105 ${isSidebarMinimized ? 'justify-center' : ''} ${
                     currentPage === item.page ? item.activeClasses : item.inactiveClasses
                   }`}
                   onClick={() => navigateTo(item.page)}
                 >
                   {item.icon}
-                  <span className={`transition-opacity duration-300 ${isSidebarMinimized ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
+                  <span className={`font-medium transition-all duration-300 ${isSidebarMinimized ? 'opacity-0 w-0' : 'opacity-100 w-auto ml-3'}`}>
                     {item.name}
                   </span>
                 </a>
-              </li>
+              </div>
             ))}
-          </ul>
-        </nav>
-
-        {/* Gestor de Perfil debajo de Exportar Reportes */}
-        <div
-          ref={profileMenuRef}
-          className={`relative flex items-center p-2 mt-4 rounded-full bg-gray-200 cursor-pointer hover:bg-green-100 transition-colors ${
-            isSidebarMinimized ? 'justify-center' : ''
-          }`}
-          onClick={() => setShowProfileMenu(!showProfileMenu)}
-        >
-          <img
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(username || 'Guest')}&background=4F46E5&color=ffffff&size=80&bold=true`}
-            alt={`Avatar de ${username || 'Invitado'}`}
-            className={`w-10 h-10 rounded-full object-cover shadow-sm ${isSidebarMinimized ? '' : 'mr-3'}`}
-          />
-          <div
-            className={`transition-all duration-300 ease-in-out overflow-hidden ${
-              isSidebarMinimized ? 'max-w-0 opacity-0' : 'max-w-xs opacity-100'
-            }`}
-          >
-            <p className="font-semibold text-gray-800 whitespace-nowrap">
-              {username || 'Invitado'}
-            </p>
-            <p className="text-xs text-gray-500 whitespace-nowrap">
-              {isSuperuser ? 'Administrador' : 'Usuario Aliado'}
-            </p>
-          </div>
-          {!isSidebarMinimized && (
-            <svg
-              className={`w-4 h-4 ml-auto text-gray-600 transition-transform duration-200 ${
-                showProfileMenu ? 'rotate-180' : ''
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          )}
-
-          {showProfileMenu && (
+            
+            {/* Separador visual */}
+            <div className="my-4 border-t border-gray-200"></div>
+            
+            {/* Administración del Perfil */}
             <div
-              className={`absolute bottom-full mb-2 ${
-                isSidebarMinimized ? 'left-1/2 -translate-x-1/2 w-32' : 'left-0 w-full'
-              } bg-white rounded-lg shadow-lg py-2 z-10 transition-opacity duration-200 ease-in-out`}
+              ref={profileMenuRef}
+              className={`relative flex items-center p-4 rounded-2xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 cursor-pointer hover:from-blue-100 hover:via-indigo-100 hover:to-purple-100 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-500 border border-slate-200/50 hover:border-blue-300/50 ${isSidebarMinimized ? 'justify-center p-3' : ''}`}
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
             >
-              <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Configuración de Perfil</a>
-              <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ayuda y Soporte</a>
-              <div className="border-t border-gray-200 my-1"></div>
-              <button onClick={onLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors">
-                Cerrar Sesión
-              </button>
+              <div className="relative">
+                <div className={`rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 ${isSidebarMinimized ? 'w-10 h-10' : 'w-12 h-12'}`}>
+                  <span className="text-white font-bold text-lg">
+                    {(username || 'G').charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className={`absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-400 border-2 border-white rounded-full shadow-sm ${isSidebarMinimized ? '' : 'animate-pulse'}`}></div>
+              </div>
+              <div
+                className={`transition-all duration-500 ease-in-out overflow-hidden ${isSidebarMinimized ? 'max-w-0 opacity-0' : 'max-w-xs opacity-100 ml-4'}`}
+              >
+                <p className="font-bold text-slate-800 whitespace-nowrap text-sm">
+                  {username || 'Invitado'}
+                </p>
+                <p className="text-xs text-slate-600 whitespace-nowrap font-medium flex items-center">
+                  <span className={`w-2 h-2 rounded-full mr-2 ${isSuperuser ? 'bg-purple-500' : 'bg-blue-500'}`}></span>
+                  {isSuperuser ? 'Administrador' : 'Usuario Aliado'}
+                </p>
+              </div>
+              {!isSidebarMinimized && (
+                <svg
+                  className={`w-5 h-5 ml-auto text-slate-500 transition-all duration-500 ${showProfileMenu ? 'rotate-180 text-blue-600' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              )}
+
+              {showProfileMenu && (
+                <div
+                  className={`absolute top-full mt-4 ${
+                    isSidebarMinimized ? 'left-1/2 -translate-x-1/2 w-64' : 'left-0 w-full'
+                  } bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-slate-900/20 py-4 z-20 border border-slate-200/50`}
+                >
+                  {/* Header elegante */}
+                  <div className="px-6 py-4 border-b border-slate-100/50">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 mr-4">
+                        <span className="text-white font-bold text-lg">
+                          {(username || 'G').charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">{username || 'Invitado'}</p>
+                        <p className="text-xs text-slate-600 font-medium flex items-center">
+                          <span className={`w-2 h-2 rounded-full mr-2 ${isSuperuser ? 'bg-purple-500' : 'bg-blue-500'}`}></span>
+                          {isSuperuser ? 'Administrador' : 'Usuario Aliado'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Opciones del menú */}
+                  <div className="py-2">
+                    <a href="#" className="group flex items-center px-6 py-3 text-sm text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mr-4 group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300 shadow-sm">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                      </div>
+                      <span className="font-semibold">Configuración</span>
+                    </a>
+                    
+                    <a href="#" className="group flex items-center px-6 py-3 text-sm text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-300">
+                      <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-xl flex items-center justify-center mr-4 group-hover:from-emerald-200 group-hover:to-emerald-300 transition-all duration-300 shadow-sm">
+                        <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                      </div>
+                      <span className="font-semibold">Ayuda y Soporte</span>
+                    </a>
+                    
+                    <div className="border-t border-slate-200/50 my-3 mx-6"></div>
+                    
+                    <button 
+                      onClick={onLogout} 
+                      className="group flex items-center w-full text-left px-6 py-3 text-sm text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 transition-all duration-300"
+                    >
+                      <div className="w-10 h-10 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center mr-4 group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300 shadow-sm">
+                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                      </div>
+                      <span className="font-semibold">Cerrar Sesión</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        </nav>
       </div>
     </aside>
   );

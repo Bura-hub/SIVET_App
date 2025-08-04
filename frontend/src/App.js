@@ -119,7 +119,7 @@ function App() {
         currentPage={currentPage}
       />
       {/* Contenedor principal de la página */}
-      <main className="flex-1 p-8 bg-gray-100 rounded-tl-3xl shadow-inner">
+      <main className={`flex-1 p-8 bg-gray-100 rounded-tl-3xl shadow-inner transition-all duration-500 ease-in-out ${isSidebarMinimized ? 'ml-0' : ''}`}>
         {renderPageContent()} {/* Renderiza el componente correspondiente */}
       </main>
 

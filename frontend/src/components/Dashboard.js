@@ -4,6 +4,17 @@ import { KpiCard } from "./KPI/KpiCard";
 import { ChartCard } from "./KPI/ChartCard";
 import TransitionOverlay from './TransitionOverlay';
 
+// Utilidades para manejo de fechas en zona horaria de Colombia
+import { 
+  formatDateForAPI, 
+  getCurrentMonthStart, 
+  getCurrentMonthEnd, 
+  getPreviousMonthStart, 
+  getPreviousMonthEnd,
+  formatDateForDisplay,
+  parseISODateToColombia
+} from '../utils/dateUtils';
+
 // Importaciones desde Chart.js y el plugin de zoom
 import {
   Chart as ChartJS,
@@ -89,8 +100,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       description: taskStatus || "Sincronizar metadatos y datos SCADA", 
       status: taskExecuting ? "loading" : "normal", 
       icon: taskIcon,
-      onClick: executeAllTasks
-    },
+      onClick: null // Se asignará después
+    }
   });
 
   // Estados para almacenar los datos de cada gráfico
@@ -227,23 +238,17 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       }
 
       // --- CALCULAR FECHAS PARA LAS LLAMADAS A LA API ---
-      const formatDate = (date) => date.toISOString().split('T')[0];
-
-      const today = new Date();
-      
-      // CORREGIR: Usar solo fechas pasadas y actuales, no futuras
-      const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      const currentMonthEnd = today; // Usar hoy en lugar del último día del mes
-
-      // Fechas para el mes pasado
-      const prevMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const prevMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+      // Usar las utilidades de fecha estandarizadas para Colombia
+      const currentMonthStart = getCurrentMonthStart();
+      const currentMonthEnd = getCurrentMonthEnd();
+      const prevMonthStart = getPreviousMonthStart();
+      const prevMonthEnd = getPreviousMonthEnd();
 
       // --- REALIZAR LLAMADAS A LA API ---
       const [kpisResponse, currentMonthChartsResponse, prevMonthChartsResponse] = await Promise.allSettled([
         fetch(KPI_API_URL, { headers: { 'Authorization': `Token ${authToken}` } }),
-        fetch(`${CHART_API_URL}?start_date=${formatDate(currentMonthStart)}&end_date=${formatDate(currentMonthEnd)}`, { headers: { 'Authorization': `Token ${authToken}` } }),
-        fetch(`${CHART_API_URL}?start_date=${formatDate(prevMonthStart)}&end_date=${formatDate(prevMonthEnd)}`, { headers: { 'Authorization': `Token ${authToken}` } }),
+        fetch(`${CHART_API_URL}?start_date=${formatDateForAPI(currentMonthStart)}&end_date=${formatDateForAPI(currentMonthEnd)}`, { headers: { 'Authorization': `Token ${authToken}` } }),
+        fetch(`${CHART_API_URL}?start_date=${formatDateForAPI(prevMonthStart)}&end_date=${formatDateForAPI(prevMonthEnd)}`, { headers: { 'Authorization': `Token ${authToken}` } }),
       ]);
 
       let hasError = false;
@@ -280,25 +285,14 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         const prevMonthChartsData = await prevMonthChartsResponse.value.json();
 
         // --- PROCESAMIENTO DE DATOS PARA GRÁFICOS ---
-        // CORREGIR: Ordenar los datos por fecha antes de procesarlos
-        const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
+        // Ordenar los datos por fecha antes de procesarlos
+        const sortByDate = (a, b) => parseISODateToColombia(a.date) - parseISODateToColombia(b.date);
         const sortedCurrentMonthData = currentMonthChartsData.sort(sortByDate);
         const sortedPrevMonthData = prevMonthChartsData.sort(sortByDate);
 
-        // Extraemos los labels (fechas) y los valores para los datasets
+        // Extraemos los labels (fechas) usando las utilidades estandarizadas
         const currentMonthLabels = sortedCurrentMonthData.map(item => {
-          const parts = item.date.split('-');
-          const year = parseInt(parts[0]);
-          const month = parseInt(parts[1]) - 1;
-          const day = parseInt(parts[2]);
-          
-          const date = new Date(year, month, day);
-          
-          const formattedDay = String(date.getDate()).padStart(2, '0');
-          const formattedMonth = String(date.getMonth() + 1).padStart(2, '0');
-          const formattedYear = date.getFullYear();
-
-          return `${formattedDay}/${formattedMonth}/${formattedYear}`;
+          return formatDateForDisplay(item.date);
         });
 
         // Datos de consumo del mes actual (usar datos ordenados)

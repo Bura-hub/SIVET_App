@@ -5,12 +5,25 @@ from django.db.models.functions import Cast, TruncDay
 import logging
 import calendar
 from django.db.models import Sum, F, FloatField, QuerySet, Q
+from django.utils import timezone as django_timezone
+import pytz
 
 from scada_proxy.models import Measurement, Device # Necesitas esto para el modelo Measurement
 from scada_proxy.models import TaskProgress # También puedes necesitar TaskProgress
 from .models import MonthlyConsumptionKPI, DailyChartData
 
 logger = logging.getLogger(__name__)
+
+# Zona horaria de Colombia
+COLOMBIA_TZ = pytz.timezone('America/Bogota')
+
+def get_colombia_now():
+    """Obtiene la fecha y hora actual en zona horaria de Colombia"""
+    return django_timezone.now().astimezone(COLOMBIA_TZ)
+
+def get_colombia_date():
+    """Obtiene la fecha actual en zona horaria de Colombia"""
+    return get_colombia_now().date()
 
 @shared_task(bind=True, retry_backoff=60, max_retries=3)
 def calculate_monthly_consumption_kpi(self):
@@ -22,11 +35,11 @@ def calculate_monthly_consumption_kpi(self):
     """
     logger.info("=== INICIANDO TAREA: calculate_monthly_consumption_kpi ===")
     try:
-        # Obtener la fecha y hora actual en UTC
-        today = datetime.now(timezone.utc).date()
+        # Obtener la fecha y hora actual en zona horaria de Colombia
+        today = get_colombia_date()
         current_day = today.day
 
-        logger.info(f"Fecha actual: {today}, día del mes: {current_day}")
+        logger.info(f"Fecha actual en Colombia: {today}, día del mes: {current_day}")
 
         # --- Cálculo de rangos de fechas para el mes actual ---
         # El mes actual va desde el primer día hasta la fecha actual
@@ -211,18 +224,18 @@ def calculate_and_save_daily_data(self, start_date_str: str = None, end_date_str
     """
     logger.info("=== INICIANDO TAREA: calculate_and_save_daily_data ===")
     try:
-        # Si no se proporcionan fechas, calcular para el día anterior
+        # Si no se proporcionan fechas, calcular para el día anterior en Colombia
         if not start_date_str or not end_date_str:
-            yesterday = datetime.now(timezone.utc).date() - timedelta(days=1)
+            yesterday = get_colombia_date() - timedelta(days=1)
             start_date_str = yesterday.isoformat()
             end_date_str = yesterday.isoformat()
-            logger.info(f"No se proporcionaron fechas, calculando para el día anterior: {yesterday}")
+            logger.info(f"No se proporcionaron fechas, calculando para el día anterior en Colombia: {yesterday}")
 
-        # 1. Convertir strings a objetos datetime conscientes de la zona horaria UTC
-        start_date = datetime.fromisoformat(start_date_str).astimezone(timezone.utc)
-        end_date = datetime.fromisoformat(end_date_str).astimezone(timezone.utc)
+        # 1. Convertir strings a objetos datetime conscientes de la zona horaria de Colombia
+        start_date = datetime.fromisoformat(start_date_str).replace(tzinfo=COLOMBIA_TZ)
+        end_date = datetime.fromisoformat(end_date_str).replace(tzinfo=COLOMBIA_TZ)
 
-        logger.info(f"Rango de fechas a procesar: {start_date.date()} -> {end_date.date()}")
+        logger.info(f"Rango de fechas a procesar en Colombia: {start_date.date()} -> {end_date.date()}")
         
         # 2. Obtener los dispositivos eléctricos, inversores y estaciones meteorológicas
         electric_meters: QuerySet[Device] = Device.objects.filter(category__id=2, is_active=True)
@@ -253,7 +266,7 @@ def calculate_and_save_daily_data(self, start_date_str: str = None, end_date_str
         
         while current_date <= end_date:
             single_date = current_date.date()
-            logger.info(f"Procesando fecha: {single_date}")
+            logger.info(f"Procesando fecha en Colombia: {single_date}")
             
             # Agregación para consumo y generación
             daily_aggregation = Measurement.objects.filter(

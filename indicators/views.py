@@ -10,6 +10,7 @@ from django.views.decorators.cache import cache_page
 import uuid 
 import requests
 import calendar
+import pytz
 
 # Importa los modelos de indicadores
 from .models import MonthlyConsumptionKPI, DailyChartData # Importación de DailyChartData
@@ -22,6 +23,14 @@ from .tasks import calculate_monthly_consumption_kpi, calculate_and_save_daily_d
 logger = logging.getLogger(__name__)
 
 scada_client = ScadaConnectorClient() 
+
+# Zona horaria de Colombia
+COLOMBIA_TZ = pytz.timezone('America/Bogota')
+
+def get_colombia_now():
+    """Obtiene la fecha y hora actual en zona horaria de Colombia"""
+    from django.utils import timezone as dj_timezone
+    return dj_timezone.now().astimezone(COLOMBIA_TZ)
 
 @method_decorator(cache_page(60 * 5), name='dispatch') # Cachear la respuesta por 5 minutos
 class ConsumptionSummaryView(APIView):
@@ -365,14 +374,14 @@ class ChartDataView(APIView):
 
             # Si no se proporcionan fechas, se usa los últimos 60 días por defecto
             if not start_date_str or not end_date_str:
-                end_date = datetime.now(timezone.utc).date()
+                end_date = get_colombia_now().date()
                 start_date = end_date - timedelta(days=60)
             else:
-                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
-                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                # Parsear fechas y asegurar que estén en zona horaria de Colombia
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').replace(tzinfo=COLOMBIA_TZ).date()
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').replace(tzinfo=COLOMBIA_TZ).date()
 
             # Consultar el modelo DailyChartData para obtener los datos precalculados
-            # AÑADIR ORDENAMIENTO POR FECHA
             chart_data = DailyChartData.objects.filter(
                 date__range=(start_date, end_date)
             ).order_by('date').values('date', 'daily_consumption', 'daily_generation', 'daily_balance', 'avg_daily_temp')
@@ -437,11 +446,11 @@ class CalculateDailyDataView(APIView):
             # Obtener parámetros del request
             days_back = request.data.get('days_back', 3)  # Por defecto 3 días
             
-            # Calcular fechas
-            end_date = datetime.now(timezone.utc)
+            # Calcular fechas en zona horaria de Colombia
+            end_date = get_colombia_now()
             start_date = end_date - timedelta(days=days_back)
             
-            logger.info(f"Calculando datos diarios desde {start_date.date()} hasta {end_date.date()}")
+            logger.info(f"Calculando datos diarios desde {start_date.date()} hasta {end_date.date()} (hora Colombia)")
             
             # Ejecutar la tarea de cálculo de datos diarios
             task_result = calculate_and_save_daily_data(

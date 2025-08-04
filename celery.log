@@ -706,3 +706,121 @@ INFO 2025-08-03 21:03:11,123 tasks 33528 23500 Días procesados: 4
 INFO 2025-08-03 21:03:11,123 tasks 33528 23500 Registros creados: 0
 INFO 2025-08-03 21:03:11,123 tasks 33528 23500 Registros actualizados: 4
 INFO 2025-08-03 21:03:11,123 tasks 33528 23500 === TAREA COMPLETADA: calculate_and_save_daily_data ===
+INFO 2025-08-03 21:45:56,637 tasks 33092 6616 === INICIANDO TAREA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 21:45:56,637 tasks 33092 6616 Fecha actual en Colombia: 2025-08-03, día del mes: 3
+INFO 2025-08-03 21:45:56,637 tasks 33092 6616 Rango mes actual: 2025-08-01 -> 2025-08-03
+INFO 2025-08-03 21:45:56,637 tasks 33092 6616 Rango mes anterior: 2025-07-01 -> 2025-07-03
+INFO 2025-08-03 21:45:56,637 tasks 33092 6616 Dispositivos encontrados:
+INFO 2025-08-03 21:45:56,639 tasks 33092 6616   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 21:45:56,640 tasks 33092 6616   - Inversores: 6 dispositivos
+INFO 2025-08-03 21:45:56,642 tasks 33092 6616   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 21:45:56,642 tasks 33092 6616 Calculando consumo total (medidores eléctricos)...
+INFO 2025-08-03 21:46:00,167 tasks 33092 6616 Consumo total - Mes actual: 20060.65 Wh, Mes anterior: 24224.63 Wh
+INFO 2025-08-03 21:46:00,167 tasks 33092 6616 Calculando generación total (inversores)...
+INFO 2025-08-03 21:46:01,901 tasks 33092 6616 Generación total - Mes actual: 20787006.00 Wh, Mes anterior: 28132490.00 Wh
+INFO 2025-08-03 21:46:01,901 tasks 33092 6616 Calculando potencia instantánea promedio (inversores)...
+INFO 2025-08-03 21:46:03,643 tasks 33092 6616 Potencia instantánea promedio - Mes actual: 2516.28 W, Mes anterior: 3111.66 W
+INFO 2025-08-03 21:46:03,643 tasks 33092 6616 Calculando temperatura promedio diaria (estaciones meteorológicas)...
+INFO 2025-08-03 21:46:05,554 tasks 33092 6616 Temperatura promedio diaria - Mes actual: 14.75 °C, Mes anterior: 14.50 °C
+INFO 2025-08-03 21:46:05,554 tasks 33092 6616 Calculando humedad relativa promedio (estaciones meteorológicas)...
+INFO 2025-08-03 21:46:07,427 tasks 33092 6616 Humedad relativa promedio - Mes actual: 73.21 %RH, Mes anterior: 76.78 %RH
+INFO 2025-08-03 21:46:07,427 tasks 33092 6616 Calculando velocidad del viento promedio (estaciones meteorológicas)...
+INFO 2025-08-03 21:46:09,248 tasks 33092 6616 Velocidad del viento promedio - Mes actual: 1.27 km/h, Mes anterior: 1.40 km/h
+INFO 2025-08-03 21:46:09,248 tasks 33092 6616 Guardando KPIs mensuales en la base de datos...
+INFO 2025-08-03 21:46:09,261 tasks 33092 6616 === TAREA COMPLETADA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 21:46:09,261 tasks 33092 6616 Todos los KPIs mensuales han sido calculados y actualizados exitosamente.
+INFO 2025-08-03 21:46:09,296 tasks 33092 26936 === INICIANDO TAREA: calculate_and_save_daily_data ===
+INFO 2025-08-03 21:46:09,296 tasks 33092 26936 Rango de fechas a procesar en Colombia: 2025-07-31 -> 2025-08-03
+INFO 2025-08-03 21:46:09,297 tasks 33092 26936 Dispositivos encontrados para cálculo diario:
+INFO 2025-08-03 21:46:09,299 tasks 33092 26936   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 21:46:09,299 tasks 33092 26936   - Inversores: 6 dispositivos
+INFO 2025-08-03 21:46:09,299 tasks 33092 26936   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 21:46:09,300 tasks 33092 26936 Iniciando procesamiento de 4 días...
+INFO 2025-08-03 21:46:09,300 tasks 33092 26936 Procesando fecha en Colombia: 2025-07-31
+INFO 2025-08-03 21:46:11,129 tasks 33092 26936   Dato diario actualizado para 2025-07-31:
+INFO 2025-08-03 21:46:11,130 tasks 33092 26936     - Consumo: 10239.41 Wh
+INFO 2025-08-03 21:46:11,130 tasks 33092 26936     - Generación: 8201196.00 Wh
+INFO 2025-08-03 21:46:11,130 tasks 33092 26936     - Balance: -2038.22 kWh
+INFO 2025-08-03 21:46:11,130 tasks 33092 26936     - Temperatura promedio: 13.69 °C
+INFO 2025-08-03 21:46:11,130 tasks 33092 26936 Procesando fecha en Colombia: 2025-08-01
+INFO 2025-08-03 21:46:13,062 tasks 33092 26936   Dato diario actualizado para 2025-08-01:
+INFO 2025-08-03 21:46:13,062 tasks 33092 26936     - Consumo: 11100.57 Wh
+INFO 2025-08-03 21:46:13,062 tasks 33092 26936     - Generación: 6309032.00 Wh
+INFO 2025-08-03 21:46:13,062 tasks 33092 26936     - Balance: -4791.54 kWh
+INFO 2025-08-03 21:46:13,062 tasks 33092 26936     - Temperatura promedio: 14.00 °C
+INFO 2025-08-03 21:46:13,062 tasks 33092 26936 Procesando fecha en Colombia: 2025-08-02
+INFO 2025-08-03 21:46:14,973 tasks 33092 26936   Dato diario actualizado para 2025-08-02:
+INFO 2025-08-03 21:46:14,973 tasks 33092 26936     - Consumo: 6659.41 Wh
+INFO 2025-08-03 21:46:14,973 tasks 33092 26936     - Generación: 7985725.00 Wh
+INFO 2025-08-03 21:46:14,973 tasks 33092 26936     - Balance: 1326.32 kWh
+INFO 2025-08-03 21:46:14,973 tasks 33092 26936     - Temperatura promedio: 15.32 °C
+INFO 2025-08-03 21:46:14,973 tasks 33092 26936 Procesando fecha en Colombia: 2025-08-03
+INFO 2025-08-03 21:46:16,870 tasks 33092 26936   Dato diario actualizado para 2025-08-03:
+INFO 2025-08-03 21:46:16,870 tasks 33092 26936     - Consumo: 2300.68 Wh
+INFO 2025-08-03 21:46:16,870 tasks 33092 26936     - Generación: 6492249.00 Wh
+INFO 2025-08-03 21:46:16,870 tasks 33092 26936     - Balance: 4191.57 kWh
+INFO 2025-08-03 21:46:16,870 tasks 33092 26936     - Temperatura promedio: 15.03 °C
+INFO 2025-08-03 21:46:16,870 tasks 33092 26936 === RESUMEN DE PROCESAMIENTO ===
+INFO 2025-08-03 21:46:16,870 tasks 33092 26936 Días procesados: 4
+INFO 2025-08-03 21:46:16,870 tasks 33092 26936 Registros creados: 0
+INFO 2025-08-03 21:46:16,871 tasks 33092 26936 Registros actualizados: 4
+INFO 2025-08-03 21:46:16,871 tasks 33092 26936 === TAREA COMPLETADA: calculate_and_save_daily_data ===
+INFO 2025-08-03 21:47:53,172 tasks 7760 29612 === INICIANDO TAREA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 21:47:53,172 tasks 7760 29612 Fecha actual en Colombia: 2025-08-03, día del mes: 3
+INFO 2025-08-03 21:47:53,172 tasks 7760 29612 Rango mes actual: 2025-08-01 -> 2025-08-03
+INFO 2025-08-03 21:47:53,172 tasks 7760 29612 Rango mes anterior: 2025-07-01 -> 2025-07-03
+INFO 2025-08-03 21:47:53,173 tasks 7760 29612 Dispositivos encontrados:
+INFO 2025-08-03 21:47:53,175 tasks 7760 29612   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 21:47:53,176 tasks 7760 29612   - Inversores: 6 dispositivos
+INFO 2025-08-03 21:47:53,178 tasks 7760 29612   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 21:47:53,178 tasks 7760 29612 Calculando consumo total (medidores eléctricos)...
+INFO 2025-08-03 21:47:55,187 tasks 7760 29612 Consumo total - Mes actual: 20060.65 Wh, Mes anterior: 24224.63 Wh
+INFO 2025-08-03 21:47:55,187 tasks 7760 29612 Calculando generación total (inversores)...
+INFO 2025-08-03 21:47:57,111 tasks 7760 29612 Generación total - Mes actual: 20787006.00 Wh, Mes anterior: 28132490.00 Wh
+INFO 2025-08-03 21:47:57,111 tasks 7760 29612 Calculando potencia instantánea promedio (inversores)...
+INFO 2025-08-03 21:47:58,942 tasks 7760 29612 Potencia instantánea promedio - Mes actual: 2516.28 W, Mes anterior: 3111.66 W
+INFO 2025-08-03 21:47:58,942 tasks 7760 29612 Calculando temperatura promedio diaria (estaciones meteorológicas)...
+INFO 2025-08-03 21:48:00,899 tasks 7760 29612 Temperatura promedio diaria - Mes actual: 14.75 °C, Mes anterior: 14.50 °C
+INFO 2025-08-03 21:48:00,899 tasks 7760 29612 Calculando humedad relativa promedio (estaciones meteorológicas)...
+INFO 2025-08-03 21:48:02,688 tasks 7760 29612 Humedad relativa promedio - Mes actual: 73.21 %RH, Mes anterior: 76.78 %RH
+INFO 2025-08-03 21:48:02,688 tasks 7760 29612 Calculando velocidad del viento promedio (estaciones meteorológicas)...
+INFO 2025-08-03 21:48:04,492 tasks 7760 29612 Velocidad del viento promedio - Mes actual: 1.27 km/h, Mes anterior: 1.40 km/h
+INFO 2025-08-03 21:48:04,492 tasks 7760 29612 Guardando KPIs mensuales en la base de datos...
+INFO 2025-08-03 21:48:04,497 tasks 7760 29612 === TAREA COMPLETADA: calculate_monthly_consumption_kpi ===
+INFO 2025-08-03 21:48:04,497 tasks 7760 29612 Todos los KPIs mensuales han sido calculados y actualizados exitosamente.
+INFO 2025-08-03 21:48:04,533 tasks 7760 34424 === INICIANDO TAREA: calculate_and_save_daily_data ===
+INFO 2025-08-03 21:48:04,533 tasks 7760 34424 Rango de fechas a procesar en Colombia: 2025-07-31 -> 2025-08-03
+INFO 2025-08-03 21:48:04,533 tasks 7760 34424 Dispositivos encontrados para cálculo diario:
+INFO 2025-08-03 21:48:04,535 tasks 7760 34424   - Medidores eléctricos: 20 dispositivos
+INFO 2025-08-03 21:48:04,536 tasks 7760 34424   - Inversores: 6 dispositivos
+INFO 2025-08-03 21:48:04,536 tasks 7760 34424   - Estaciones meteorológicas: 6 dispositivos
+INFO 2025-08-03 21:48:04,537 tasks 7760 34424 Iniciando procesamiento de 4 días...
+INFO 2025-08-03 21:48:04,537 tasks 7760 34424 Procesando fecha en Colombia: 2025-07-31
+INFO 2025-08-03 21:48:06,304 tasks 7760 34424   Dato diario actualizado para 2025-07-31:
+INFO 2025-08-03 21:48:06,305 tasks 7760 34424     - Consumo: 10239.41 Wh
+INFO 2025-08-03 21:48:06,305 tasks 7760 34424     - Generación: 8201196.00 Wh
+INFO 2025-08-03 21:48:06,305 tasks 7760 34424     - Balance: -2038.22 kWh
+INFO 2025-08-03 21:48:06,305 tasks 7760 34424     - Temperatura promedio: 13.69 °C
+INFO 2025-08-03 21:48:06,305 tasks 7760 34424 Procesando fecha en Colombia: 2025-08-01
+INFO 2025-08-03 21:48:08,282 tasks 7760 34424   Dato diario actualizado para 2025-08-01:
+INFO 2025-08-03 21:48:08,282 tasks 7760 34424     - Consumo: 11100.57 Wh
+INFO 2025-08-03 21:48:08,282 tasks 7760 34424     - Generación: 6309032.00 Wh
+INFO 2025-08-03 21:48:08,282 tasks 7760 34424     - Balance: -4791.54 kWh
+INFO 2025-08-03 21:48:08,283 tasks 7760 34424     - Temperatura promedio: 14.00 °C
+INFO 2025-08-03 21:48:08,283 tasks 7760 34424 Procesando fecha en Colombia: 2025-08-02
+INFO 2025-08-03 21:48:10,201 tasks 7760 34424   Dato diario actualizado para 2025-08-02:
+INFO 2025-08-03 21:48:10,201 tasks 7760 34424     - Consumo: 6659.41 Wh
+INFO 2025-08-03 21:48:10,201 tasks 7760 34424     - Generación: 7985725.00 Wh
+INFO 2025-08-03 21:48:10,201 tasks 7760 34424     - Balance: 1326.32 kWh
+INFO 2025-08-03 21:48:10,201 tasks 7760 34424     - Temperatura promedio: 15.32 °C
+INFO 2025-08-03 21:48:10,201 tasks 7760 34424 Procesando fecha en Colombia: 2025-08-03
+INFO 2025-08-03 21:48:12,114 tasks 7760 34424   Dato diario actualizado para 2025-08-03:
+INFO 2025-08-03 21:48:12,114 tasks 7760 34424     - Consumo: 2300.68 Wh
+INFO 2025-08-03 21:48:12,114 tasks 7760 34424     - Generación: 6492249.00 Wh
+INFO 2025-08-03 21:48:12,115 tasks 7760 34424     - Balance: 4191.57 kWh
+INFO 2025-08-03 21:48:12,115 tasks 7760 34424     - Temperatura promedio: 15.03 °C
+INFO 2025-08-03 21:48:12,115 tasks 7760 34424 === RESUMEN DE PROCESAMIENTO ===
+INFO 2025-08-03 21:48:12,115 tasks 7760 34424 Días procesados: 4
+INFO 2025-08-03 21:48:12,115 tasks 7760 34424 Registros creados: 0
+INFO 2025-08-03 21:48:12,115 tasks 7760 34424 Registros actualizados: 4
+INFO 2025-08-03 21:48:12,115 tasks 7760 34424 === TAREA COMPLETADA: calculate_and_save_daily_data ===

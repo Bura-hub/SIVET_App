@@ -6,6 +6,7 @@ import requests
 from django.db import transaction, IntegrityError
 from datetime import datetime, timedelta, timezone as dt_timezone
 from django.utils import timezone as dj_timezone
+import pytz
 
 # Importa tu cliente SCADA y tus modelos
 from .scada_client import ScadaConnectorClient
@@ -13,6 +14,13 @@ from .models import Institution, DeviceCategory, Device, Measurement, TaskProgre
 
 logger = logging.getLogger(__name__)
 scada_client = ScadaConnectorClient()
+
+# Zona horaria de Colombia
+COLOMBIA_TZ = pytz.timezone('America/Bogota')
+
+def get_colombia_now():
+    """Obtiene la fecha y hora actual en zona horaria de Colombia"""
+    return dj_timezone.now().astimezone(COLOMBIA_TZ)
 
 # Tarea para sincronizar metadatos (instituciones y categorías de dispositivos)
 @shared_task(bind=True, retry_backoff=60, max_retries=3)
@@ -105,9 +113,11 @@ def fetch_and_save_measurements_for_device(self, device_scada_id: str, django_de
         token = scada_client.get_token()
         device_instance = Device.objects.get(id=django_device_id)
 
-        # Convertimos los strings a datetime con tz UTC explícita
-        from_dt = datetime.fromisoformat(from_datetime_str).astimezone(dt_timezone.utc)
-        to_dt = datetime.fromisoformat(to_datetime_str).astimezone(dt_timezone.utc)
+        # Convertimos los strings a datetime con tz Colombia explícita
+        from_dt = datetime.fromisoformat(from_datetime_str).replace(tzinfo=COLOMBIA_TZ)
+        to_dt = datetime.fromisoformat(to_datetime_str).replace(tzinfo=COLOMBIA_TZ)
+
+        logger.info(f"Obteniendo mediciones para dispositivo {device_scada_id} desde {from_dt} hasta {to_dt} (hora Colombia)")
 
         page_size = 1000
         offset = 0
@@ -141,7 +151,10 @@ def fetch_and_save_measurements_for_device(self, device_scada_id: str, django_de
                     continue
 
                 if is_naive(dt):  # Hacer aware si está en naive
-                    dt = make_aware(dt)
+                    dt = make_aware(dt, timezone=COLOMBIA_TZ)
+                else:
+                    # Convertir a zona horaria de Colombia si ya tiene timezone
+                    dt = dt.astimezone(COLOMBIA_TZ)
 
                 _, created = Measurement.objects.update_or_create(
                     device=device_instance,
@@ -174,19 +187,14 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
     """
     time_range = timedelta(seconds=time_range_seconds)
 
-    # Tiempo actual en UTC usando datetime + dt_timezone
-    now_utc = datetime.now(dt_timezone.utc)
-    from_date = now_utc - time_range
-
-    # Convertimos a hora local para logs usando Django
-    local_tz = dj_timezone.get_current_timezone()
-    now_local = now_utc.astimezone(local_tz)
-    from_date_local = from_date.astimezone(local_tz)
+    # Tiempo actual en zona horaria de Colombia
+    now_colombia = get_colombia_now()
+    from_date = now_colombia - time_range
 
     logger.info(
         f"Iniciando la obtención de mediciones históricas "
         f"para los últimos {time_range}. "
-        f"Rango: {from_date_local} -> {now_local} (hora local)"
+        f"Rango: {from_date} -> {now_colombia} (hora Colombia)"
     )
 
     devices = Device.objects.filter(is_active=True)
@@ -213,11 +221,11 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
             device_scada_id=device.scada_id,
             django_device_id=device.id,
             from_datetime_str=from_date.isoformat(),
-            to_datetime_str=now_utc.isoformat()
+            to_datetime_str=now_colombia.isoformat()
         )
         logger.info(
             f"Tarea creada para dispositivo {device.name} ({device.scada_id}) "
-            f"desde {from_date_local} hasta {now_local} (hora local)."
+            f"desde {from_date} hasta {now_colombia} (hora Colombia)."
         )
 
         # Actualizar progreso

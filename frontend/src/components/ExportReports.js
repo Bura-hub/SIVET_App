@@ -1,6 +1,7 @@
 // Importaciones necesarias de React y componentes personalizados
 import React, { useState, useEffect, useRef } from 'react';
 import TransitionOverlay from './TransitionOverlay';
+import { formatDateForAPI, getCurrentDateISO } from '../utils/dateUtils';
 
 function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo, isSidebarMinimized, setIsSidebarMinimized }) {
   const [loading, setLoading] = useState(false);
@@ -27,6 +28,15 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
     { type: 'Energy Balance Report', date: '2023-10-24 02:30 PM', format: 'Excel', status: 'Completed' },
     { type: 'System Performance', date: '2023-10-23 11:45 AM', format: 'PDF', status: 'Completed' },
   ];
+
+  // Inicializar fechas con valores por defecto en zona horaria de Colombia
+  useEffect(() => {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    setStartDate(formatDateForAPI(firstDayOfMonth));
+    setEndDate(formatDateForAPI(today));
+  }, []);
 
   const handleExport = (format) => {
     // Simulate export logic

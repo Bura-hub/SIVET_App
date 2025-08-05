@@ -250,3 +250,140 @@ def fetch_historical_measurements_for_all_devices(time_range_seconds: int):
         task_progress.save(update_fields=['status', 'message'])
 
     logger.info("Todas las subtareas para obtener mediciones han sido encoladas.")
+
+@shared_task(bind=True, retry_backoff=30, max_retries=3)
+def check_devices_status(self):
+    """
+    Verifica el estado de los dispositivos y actualiza su información básica
+    sin necesidad de sincronización completa.
+    """
+    try:
+        token = scada_client.get_token()
+        logger.info("Iniciando verificación de estado de dispositivos")
+        
+        # Obtener dispositivos activos
+        active_devices = Device.objects.filter(is_active=True)
+        updated_count = 0
+        
+        for device in active_devices:
+            try:
+                # Obtener información actualizada del dispositivo desde SCADA
+                # Nota: Esto asume que tienes un endpoint para obtener un dispositivo específico
+                # Si no lo tienes, puedes usar get_devices con filtros
+                devices_data = scada_client.get_devices(
+                    token, 
+                    device_name=device.name
+                ).get('data', [])
+                
+                if devices_data:
+                    device_data = devices_data[0]  # Tomar el primer resultado
+                    
+                    # Actualizar solo campos básicos sin tocar las relaciones
+                    device.name = device_data.get('name', device.name)
+                    device.status = device_data.get('status', device.status)
+                    device.save()
+                    updated_count += 1
+                    
+            except Exception as e:
+                logger.warning(f"Error al actualizar dispositivo {device.name}: {e}")
+                continue
+        
+        logger.info(f"Verificación completada. {updated_count} dispositivos actualizados.")
+        
+    except Exception as e:
+        logger.error(f"Error en verificación de dispositivos: {e}")
+        raise self.retry(exc=e, countdown=self.request.retries * 30)
+
+@shared_task(bind=True, retry_backoff=60, max_retries=3)
+def sync_scada_metadata_enhanced(self):
+    """
+    Versión mejorada de la sincronización que maneja mejor las relaciones
+    y proporciona más información de logging.
+    """
+    try:
+        token = scada_client.get_token()
+        logger.info("Iniciando sincronización mejorada de metadatos SCADA")
+        
+        with transaction.atomic():
+            # 1. Sincronizar categorías primero
+            categories_data = scada_client.get_device_categories(token).get('data', [])
+            category_map = {}
+            for cat_data in categories_data:
+                category_obj, created = DeviceCategory.objects.update_or_create(
+                    scada_id=str(cat_data['id']),
+                    defaults={
+                        'name': cat_data['name'],
+                        'description': cat_data.get('description', '')
+                    }
+                )
+                category_map[str(cat_data['id'])] = category_obj
+                if created:
+                    logger.info(f"Nueva categoría creada: {cat_data['name']}")
+            
+            # 2. Sincronizar instituciones
+            institutions_data = scada_client.get_institutions(token).get('data', [])
+            institution_map = {}
+            for inst_data in institutions_data:
+                institution_obj, created = Institution.objects.update_or_create(
+                    scada_id=str(inst_data['id']),
+                    defaults={
+                        'name': inst_data['name']
+                    }
+                )
+                institution_map[str(inst_data['id'])] = institution_obj
+                if created:
+                    logger.info(f"Nueva institución creada: {inst_data['name']}")
+            
+            # 3. Sincronizar dispositivos con relaciones
+            devices_data = scada_client.get_devices(token).get('data', [])
+            existing_device_ids = set(Device.objects.values_list('scada_id', flat=True))
+            fetched_device_ids = set()
+            
+            for device_data in devices_data:
+                device_scada_id = str(device_data['id'])
+                fetched_device_ids.add(device_scada_id)
+                
+                # Obtener categoría e institución
+                category_obj = None
+                institution_obj = None
+                
+                if device_data.get('category'):
+                    category_scada_id = str(device_data['category']['id'])
+                    category_obj = category_map.get(category_scada_id)
+                    if not category_obj:
+                        logger.warning(f"Categoría no encontrada para dispositivo {device_data['name']}")
+                
+                if device_data.get('institution'):
+                    institution_scada_id = str(device_data['institution']['id'])
+                    institution_obj = institution_map.get(institution_scada_id)
+                    if not institution_obj:
+                        logger.warning(f"Institución no encontrada para dispositivo {device_data['name']}")
+                
+                # Crear o actualizar dispositivo
+                device, created = Device.objects.update_or_create(
+                    scada_id=device_scada_id,
+                    defaults={
+                        'name': device_data['name'],
+                        'category': category_obj,
+                        'institution': institution_obj,
+                        'status': device_data.get('status', ''),
+                        'is_active': True
+                    }
+                )
+                
+                if created:
+                    logger.info(f"Nuevo dispositivo creado: {device.name}")
+                elif device.category != category_obj or device.institution != institution_obj:
+                    logger.info(f"Relaciones actualizadas para dispositivo: {device.name}")
+            
+            # 4. Desactivar dispositivos que ya no existen
+            devices_to_deactivate = existing_device_ids - fetched_device_ids
+            if devices_to_deactivate:
+                Device.objects.filter(scada_id__in=list(devices_to_deactivate)).update(is_active=False)
+                logger.info(f"Desactivados {len(devices_to_deactivate)} dispositivos obsoletos")
+        
+        logger.info("Sincronización mejorada completada exitosamente")
+        
+    except Exception as e:
+        logger.error(f"Error en sincronización mejorada: {e}")
+        raise self.retry(exc=e, countdown=self.request.retries * 60)

@@ -15,10 +15,18 @@ function App() {
   const [isSuperuser, setIsSuperuser] = useState(localStorage.getItem('isSuperuser') === 'true'); // Rol de superusuario
 
   // Estado para determinar la vista actual (login, dashboard, etc.)
-  const [currentPage, setCurrentPage] = useState(authToken ? 'dashboard' : 'login');
+  // Persistir la página actual en localStorage
+  const [currentPage, setCurrentPage] = useState(() => {
+    const savedPage = localStorage.getItem('currentPage');
+    return authToken ? (savedPage || 'dashboard') : 'login';
+  });
 
   // Estado para controlar si la barra lateral está minimizada
-  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
+  // Persistir el estado de la sidebar en localStorage
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(() => {
+    const savedSidebarState = localStorage.getItem('isSidebarMinimized');
+    return savedSidebarState ? JSON.parse(savedSidebarState) : false;
+  });
 
   // Estado para controlar si se debe mostrar la animación de cierre de sesión
   const [showLogoutAnimation, setShowLogoutAnimation] = useState(false);
@@ -32,6 +40,7 @@ function App() {
     localStorage.setItem('username', user);
     localStorage.setItem('isSuperuser', superuser);
     setCurrentPage('dashboard'); // Redirige al dashboard
+    localStorage.setItem('currentPage', 'dashboard'); // Persistir la página
   };
 
   // Cierra sesión limpiando los datos de sesión y redirigiendo al login
@@ -42,6 +51,7 @@ function App() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('username');
     localStorage.removeItem('isSuperuser');
+    localStorage.removeItem('currentPage'); // Limpiar la página persistida
     setCurrentPage('login'); // Redirige a la vista de login
   };
 
@@ -57,12 +67,14 @@ function App() {
   // Cambia de vista dentro de la aplicación
   const navigateTo = (page) => {
     setCurrentPage(page);
+    localStorage.setItem('currentPage', page); // Persistir la nueva página
   };
 
   // Efecto que asegura que si no hay token, se redirige a login
   useEffect(() => {
     if (!authToken) {
       setCurrentPage('login');
+      localStorage.removeItem('currentPage'); // Limpiar la página persistida
     }
   }, [authToken]);
 
@@ -75,7 +87,10 @@ function App() {
       isSuperuser,
       navigateTo,
       isSidebarMinimized,
-      setIsSidebarMinimized,
+      setIsSidebarMinimized: (minimized) => {
+        setIsSidebarMinimized(minimized);
+        localStorage.setItem('isSidebarMinimized', JSON.stringify(minimized)); // Persistir el estado
+      },
     };
 
     switch (currentPage) {
@@ -113,7 +128,10 @@ function App() {
         username={username}
         isSuperuser={isSuperuser}
         isSidebarMinimized={isSidebarMinimized}
-        setIsSidebarMinimized={setIsSidebarMinimized}
+        setIsSidebarMinimized={(minimized) => {
+          setIsSidebarMinimized(minimized);
+          localStorage.setItem('isSidebarMinimized', JSON.stringify(minimized)); // Persistir el estado
+        }}
         navigateTo={navigateTo}
         onLogout={handleLogoutWithAnimation}
         currentPage={currentPage}

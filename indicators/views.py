@@ -378,8 +378,12 @@ class ChartDataView(APIView):
                 start_date = end_date - timedelta(days=60)
             else:
                 # Parsear fechas y asegurar que estén en zona horaria de Colombia
-                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').replace(tzinfo=COLOMBIA_TZ).date()
-                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').replace(tzinfo=COLOMBIA_TZ).date()
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+                
+                # Localizar las fechas en zona horaria de Colombia
+                end_date = COLOMBIA_TZ.localize(end_date).date()
+                start_date = COLOMBIA_TZ.localize(start_date).date()
 
             # Consultar el modelo DailyChartData para obtener los datos precalculados
             chart_data = DailyChartData.objects.filter(

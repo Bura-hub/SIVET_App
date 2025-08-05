@@ -113,9 +113,20 @@ def fetch_and_save_measurements_for_device(self, device_scada_id: str, django_de
         token = scada_client.get_token()
         device_instance = Device.objects.get(id=django_device_id)
 
-        # Convertimos los strings a datetime con tz Colombia explícita
-        from_dt = datetime.fromisoformat(from_datetime_str).replace(tzinfo=COLOMBIA_TZ)
-        to_dt = datetime.fromisoformat(to_datetime_str).replace(tzinfo=COLOMBIA_TZ)
+        # Convertimos los strings a datetime con tz Colombia correctamente
+        from_dt = datetime.fromisoformat(from_datetime_str)
+        to_dt = datetime.fromisoformat(to_datetime_str)
+        
+        # Si las fechas no tienen timezone, asumir que están en Colombia
+        if from_dt.tzinfo is None:
+            from_dt = COLOMBIA_TZ.localize(from_dt)
+        else:
+            from_dt = from_dt.astimezone(COLOMBIA_TZ)
+            
+        if to_dt.tzinfo is None:
+            to_dt = COLOMBIA_TZ.localize(to_dt)
+        else:
+            to_dt = to_dt.astimezone(COLOMBIA_TZ)
 
         logger.info(f"Obteniendo mediciones para dispositivo {device_scada_id} desde {from_dt} hasta {to_dt} (hora Colombia)")
 

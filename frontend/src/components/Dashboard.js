@@ -12,6 +12,7 @@ import {
   getPreviousMonthStart, 
   getPreviousMonthEnd,
   formatDateForDisplay,
+  formatAPIDateForDisplay, // Nueva función
   parseISODateToColombia
 } from '../utils/dateUtils';
 
@@ -290,9 +291,9 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         const sortedCurrentMonthData = currentMonthChartsData.sort(sortByDate);
         const sortedPrevMonthData = prevMonthChartsData.sort(sortByDate);
 
-        // Extraemos los labels (fechas) usando las utilidades estandarizadas
+        // Extraemos los labels (fechas) usando la función específica para fechas de la API
         const currentMonthLabels = sortedCurrentMonthData.map(item => {
-          return formatDateForDisplay(item.date);
+          return formatAPIDateForDisplay(item.date);
         });
 
         // Datos de consumo del mes actual (usar datos ordenados)

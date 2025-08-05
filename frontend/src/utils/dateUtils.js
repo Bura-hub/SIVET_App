@@ -35,11 +35,29 @@ export const formatDateForAPI = (date) => {
 };
 
 /**
+ * Formatea una fecha de la API (string YYYY-MM-DD) para mostrar en la interfaz
+ * @param {string} dateString - Fecha en formato YYYY-MM-DD
+ * @returns {string} Fecha en formato DD/MM/YYYY
+ */
+export const formatAPIDateForDisplay = (dateString) => {
+  // Para fechas de la API que vienen como YYYY-MM-DD, no necesitamos conversión de timezone
+  // Solo formatear directamente
+  const [year, month, day] = dateString.split('-');
+  return `${day}/${month}/${year}`;
+};
+
+/**
  * Formatea una fecha para mostrar en la interfaz (formato DD/MM/YYYY)
  * @param {Date|string} date - Fecha a formatear
  * @returns {string} Fecha en formato DD/MM/YYYY
  */
 export const formatDateForDisplay = (date) => {
+  // Si es un string de fecha de la API (YYYY-MM-DD), usar la función específica
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return formatAPIDateForDisplay(date);
+  }
+  
+  // Para otros casos, usar la conversión de timezone
   const colombiaDate = toColombiaTime(date);
   const day = String(colombiaDate.getDate()).padStart(2, '0');
   const month = String(colombiaDate.getMonth() + 1).padStart(2, '0');
@@ -88,11 +106,26 @@ export const getPreviousMonthStart = () => {
 };
 
 /**
+ * Convierte una fecha de la API (string YYYY-MM-DD) a objeto Date para comparación
+ * @param {string} dateString - Fecha en formato YYYY-MM-DD
+ * @returns {Date} Fecha como objeto Date
+ */
+export const parseAPIDate = (dateString) => {
+  // Para fechas de la API que vienen como YYYY-MM-DD, crear Date directamente
+  return new Date(dateString + 'T00:00:00');
+};
+
+/**
  * Convierte una fecha ISO string a fecha en Colombia
  * @param {string} isoString - Fecha en formato ISO
  * @returns {Date} Fecha en zona horaria de Colombia
  */
 export const parseISODateToColombia = (isoString) => {
+  // Si es una fecha de la API (YYYY-MM-DD), usar parseAPIDate
+  if (/^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
+    return parseAPIDate(isoString);
+  }
+  // Para otros casos, usar la conversión de timezone
   return toColombiaTime(new Date(isoString));
 };
 

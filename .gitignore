@@ -1,7 +1,29 @@
 db.sqlite3
 env_lumen
-.env
-__pycache__
 scada-connector-client-main
 test.js
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+*.log
+db.sqlite3
+media/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# IDE
+.vscode/
+.idea/
+
 .cursor

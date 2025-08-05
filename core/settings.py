@@ -31,14 +31,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ========================= Configuración General =========================
 
-# Clave secreta del proyecto (¡no debe compartirse públicamente!)
-SECRET_KEY = 'django-insecure-e=gg2m8*l$v$#0qq%*^sxpu23!kfw6rak55*o2t^_0^*w!^-zi'
+# Clave secreta del proyecto desde variables de entorno
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise EnvironmentError("SECRET_KEY environment variable is not set.")
 
-# Modo debug activo (solo para desarrollo)
-DEBUG = True
+# Modo debug desde variables de entorno
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# Lista de hosts permitidos (comentada por ahora)
-# ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'sivet.com']
+# Lista de hosts permitidos desde variables de entorno
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # ========================= Aplicaciones Registradas =========================
 
@@ -113,16 +115,20 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("name_db"),
-        'USER': os.getenv("user_postgres"),
-        'PASSWORD': os.getenv("password_user_postgres"),
-        'HOST': 'localhost',
-        'PORT': os.getenv("port_postgres", '5432'),
+        'NAME': os.getenv('name_db'),
+        'USER': os.getenv('user_postgres'),
+        'PASSWORD': os.getenv('password_user_postgres'),
+        'HOST': os.getenv('REDIS_HOST', 'localhost'),
+        'PORT': os.getenv('port_postgres', '5432'),
         'OPTIONS': {
             'options': '-c client_encoding=UTF8'
         }
     }
 }
+
+# Validar configuración de base de datos
+if not all([os.getenv('name_db'), os.getenv('user_postgres'), os.getenv('password_user_postgres')]):
+    raise EnvironmentError("Database configuration environment variables are not set.")
 
 # ========================= Validación de Contraseñas =========================
 
@@ -176,9 +182,13 @@ CACHES = {
 
 # ========================= Celery =========================
 
-# Broker y backend de resultados (usando Redis)
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+# Broker y backend de resultados desde variables de entorno
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+REDIS_DB = os.getenv('REDIS_DB', '0')
+
+CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
+CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

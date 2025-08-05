@@ -9,7 +9,8 @@ class ScadaConnectorClient:
     A client for connecting to and interacting with SCADA systems.
     ... (copia el resto de tu clase ScadaConnectorClient aquí) ...
     """
-    base_url: str = "http://192.68.185.76:3700" # Asegúrate de que esta URL sea correcta
+    # Usar variable de entorno para la URL base
+    base_url: str = os.getenv('SCADA_BASE_URL')
 
     def __init__(self) -> None:
         self._token: Optional[str] = None
@@ -26,10 +27,9 @@ class ScadaConnectorClient:
         if self._is_token_valid():
             return self._token
 
-        # Accede a las variables de entorno directamente desde os.environ
-        # ya que load_dotenv() se llamó en settings.py
-        username = os.environ.get("SCADA_USERNAME")
-        password = os.environ.get("SCADA_PASSWORD")
+        # Accede a las variables de entorno
+        username = os.getenv("SCADA_USERNAME")
+        password = os.getenv("SCADA_PASSWORD")
 
         if not username or not password:
             raise EnvironmentError("SCADA_USERNAME or SCADA_PASSWORD are not defined in environment.")
@@ -42,7 +42,6 @@ class ScadaConnectorClient:
         if response.status_code == 200:
             auth_data = response.json()
             self._token = auth_data.get("accessToken")
-            # Establece la expiración del token un poco antes de la real para refrescarlo proactivamente
             self._token_expiration = datetime.now(timezone.utc) + timedelta(hours=23)
             return self._token
         else:

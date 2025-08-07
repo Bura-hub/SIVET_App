@@ -1,6 +1,6 @@
 from celery import shared_task
 from datetime import datetime, timedelta, timezone
-from django.db.models import Sum, Avg, F, FloatField, Max # Importa Max
+from django.db.models import Sum, Avg, F, FloatField, Max, Count # Importa Max y Count
 from django.db.models.functions import Cast, TruncDay
 import logging
 import calendar
@@ -11,6 +11,12 @@ import pytz
 from scada_proxy.models import Measurement, Device # Necesitas esto para el modelo Measurement
 from scada_proxy.models import TaskProgress # También puedes necesitar TaskProgress
 from .models import MonthlyConsumptionKPI, DailyChartData
+
+# Importaciones adicionales
+from .models import ElectricMeterConsumption, ElectricMeterChartData
+from scada_proxy.models import Institution, DeviceCategory
+from django.db.models import Q, Sum, Avg, Max, Min
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -336,3 +342,248 @@ def calculate_and_save_daily_data(self, start_date_str: str = None, end_date_str
         logger.error(f"=== ERROR EN TAREA: calculate_and_save_daily_data ===")
         logger.error(f"Error en el cálculo de datos diarios: {e}", exc_info=True)
         raise
+
+@shared_task(bind=True, retry_backoff=60, max_retries=3)
+def calculate_electric_meter_data(self, time_range='daily', start_date_str=None, end_date_str=None, institution_id=None, device_id=None):
+    """
+    Calcula y almacena datos de consumo de medidores eléctricos para un rango de tiempo específico.
+    
+    Args:
+        time_range: 'daily' o 'monthly'
+        start_date_str: fecha de inicio en formato ISO
+        end_date_str: fecha de fin en formato ISO
+        institution_id: ID de la institución (opcional)
+        device_id: ID del dispositivo específico (opcional)
+    """
+    logger.info("=== INICIANDO TAREA: calculate_electric_meter_data ===")
+    try:
+        # Procesar fechas
+        if not start_date_str or not end_date_str:
+            # Por defecto, último mes
+            end_date = get_colombia_date()
+            start_date = end_date - timedelta(days=30)
+        else:
+            start_date = datetime.fromisoformat(start_date_str).date()
+            end_date = datetime.fromisoformat(end_date_str).date()
+
+        logger.info(f"Calculando datos para rango: {time_range}, desde {start_date} hasta {end_date}")
+
+        # Obtener medidores eléctricos filtrados
+        electric_meters = Device.objects.filter(category__name='electricMeter', is_active=True)
+        
+        if institution_id:
+            electric_meters = electric_meters.filter(institution_id=institution_id)
+            logger.info(f"Filtrado por institución ID: {institution_id}")
+        
+        if device_id:
+            electric_meters = electric_meters.filter(scada_id=device_id)
+            logger.info(f"Filtrado por dispositivo ID: {device_id}")
+
+        logger.info(f"Procesando {electric_meters.count()} medidores eléctricos")
+
+        total_records_created = 0
+        total_records_updated = 0
+
+        for meter in electric_meters:
+            logger.info(f"Procesando medidor: {meter.name} (ID: {meter.id}, SCADA ID: {meter.scada_id})")
+            
+            if time_range == 'daily':
+                records_created, records_updated = self._calculate_daily_data(meter, start_date, end_date)
+            else:  # monthly
+                records_created, records_updated = self._calculate_monthly_data(meter, start_date, end_date)
+            
+            total_records_created += records_created
+            total_records_updated += records_updated
+
+        logger.info(f"=== RESUMEN DE PROCESAMIENTO ===")
+        logger.info(f"Registros creados: {total_records_created}")
+        logger.info(f"Registros actualizados: {total_records_updated}")
+        logger.info("=== TAREA COMPLETADA: calculate_electric_meter_data ===")
+
+        return f"Procesados {electric_meters.count()} medidores. Creados: {total_records_created}, Actualizados: {total_records_updated}"
+
+    except Exception as e:
+        logger.error(f"=== ERROR EN TAREA: calculate_electric_meter_data ===")
+        logger.error(f"Error calculando datos de medidores eléctricos: {e}", exc_info=True)
+        raise
+
+def _calculate_daily_data(self, meter, start_date, end_date):
+    """
+    Calcula datos diarios para un medidor específico
+    """
+    records_created = 0
+    records_updated = 0
+    
+    current_date = start_date
+    while current_date <= end_date:
+        logger.info(f"  Procesando fecha: {current_date}")
+        
+        # Obtener mediciones del día
+        daily_measurements = Measurement.objects.filter(
+            device=meter,
+            date__date=current_date,
+            data__totalActivePower__isnull=False
+        ).order_by('date')
+
+        if not daily_measurements.exists():
+            logger.info(f"    No hay mediciones para {current_date}")
+            current_date += timedelta(days=1)
+            continue
+
+        # Calcular métricas diarias
+        daily_stats = daily_measurements.aggregate(
+            total_consumption=Sum(Cast(F('data__totalActivePower'), FloatField())),
+            peak_demand=Max(Cast(F('data__totalActivePower'), FloatField())),
+            avg_demand=Avg(Cast(F('data__totalActivePower'), FloatField())),
+            measurement_count=Count('id'),
+            last_measurement=Max('date')
+        )
+
+        # Calcular consumo acumulado (diferencia entre primera y última medición)
+        first_measurement = daily_measurements.first()
+        last_measurement = daily_measurements.last()
+        
+        cumulative_consumption = 0.0
+        if first_measurement and last_measurement:
+            first_value = first_measurement.data.get('totalActivePower', 0)
+            last_value = last_measurement.data.get('totalActivePower', 0)
+            cumulative_consumption = max(0, last_value - first_value)
+
+        # Crear o actualizar registro de consumo
+        consumption_record, created = ElectricMeterConsumption.objects.update_or_create(
+            device=meter,
+            institution=meter.institution,
+            date=current_date,
+            time_range='daily',
+            defaults={
+                'cumulative_active_power': cumulative_consumption,
+                'total_active_power': daily_stats['total_consumption'] or 0.0,
+                'peak_demand': daily_stats['peak_demand'] or 0.0,
+                'avg_demand': daily_stats['avg_demand'] or 0.0,
+                'measurement_count': daily_stats['measurement_count'] or 0,
+                'last_measurement_date': daily_stats['last_measurement']
+            }
+        )
+
+        if created:
+            records_created += 1
+        else:
+            records_updated += 1
+
+        # Calcular datos para gráficos (consumo por hora)
+        hourly_consumption = self._calculate_hourly_consumption(daily_measurements)
+        
+        # Encontrar hora pico
+        peak_hour = 0
+        peak_value = 0.0
+        for hour, consumption in enumerate(hourly_consumption):
+            if consumption > peak_value:
+                peak_value = consumption
+                peak_hour = hour
+
+        # Crear o actualizar datos de gráfico
+        chart_record, chart_created = ElectricMeterChartData.objects.update_or_create(
+            device=meter,
+            institution=meter.institution,
+            date=current_date,
+            defaults={
+                'hourly_consumption': hourly_consumption,
+                'daily_consumption': daily_stats['total_consumption'] or 0.0,
+                'peak_hour': peak_hour,
+                'peak_value': peak_value
+            }
+        )
+
+        current_date += timedelta(days=1)
+
+    return records_created, records_updated
+
+def _calculate_monthly_data(self, meter, start_date, end_date):
+    """
+    Calcula datos mensuales para un medidor específico
+    """
+    records_created = 0
+    records_updated = 0
+    
+    # Agrupar por mes
+    current_date = start_date.replace(day=1)  # Primer día del mes
+    while current_date <= end_date:
+        month_end = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        month_end = min(month_end, end_date)
+        
+        logger.info(f"  Procesando mes: {current_date.month}/{current_date.year}")
+        
+        # Obtener mediciones del mes
+        monthly_measurements = Measurement.objects.filter(
+            device=meter,
+            date__date__range=(current_date, month_end),
+            data__totalActivePower__isnull=False
+        ).order_by('date')
+
+        if not monthly_measurements.exists():
+            logger.info(f"    No hay mediciones para {current_date.month}/{current_date.year}")
+            current_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
+            continue
+
+        # Calcular métricas mensuales
+        monthly_stats = monthly_measurements.aggregate(
+            total_consumption=Sum(Cast(F('data__totalActivePower'), FloatField())),
+            peak_demand=Max(Cast(F('data__totalActivePower'), FloatField())),
+            avg_demand=Avg(Cast(F('data__totalActivePower'), FloatField())),
+            measurement_count=Count('id'),
+            last_measurement=Max('date')
+        )
+
+        # Calcular consumo acumulado del mes
+        first_measurement = monthly_measurements.first()
+        last_measurement = monthly_measurements.last()
+        
+        cumulative_consumption = 0.0
+        if first_measurement and last_measurement:
+            first_value = first_measurement.data.get('totalActivePower', 0)
+            last_value = last_measurement.data.get('totalActivePower', 0)
+            cumulative_consumption = max(0, last_value - first_value)
+
+        # Crear o actualizar registro de consumo
+        consumption_record, created = ElectricMeterConsumption.objects.update_or_create(
+            device=meter,
+            institution=meter.institution,
+            date=current_date,
+            time_range='monthly',
+            defaults={
+                'cumulative_active_power': cumulative_consumption,
+                'total_active_power': monthly_stats['total_consumption'] or 0.0,
+                'peak_demand': monthly_stats['peak_demand'] or 0.0,
+                'avg_demand': monthly_stats['avg_demand'] or 0.0,
+                'measurement_count': monthly_stats['measurement_count'] or 0,
+                'last_measurement_date': monthly_stats['last_measurement']
+            }
+        )
+
+        if created:
+            records_created += 1
+        else:
+            records_updated += 1
+
+        current_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
+
+    return records_created, records_updated
+
+def _calculate_hourly_consumption(self, measurements):
+    """
+    Calcula el consumo por hora del día basado en las mediciones
+    """
+    hourly_data = defaultdict(list)
+    
+    for measurement in measurements:
+        hour = measurement.date.hour
+        power_value = measurement.data.get('totalActivePower', 0)
+        hourly_data[hour].append(power_value)
+    
+    # Calcular promedio por hora
+    hourly_consumption = [0.0] * 24
+    for hour in range(24):
+        if hour in hourly_data:
+            hourly_consumption[hour] = sum(hourly_data[hour]) / len(hourly_data[hour])
+    
+    return hourly_consumption

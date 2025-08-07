@@ -3,6 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 import logging
 from datetime import datetime, timedelta, timezone, date
 from django.utils.decorators import method_decorator
@@ -13,12 +15,19 @@ import calendar
 import pytz
 
 # Importa los modelos de indicadores
-from .models import MonthlyConsumptionKPI, DailyChartData # Importación de DailyChartData
+from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData
 # Importa el cliente SCADA y los modelos DeviceCategory, Measurement, Device de scada_proxy
 from scada_proxy.scada_client import ScadaConnectorClient 
-from scada_proxy.models import DeviceCategory, Measurement, Device
+from scada_proxy.models import DeviceCategory, Measurement, Device, Institution
 # Importa las tareas de Celery
-from .tasks import calculate_monthly_consumption_kpi, calculate_and_save_daily_data
+from .tasks import calculate_electric_meter_data, calculate_monthly_consumption_kpi, calculate_and_save_daily_data
+
+# Importaciones adicionales para los nuevos modelos - CORREGIDAS
+from django.db.models import Q, Sum, Avg, Max, F, FloatField, Count
+from django.db.models.functions import Cast
+from drf_spectacular.utils import extend_schema, OpenApiTypes, OpenApiParameter, OpenApiRequest, OpenApiResponse
+from .serializers import MonthlyConsumptionKPISerializer, DailyChartDataSerializer, ElectricMeterConsumptionSerializer, ElectricMeterChartDataSerializer, ElectricMeterCalculationRequestSerializer, ElectricMeterCalculationResponseSerializer
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +41,11 @@ def get_colombia_now():
     from django.utils import timezone as dj_timezone
     return dj_timezone.now().astimezone(COLOMBIA_TZ)
 
-@method_decorator(cache_page(60 * 5), name='dispatch') # Cachear la respuesta por 5 minutos
+def get_colombia_date():
+    """Obtiene la fecha actual en zona horaria de Colombia"""
+    return get_colombia_now().date()
+
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class ConsumptionSummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -46,7 +59,33 @@ class ConsumptionSummaryView(APIView):
             logger.error(f"Error getting SCADA token: {e}")
             return Response({"detail": "No se pudo autenticar con la API SCADA. Revise las credenciales."}, status=status.HTTP_502_BAD_GATEWAY)
 
+    @extend_schema(
+        summary="Obtener resumen de consumo, generación y balance energético",
+        description="Obtiene el resumen de consumo, generación y balance energético mensual",
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "totalConsumption": {"type": "object"},
+                    "totalGeneration": {"type": "object"},
+                    "energyBalance": {"type": "object"},
+                    "averageInstantaneousPower": {"type": "object"},
+                    "avgDailyTemp": {"type": "object"},
+                    "relativeHumidity": {"type": "object"},
+                    "windSpeed": {"type": "object"},
+                    "activeInverters": {"type": "object"},
+                }
+            },
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Dashboard"]
+    )
     def get(self, request, *args, **kwargs):
+        """
+        GET /api/dashboard/summary/
+        
+        Obtiene el resumen de consumo, generación y balance energético mensual.
+        """
         token = self.get_scada_token()
         if isinstance(token, Response):
             return token
@@ -93,7 +132,6 @@ class ConsumptionSummaryView(APIView):
             avg_wind_speed_current = kpi_record.avg_wind_speed_current_month
             avg_wind_speed_previous = kpi_record.avg_wind_speed_previous_month
             logger.info(f"Avg Wind Speed: Current: {avg_wind_speed_current} km/h, Previous: {avg_wind_speed_previous} km/h")
-
 
             # --- Inversores Activos (Real-time from SCADA API) ---
             active_inverters_count = 0
@@ -259,7 +297,6 @@ class ConsumptionSummaryView(APIView):
                     
                     description_text = f"{'+' if change_percentage >= 0 else ''}{change_percentage:.2f}% vs mes pasado"
 
-
                 change_text = f"{'+' if change_percentage >= 0 else ''}{change_percentage:.2f}% vs mes pasado"
                 
                 return {
@@ -363,10 +400,49 @@ class ConsumptionSummaryView(APIView):
 class ChartDataView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Obtener datos diarios de consumo, generación, balance y temperatura",
+        description="Obtiene datos diarios de consumo, generación, balance y temperatura para gráficos.",
+        parameters=[
+            OpenApiParameter(
+                name='start_date',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                description="Fecha de inicio en formato YYYY-MM-DD",
+                required=False
+            ),
+            OpenApiParameter(
+                name='end_date',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                description="Fecha de fin en formato YYYY-MM-DD",
+                required=False
+            ),
+        ],
+        responses={
+            200: {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "date": {"type": "string"},
+                        "daily_consumption": {"type": "number"},
+                        "daily_generation": {"type": "number"},
+                        "daily_balance": {"type": "number"},
+                        "avg_daily_temp": {"type": "number"},
+                    }
+                }
+            },
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Dashboard"]
+    )
     def get(self, request, *args, **kwargs):
         """
-        Retorna los datos diarios de consumo, generación, balance y temperatura
-        para un rango de fechas. Por defecto, retorna los datos de los últimos 60 días.
+        GET /api/dashboard/chart-data/
+        
+        Obtiene datos diarios de consumo, generación, balance y temperatura para gráficos.
+        Por defecto, retorna los datos de los últimos 60 días.
         """
         try:
             start_date_str = request.query_params.get('start_date')
@@ -415,7 +491,28 @@ class CalculateKPIsView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Ejecutar cálculo de KPIs mensuales",
+        description="Ejecuta manualmente el cálculo de KPIs mensuales.",
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "message": {"type": "string"},
+                    "task_result": {"type": "string"},
+                    "status": {"type": "string"},
+                }
+            },
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Dashboard"]
+    )
     def post(self, request, *args, **kwargs):
+        """
+        POST /api/dashboard/calculate-kpis/
+        
+        Ejecuta manualmente la tarea de cálculo de KPIs mensuales.
+        """
         try:
             logger.info("=== INICIANDO CÁLCULO MANUAL DE KPIs ===")
             
@@ -443,7 +540,43 @@ class CalculateDailyDataView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Ejecutar cálculo de datos diarios",
+        description="Ejecuta manualmente el cálculo de datos diarios.",
+        request={
+            "type": "object",
+            "properties": {
+                "days_back": {
+                    "type": "integer",
+                    "description": "Número de días hacia atrás para calcular",
+                    "default": 3
+                }
+            }
+        },
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "message": {"type": "string"},
+                    "start_date": {"type": "string"},
+                    "end_date": {"type": "string"},
+                    "task_result": {"type": "string"},
+                    "status": {"type": "string"},
+                }
+            },
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Dashboard"]
+    )
     def post(self, request, *args, **kwargs):
+        """
+        POST /api/dashboard/calculate-daily-data/
+        
+        Ejecuta manualmente la tarea de cálculo de datos diarios.
+        
+        Cuerpo de la petición:
+        - days_back: número de días hacia atrás para calcular (por defecto: 3)
+        """
         try:
             logger.info("=== INICIANDO CÁLCULO MANUAL DE DATOS DIARIOS ===")
             
@@ -477,4 +610,617 @@ class CalculateDailyDataView(APIView):
             return Response({
                 "message": f"Error al ejecutar cálculo de datos diarios: {str(e)}",
                 "status": "error"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class ElectricMeterIndicatorsView(APIView):
+    """
+    Vista para obtener indicadores de medidores eléctricos filtrados por:
+    - Rango de tiempo (diario/mensual)
+    - Institución (Udenar, Cesmag, Mariana, UCC, HUDN)
+    - Medidor específico
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Obtener indicadores de medidores eléctricos",
+        description="Obtiene indicadores de consumo de medidores eléctricos filtrados por institución, rango de tiempo y medidor específico",
+        parameters=[
+            OpenApiParameter(
+                name='time_range',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Rango de tiempo para los datos (daily/monthly)",
+                enum=['daily', 'monthly'],
+                default='daily'
+            ),
+            OpenApiParameter(
+                name='institution_id',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description="ID de la institución (requerido)",
+                required=True
+            ),
+            OpenApiParameter(
+                name='device_id',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="ID específico del medidor (opcional)"
+            ),
+            OpenApiParameter(
+                name='start_date',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                description="Fecha de inicio en formato YYYY-MM-DD"
+            ),
+            OpenApiParameter(
+                name='end_date',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                description="Fecha de fin en formato YYYY-MM-DD"
+            ),
+        ],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "time_range": {"type": "string"},
+                    "institution_id": {"type": "string"},
+                    "institution_name": {"type": "string"},
+                    "device_id": {"type": "string", "nullable": True},
+                    "start_date": {"type": "string"},
+                    "end_date": {"type": "string"},
+                    "consumption_data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "date": {"type": "string"},
+                                "device_id": {"type": "integer"},
+                                "device_name": {"type": "string"},
+                                "institution_name": {"type": "string"},
+                                "cumulative_active_power": {"type": "number"},
+                                "total_active_power": {"type": "number"},
+                                "peak_demand": {"type": "number"},
+                                "avg_demand": {"type": "number"},
+                                "measurement_count": {"type": "integer"},
+                                "last_measurement_date": {"type": "string", "nullable": True},
+                            }
+                        }
+                    },
+                    "chart_data": {"type": "array", "items": {"type": "object"}},
+                    "summary": {
+                        "type": "object",
+                        "properties": {
+                            "total_consumption": {"type": "number"},
+                            "avg_daily_consumption": {"type": "number"},
+                            "peak_demand": {"type": "number"},
+                            "total_devices": {"type": "integer"},
+                            "active_devices": {"type": "integer"},
+                            "days_processed": {"type": "integer"},
+                        }
+                    },
+                }
+            },
+            400: {"description": "Parámetros inválidos"},
+            404: {"description": "Institución no encontrada"},
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Medidores Eléctricos"]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/electric-meters/
+        
+        Obtiene indicadores de consumo de medidores eléctricos filtrados por institución, 
+        rango de tiempo y medidor específico.
+        
+        Parámetros de consulta:
+        - time_range: 'daily' o 'monthly' (por defecto: 'daily')
+        - institution_id: ID de la institución (requerido)
+        - device_id: ID del medidor específico (opcional)
+        - start_date: fecha de inicio (YYYY-MM-DD)
+        - end_date: fecha de fin (YYYY-MM-DD)
+        """
+        try:
+            # Obtener parámetros de consulta
+            time_range = request.query_params.get('time_range', 'daily')
+            institution_id = request.query_params.get('institution_id')
+            device_id = request.query_params.get('device_id')
+            start_date_str = request.query_params.get('start_date')
+            end_date_str = request.query_params.get('end_date')
+
+            # Validar parámetros
+            if time_range not in ['daily', 'monthly']:
+                return Response(
+                    {"detail": "time_range debe ser 'daily' o 'monthly'"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if not institution_id:
+                return Response(
+                    {"detail": "institution_id es requerido"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Procesar fechas
+            if not start_date_str or not end_date_str:
+                # Por defecto, último mes
+                end_date = get_colombia_now().date()
+                start_date = end_date - timedelta(days=30)
+            else:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+            # Obtener la institución
+            try:
+                institution = Institution.objects.get(id=institution_id)
+            except Institution.DoesNotExist:
+                return Response(
+                    {"detail": "Institución no encontrada"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Construir filtros para datos locales
+            filters = {
+                'time_range': time_range,
+                'date__range': (start_date, end_date),
+                'institution': institution
+            }
+
+            if device_id:
+                filters['device__scada_id'] = device_id
+
+            # Obtener datos de consumo locales
+            consumption_data = ElectricMeterConsumption.objects.filter(**filters).select_related(
+                'device', 'institution'
+            ).order_by('date')
+
+            # Obtener datos de gráficos si es necesario
+            chart_data = None
+            if time_range == 'daily':
+                chart_filters = {
+                    'date__range': (start_date, end_date),
+                    'institution': institution
+                }
+                if device_id:
+                    chart_filters['device__scada_id'] = device_id
+
+                chart_data = ElectricMeterChartData.objects.filter(**chart_filters).select_related(
+                    'device', 'institution'
+                ).order_by('date')
+
+            # Formatear respuesta
+            response_data = {
+                'time_range': time_range,
+                'institution_id': institution_id,
+                'institution_name': institution.name,
+                'device_id': device_id,
+                'start_date': start_date.isoformat(),
+                'end_date': end_date.isoformat(),
+                'consumption_data': [],
+                'chart_data': [],
+                'summary': {
+                    'total_consumption': 0.0,
+                    'avg_daily_consumption': 0.0,
+                    'peak_demand': 0.0,
+                    'total_devices': 0,
+                    'active_devices': 0
+                }
+            }
+
+            # Procesar datos de consumo
+            total_consumption = 0.0
+            peak_demand = 0.0
+            devices_processed = set()
+
+            for record in consumption_data:
+                devices_processed.add(record.device_id)
+                total_consumption += record.total_active_power
+                peak_demand = max(peak_demand, record.peak_demand)
+
+                response_data['consumption_data'].append({
+                    'date': record.date.isoformat(),
+                    'device_id': record.device_id,
+                    'device_name': record.device.name,
+                    'institution_name': record.institution.name,
+                    'cumulative_active_power': record.cumulative_active_power,
+                    'total_active_power': record.total_active_power,
+                    'peak_demand': record.peak_demand,
+                    'avg_demand': record.avg_demand,
+                    'measurement_count': record.measurement_count,
+                    'last_measurement_date': record.last_measurement_date.isoformat() if record.last_measurement_date else None
+                })
+
+            # Procesar datos de gráficos
+            if chart_data:
+                for record in chart_data:
+                    response_data['chart_data'].append({
+                        'date': record.date.isoformat(),
+                        'device_id': record.device_id,
+                        'device_name': record.device.name,
+                        'institution_name': record.institution.name,
+                        'hourly_consumption': record.hourly_consumption,
+                        'daily_consumption': record.daily_consumption,
+                        'peak_hour': record.peak_hour,
+                        'peak_value': record.peak_value
+                    })
+
+            # Calcular resumen
+            days_count = (end_date - start_date).days + 1
+            response_data['summary'] = {
+                'total_consumption': total_consumption,
+                'avg_daily_consumption': total_consumption / days_count if days_count > 0 else 0.0,
+                'peak_demand': peak_demand,
+                'total_devices': len(devices_processed),
+                'active_devices': len(devices_processed),
+                'days_processed': days_count
+            }
+
+            return Response(response_data)
+
+        except Exception as e:
+            logger.error(f"Error en ElectricMeterIndicatorsView: {e}", exc_info=True)
+            return Response(
+                {"detail": f"Error interno del servidor: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class InstitutionsListView(APIView):
+    """
+    Vista para obtener la lista de instituciones disponibles
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Obtener lista de instituciones",
+        description="Obtiene la lista de todas las instituciones disponibles en el sistema",
+        responses={
+            200: {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "name": {"type": "string"},
+                        "scada_id": {"type": "string"},
+                    }
+                }
+            },
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Instituciones"]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/institutions/
+        
+        Obtiene la lista de todas las instituciones disponibles en el sistema.
+        """
+        try:
+            institutions = Institution.objects.all().values('id', 'name', 'scada_id')
+            return Response(list(institutions))
+        except Exception as e:
+            logger.error(f"Error en InstitutionsListView: {e}", exc_info=True)
+            return Response(
+                {"detail": f"Error interno del servidor: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class ElectricMetersListView(APIView):
+    """
+    Vista para obtener la lista de medidores eléctricos por institución
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Obtener lista de medidores eléctricos",
+        description="Obtiene la lista de medidores eléctricos, opcionalmente filtrados por institución",
+        parameters=[
+            OpenApiParameter(
+                name='institution_id',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description="ID de la institución para filtrar medidores (opcional)"
+            ),
+        ],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "institution_id": {"type": "integer", "nullable": True},
+                    "devices": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "scada_id": {"type": "string"},
+                                "name": {"type": "string"},
+                                "institution_id": {"type": "string"},
+                                "institution_name": {"type": "string"},
+                                "status": {"type": "string"},
+                                "is_active": {"type": "boolean"},
+                                "description": {"type": "string"},
+                                "location": {"type": "object"},
+                            }
+                        }
+                    },
+                    "total_count": {"type": "integer"},
+                }
+            },
+            404: {"description": "Institución no encontrada"},
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Medidores Eléctricos"]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/electric-meters/list/
+        
+        Obtiene la lista de medidores eléctricos, opcionalmente filtrados por institución.
+        
+        Parámetros de consulta:
+        - institution_id: ID de la institución (opcional)
+        """
+        try:
+            institution_id = request.query_params.get('institution_id')
+            
+            # Obtener medidores eléctricos directamente de la base de datos local
+            try:
+                # Obtener la categoría de medidores eléctricos
+                electric_meter_category = DeviceCategory.objects.get(name='electricMeter')
+                
+                # Obtener todos los dispositivos de esta categoría
+                local_devices = Device.objects.filter(
+                    category=electric_meter_category,
+                    is_active=True
+                ).select_related('institution')
+                
+                logger.info(f"Dispositivos encontrados en BD local: {local_devices.count()}")
+                
+            except DeviceCategory.DoesNotExist:
+                logger.error("Categoría 'electricMeter' no encontrada")
+                return Response(
+                    {"detail": "Categoría de medidores eléctricos no encontrada"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            except Exception as e:
+                logger.error(f"Error obteniendo dispositivos de BD local: {e}")
+                return Response(
+                    {"detail": f"Error obteniendo dispositivos: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+            # Filtrar por institución si se especifica
+            if institution_id:
+                try:
+                    institution = Institution.objects.get(id=institution_id)
+                    local_devices = local_devices.filter(institution=institution)
+                    logger.info(f"Dispositivos filtrados por institución {institution.name}: {local_devices.count()}")
+                except Institution.DoesNotExist:
+                    return Response(
+                        {"detail": "Institución no encontrada"},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+
+            # Formatear respuesta
+            devices_list = []
+            for device in local_devices:
+                devices_list.append({
+                    'scada_id': device.scada_id,
+                    'name': device.name,
+                    'institution_id': device.institution.scada_id if device.institution else None,
+                    'institution_name': device.institution.name if device.institution else 'Sin institución',
+                    'status': device.status or 'unknown',
+                    'is_active': device.is_active,
+                    'description': device.name,  # Usar el nombre como descripción
+                    'location': {}  # No tenemos datos de ubicación en el modelo local
+                })
+
+            logger.info(f"Respuesta formateada con {len(devices_list)} dispositivos")
+
+            return Response({
+                'institution_id': institution_id,
+                'devices': devices_list,
+                'total_count': len(devices_list)
+            })
+
+        except Exception as e:
+            logger.error(f"Error en ElectricMetersListView: {e}", exc_info=True)
+            return Response(
+                {"detail": f"Error interno del servidor: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class CalculateElectricMeterDataView(APIView):
+    """
+    Vista para ejecutar manualmente el cálculo de datos de medidores eléctricos
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Calcular datos de medidores eléctricos",
+        description="Ejecuta manualmente el cálculo de datos de medidores eléctricos para un rango de tiempo específico. "
+                   "Este endpoint inicia una tarea asíncrona que procesa los datos de consumo de energía "
+                   "para los medidores eléctricos de la institución especificada.",
+        request=ElectricMeterCalculationRequestSerializer,
+        responses={
+            200: ElectricMeterCalculationResponseSerializer,
+            400: OpenApiResponse(
+                description="Datos de entrada inválidos",
+                examples=[
+                    OpenApiExample(
+                        "Error de validación",
+                        value={
+                            "detail": "Los datos proporcionados no son válidos",
+                            "errors": {
+                                "institution_id": ["Este campo es requerido."],
+                                "start_date": ["Fecha de inicio debe ser anterior a fecha de fin."]
+                            }
+                        }
+                    )
+                ]
+            ),
+            500: OpenApiResponse(
+                description="Error interno del servidor",
+                examples=[
+                    OpenApiExample(
+                        "Error de cálculo",
+                        value={
+                            "detail": "Error al procesar los datos de medidores eléctricos",
+                            "error": "No se pudieron obtener datos del servidor SCADA"
+                        }
+                    )
+                ]
+            )
+        },
+        examples=[
+            OpenApiExample(
+                "Cálculo diario",
+                value={
+                    "time_range": "daily",
+                    "start_date": "2024-01-01",
+                    "end_date": "2024-01-31",
+                    "institution_id": 1
+                },
+                description="Ejemplo de cálculo diario para una institución"
+            ),
+            OpenApiExample(
+                "Cálculo mensual con medidor específico",
+                value={
+                    "time_range": "monthly",
+                    "start_date": "2024-01-01",
+                    "end_date": "2024-12-31",
+                    "institution_id": 2,
+                    "device_id": "3ccb420f-e6a0-4461-8dc6-e8568bd699f0"
+                },
+                description="Ejemplo de cálculo mensual para un medidor específico"
+            )
+        ]
+    )
+    def post(self, request, *args, **kwargs):
+        """
+        POST /api/electric-meters/calculate/
+        
+        Ejecuta el cálculo de datos de medidores eléctricos.
+        
+        Headers requeridos:
+        - Authorization: Token <token>
+        - Content-Type: application/json
+        
+        Body requerido:
+        - time_range: 'daily' o 'monthly'
+        - start_date: YYYY-MM-DD
+        - end_date: YYYY-MM-DD
+        - institution_id: integer
+        - device_id: string (opcional)
+        """
+        try:
+            # Validar datos de entrada
+            serializer = ElectricMeterCalculationRequestSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response({
+                    "detail": "Los datos proporcionados no son válidos",
+                    "errors": serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            validated_data = serializer.validated_data
+            
+            # Ejecutar tarea de cálculo
+            task = calculate_electric_meter_data.delay(
+                time_range=validated_data['time_range'],
+                start_date_str=validated_data['start_date'].isoformat(),
+                end_date_str=validated_data['end_date'].isoformat(),
+                institution_id=validated_data['institution_id'],
+                device_id=validated_data.get('device_id')
+            )
+            
+            logger.info(f"Tarea de cálculo iniciada: {task.id} para institución {validated_data['institution_id']}")
+            
+            return Response({
+                "success": True,
+                "message": "Cálculo de datos de medidores eléctricos iniciado correctamente",
+                "task_id": task.id,
+                "processed_devices": 0,  # Se actualizará cuando termine la tarea
+                "total_consumption": 0.0  # Se actualizará cuando termine la tarea
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error en cálculo de medidores eléctricos: {str(e)}")
+            return Response({
+                "success": False,
+                "detail": "Error al procesar los datos de medidores eléctricos",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class TriggerElectricMeterCalculationView(APIView):
+    """
+    Vista para disparar el cálculo de datos de medidores eléctricos
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Disparar cálculo de datos de medidores eléctricos",
+        description="Inicia el cálculo de datos de medidores eléctricos para los filtros especificados",
+        request=ElectricMeterCalculationRequestSerializer,
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "success": {"type": "boolean"},
+                    "message": {"type": "string"},
+                    "task_id": {"type": "string"},
+                }
+            },
+            400: {"description": "Datos de entrada inválidos"},
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Medidores Eléctricos"]
+    )
+    def post(self, request, *args, **kwargs):
+        """
+        POST /api/electric-meters/trigger-calculation/
+        
+        Dispara el cálculo de datos de medidores eléctricos.
+        """
+        try:
+            # Validar datos de entrada
+            serializer = ElectricMeterCalculationRequestSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response({
+                    "detail": "Los datos proporcionados no son válidos",
+                    "errors": serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            validated_data = serializer.validated_data
+            
+            # Ejecutar tarea de cálculo
+            task = calculate_electric_meter_data.delay(
+                time_range=validated_data['time_range'],
+                start_date_str=validated_data['start_date'].isoformat(),
+                end_date_str=validated_data['end_date'].isoformat(),
+                institution_id=validated_data['institution_id'],
+                device_id=validated_data.get('device_id')
+            )
+            
+            logger.info(f"Tarea de cálculo disparada: {task.id}")
+            
+            return Response({
+                "success": True,
+                "message": "Cálculo de datos iniciado correctamente",
+                "task_id": task.id
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error disparando cálculo de medidores eléctricos: {str(e)}")
+            return Response({
+                "success": False,
+                "detail": "Error al iniciar el cálculo",
+                "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

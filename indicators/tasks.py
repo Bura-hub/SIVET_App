@@ -90,9 +90,6 @@ def calculate_monthly_consumption_kpi(self):
             total_sum=Sum(Cast(F('data__totalActivePower'), FloatField()))
         )['total_sum'] or 0.0
 
-        # Convertir de Wh a kWh
-        current_month_consumption_sum = current_month_consumption_sum / 1000.0
-
         previous_month_consumption_sum = Measurement.objects.filter(
             device__in=electric_meters,
             date__date__range=(start_previous_month, end_previous_month),
@@ -100,7 +97,7 @@ def calculate_monthly_consumption_kpi(self):
         ).aggregate(
             total_sum=Sum(Cast(F('data__totalActivePower'), FloatField()))
         )['total_sum'] or 0.0
-        logger.info(f"Consumo total - Mes actual: {current_month_consumption_sum:.2f} Wh, Mes anterior: {previous_month_consumption_sum:.2f} Wh")
+        logger.info(f"Consumo total - Mes actual: {current_month_consumption_sum:.2f} kWh, Mes anterior: {previous_month_consumption_sum:.2f} kWh")
 
         # --- Cálculo de Generación Total (Inversores) ---
         logger.info("Calculando generación total (inversores)...")

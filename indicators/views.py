@@ -185,20 +185,42 @@ class ConsumptionSummaryView(APIView):
 
             # Función de conversión de unidades
             def format_energy_value(value_base_unit, base_unit_name="kWh"):
+                # Manejar valores negativos para el equilibrio energético
+                is_negative = value_base_unit < 0
+                abs_value = abs(value_base_unit)
+                
                 if base_unit_name == "kWh":
-                    if value_base_unit >= 1_000_000:
-                        return f"{value_base_unit / 1_000_000:.2f}", "GWh"
-                    elif value_base_unit >= 1_000:
-                        return f"{value_base_unit / 1_000:.2f}", "MWh"
+                    if abs_value >= 1_000_000:
+                        formatted_value = abs_value / 1_000_000
+                        unit = "GWh"
+                    elif abs_value >= 1_000:
+                        formatted_value = abs_value / 1_000
+                        unit = "MWh"
                     else:
-                        return f"{value_base_unit:.2f}", "kWh"
+                        formatted_value = abs_value
+                        unit = "kWh"
+                    
+                    # Aplicar signo negativo si es necesario
+                    if is_negative:
+                        return f"-{formatted_value:.2f}", unit
+                    else:
+                        return f"{formatted_value:.2f}", unit
                 elif base_unit_name == "W":
-                    if value_base_unit >= 1_000_000:
-                        return f"{value_base_unit / 1_000_000:.2f}", "MW"
-                    elif value_base_unit >= 1_000:
-                        return f"{value_base_unit / 1_000:.2f}", "kW"
+                    if abs_value >= 1_000_000:
+                        formatted_value = abs_value / 1_000_000
+                        unit = "MW"
+                    elif abs_value >= 1_000:
+                        formatted_value = abs_value / 1_000
+                        unit = "kW"
                     else:
-                        return f"{value_base_unit:.2f}", "W"
+                        formatted_value = abs_value
+                        unit = "W"
+                    
+                    # Aplicar signo negativo si es necesario
+                    if is_negative:
+                        return f"-{formatted_value:.2f}", unit
+                    else:
+                        return f"{formatted_value:.2f}", unit
                 elif base_unit_name == "°C": 
                     return f"{value_base_unit:.1f}", "°C" 
                 elif base_unit_name == "%RH": 
@@ -388,9 +410,34 @@ class ConsumptionSummaryView(APIView):
 
 # --- NUEVA CLASE PARA LOS DATOS DEL GRÁFICO (REEMPLAZA A LA FUNCIÓN) ---
 
-@method_decorator(cache_page(60 * 5), name='dispatch') # Cachear la respuesta por 5 minutos
+# Modificar la vista ChartDataView para incluir unidades automáticas
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class ChartDataView(APIView):
     permission_classes = [IsAuthenticated]
+
+    def format_energy_value(self, value_base_unit, base_unit_name="kWh"):
+        # Manejar valores negativos para el equilibrio energético
+        is_negative = value_base_unit < 0
+        abs_value = abs(value_base_unit)
+        
+        if base_unit_name == "kWh":
+            if abs_value >= 1_000_000:
+                formatted_value = abs_value / 1_000_000
+                unit = "GWh"
+            elif abs_value >= 1_000:
+                formatted_value = abs_value / 1_000
+                unit = "MWh"
+            else:
+                formatted_value = abs_value
+                unit = "kWh"
+            
+            # Aplicar signo negativo si es necesario
+            if is_negative:
+                return f"-{formatted_value:.2f}", unit
+            else:
+                return f"{formatted_value:.2f}", unit
+        else:
+            return f"{value_base_unit:.2f}", base_unit_name
 
     @extend_schema(
         summary="Obtener datos diarios de consumo, generación, balance y temperatura",
@@ -458,14 +505,67 @@ class ChartDataView(APIView):
                 date__range=(start_date, end_date)
             ).order_by('date').values('date', 'daily_consumption', 'daily_generation', 'daily_balance', 'avg_daily_temp')
 
+            # Calcular unidades automáticas basadas en los valores
+            consumption_values = [item['daily_consumption'] for item in chart_data if item['daily_consumption'] is not None]
+            generation_values = [item['daily_generation'] for item in chart_data if item['daily_generation'] is not None]
+            balance_values = [item['daily_balance'] for item in chart_data if item['daily_balance'] is not None]
+            
+            # Determinar unidades automáticas
+            max_consumption = max(consumption_values) if consumption_values else 0
+            max_generation = max(generation_values) if generation_values else 0
+            max_balance = max(abs(min(balance_values)) if balance_values else 0, abs(max(balance_values)) if balance_values else 0)
+            
+            # IMPORTANTE: Los datos ya están convertidos a kWh en las tareas de Celery
+            # Consumo: totalActivePower (kW) → kWh (ya convertido en tasks.py)
+            # Generación: acPower (W) → kWh (ya convertido en tasks.py)
+
+            # Determinar unidades para consumo (usar la misma lógica que format_energy_value)
+            if max_consumption >= 1_000_000:
+                consumption_unit = "GWh"
+                consumption_divider = 1_000_000
+            elif max_consumption >= 1_000:
+                consumption_unit = "MWh"
+                consumption_divider = 1_000
+            else:
+                consumption_unit = "kWh"
+                consumption_divider = 1
+
+            # Determinar unidades para generación (usar la misma lógica)
+            if max_generation >= 1_000_000:
+                generation_unit = "GWh"
+                generation_divider = 1_000_000
+            elif max_generation >= 1_000:
+                generation_unit = "MWh"
+                generation_divider = 1_000
+            else:
+                generation_unit = "kWh"
+                generation_divider = 1
+
+            # Determinar unidades para balance (usar la misma lógica)
+            if max_balance >= 1_000_000:
+                balance_unit = "GWh"
+                balance_divider = 1_000_000
+            elif max_balance >= 1_000:
+                balance_unit = "MWh"
+                balance_divider = 1_000
+            else:
+                balance_unit = "kWh"
+                balance_divider = 1
+
             # Formatear el queryset a una lista de diccionarios con fechas en formato string
             response_data = [
                 {
                     'date': item['date'].isoformat(),
-                    'daily_consumption': item['daily_consumption'],
-                    'daily_generation': item['daily_generation'],
-                    'daily_balance': item['daily_balance'],
-                    'avg_daily_temp': item['avg_daily_temp']
+                    'daily_consumption': item['daily_consumption'] / consumption_divider if item['daily_consumption'] is not None else 0,
+                    'daily_generation': item['daily_generation'] / generation_divider if item['daily_generation'] is not None else 0,
+                    'daily_balance': item['daily_balance'] / balance_divider if item['daily_balance'] is not None else 0,
+                    'avg_daily_temp': item['avg_daily_temp'],
+                    'units': {
+                        'consumption': consumption_unit,
+                        'generation': generation_unit,
+                        'balance': balance_unit,
+                        'temperature': '°C'
+                    }
                 }
                 for item in chart_data
             ]

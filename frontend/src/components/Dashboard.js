@@ -582,25 +582,27 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     updateTemperatureChart(sortedCurrentData, sortedPrevData);
   };
 
-  // Funciones específicas para actualizar cada gráfico
+  // Modificar las funciones de actualización de gráficos para usar unidades dinámicas
   const updateConsumptionChart = (currentData, prevData) => {
-        setElectricityConsumptionData({
+    const units = currentData[0]?.units?.consumption || 'kWh';
+    
+    setElectricityConsumptionData({
       labels: currentData.map(item => formatAPIDateForDisplay(item.date)),
-          datasets: [
-            {
-              label: 'Actual (MWh)',
-          data: currentData.map(item => parseFloat(item.daily_consumption)), // Usar valor tal como viene del backend
-              borderColor: '#3B82F6',
-              backgroundColor: 'rgba(59, 130, 246, 0.2)',
-              fill: true,
+      datasets: [
+        {
+          label: `Actual (${units})`,
+          data: currentData.map(item => parseFloat(item.daily_consumption)),
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59, 130, 246, 0.2)',
+          fill: true,
           tension: 0.4
-            },
-            {
-              label: 'Anterior (MWh)',
-          data: prevData.map(item => parseFloat(item.daily_consumption)), // Usar valor tal como viene del backend
-              borderColor: '#A1A1AA',
-              backgroundColor: 'rgba(161, 161, 170, 0.2)',
-              fill: true,
+        },
+        {
+          label: `Anterior (${units})`,
+          data: prevData.map(item => parseFloat(item.daily_consumption)),
+          borderColor: '#A1A1AA',
+          backgroundColor: 'rgba(161, 161, 170, 0.2)',
+          fill: true,
           tension: 0.4
         }
       ]
@@ -608,60 +610,64 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
   };
 
   const updateGenerationChart = (currentData, prevData) => {
-        setInverterGenerationData({
+    const units = currentData[0]?.units?.generation || 'kWh';
+    
+    setInverterGenerationData({
       labels: currentData.map(item => formatAPIDateForDisplay(item.date)),
-          datasets: [
-            {
-              label: 'Actual (MWh)',
-          data: currentData.map(item => parseFloat(item.daily_generation)), // Usar valor tal como viene del backend
-              backgroundColor: '#10B981',
-              borderColor: '#059669',
-              borderWidth: 1,
-              borderRadius: 5,
-            },
-            {
-              label: 'Anterior (MWh)',
-          data: prevData.map(item => parseFloat(item.daily_generation)), // Usar valor tal como viene del backend
-              backgroundColor: 'rgba(161, 161, 170, 0.6)',
-              borderColor: 'rgba(161, 161, 170, 1)',
-              borderWidth: 1,
-              borderRadius: 5,
+      datasets: [
+        {
+          label: `Actual (${units})`,
+          data: currentData.map(item => parseFloat(item.daily_generation)),
+          backgroundColor: '#10B981',
+          borderColor: '#059669',
+          borderWidth: 1,
+          borderRadius: 5,
+        },
+        {
+          label: `Anterior (${units})`,
+          data: prevData.map(item => parseFloat(item.daily_generation)),
+          backgroundColor: 'rgba(161, 161, 170, 0.6)',
+          borderColor: 'rgba(161, 161, 170, 1)',
+          borderWidth: 1,
+          borderRadius: 5,
         }
       ]
-        });
+    });
   };
 
   const updateBalanceChart = (currentData, prevData) => {
-        setEnergyBalanceData({
+    const units = currentData[0]?.units?.balance || 'kWh';
+    
+    setEnergyBalanceData({
       labels: currentData.map(item => formatAPIDateForDisplay(item.date)),
-          datasets: [
-            {
-              label: 'Actual (MWh)',
-          data: currentData.map(item => parseFloat(item.daily_balance)), // Usar valor tal como viene del backend
-              borderColor: '#8B5CF6',
-              backgroundColor: (context) => {
-                const chart = context.chart;
-                const { ctx, chartArea } = chart;
-                if (!chartArea) return;
-                const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                gradient.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
-                gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.2)');
-                gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
-                return gradient;
-              },
-              fill: true,
-              tension: 0.4,
-            },
-            {
-              label: 'Anterior (MWh)',
-          data: prevData.map(item => parseFloat(item.daily_balance)), // Usar valor tal como viene del backend
-              borderColor: '#3B82F6',
-              backgroundColor: 'rgba(59, 130, 246, 0.2)',
-              fill: false,
-              tension: 0.4,
+      datasets: [
+        {
+          label: `Actual (${units})`,
+          data: currentData.map(item => parseFloat(item.daily_balance)),
+          borderColor: '#8B5CF6',
+          backgroundColor: (context) => {
+            const chart = context.chart;
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return;
+            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+            gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.2)');
+            gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+            return gradient;
+          },
+          fill: true,
+          tension: 0.4,
+        },
+        {
+          label: `Anterior (${units})`,
+          data: prevData.map(item => parseFloat(item.daily_balance)),
+          borderColor: 'rgba(161, 161, 170, 1)',
+          backgroundColor: 'rgba(161, 161, 170, 0.2)',
+          fill: true,
+          tension: 0.4,
         }
       ]
-        });
+    });
   };
 
   const updateTemperatureChart = (currentData, prevData) => {

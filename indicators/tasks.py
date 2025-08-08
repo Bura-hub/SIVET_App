@@ -81,6 +81,7 @@ def calculate_monthly_consumption_kpi(self):
 
         # --- Cálculo de Consumo Total (Medidores Eléctricos) ---
         logger.info("Calculando consumo total (medidores eléctricos)...")
+        # Cambiar el cálculo de consumo para que sea consistente
         current_month_consumption_sum = Measurement.objects.filter(
             device__in=electric_meters,
             date__date__range=(start_current_month, end_current_month),
@@ -88,6 +89,9 @@ def calculate_monthly_consumption_kpi(self):
         ).aggregate(
             total_sum=Sum(Cast(F('data__totalActivePower'), FloatField()))
         )['total_sum'] or 0.0
+
+        # Convertir de Wh a kWh
+        current_month_consumption_sum = current_month_consumption_sum / 1000.0
 
         previous_month_consumption_sum = Measurement.objects.filter(
             device__in=electric_meters,
@@ -100,22 +104,50 @@ def calculate_monthly_consumption_kpi(self):
 
         # --- Cálculo de Generación Total (Inversores) ---
         logger.info("Calculando generación total (inversores)...")
-        current_month_generation_sum = Measurement.objects.filter(
+
+        # Cálculo para el mes actual
+        current_month_generation = Measurement.objects.filter(
             device__in=inverters,
             date__date__range=(start_current_month, end_current_month),
             data__acPower__isnull=False
-        ).aggregate(
-            total_sum=Sum(Cast(F('data__acPower'), FloatField()))
-        )['total_sum'] or 0.0
-        
-        previous_month_generation_sum = Measurement.objects.filter(
+        ).annotate(
+            day=TruncDay('date')
+        ).values('day').annotate(
+            total_power=Sum(Cast(F('data__acPower'), FloatField())),
+            measurements_count=Count('id')
+        ).order_by('day')
+
+        current_month_generation_sum = 0
+        for day_data in current_month_generation:
+            hours_in_day = 24
+            daily_energy_wh = (day_data['total_power'] / day_data['measurements_count']) * hours_in_day
+            current_month_generation_sum += daily_energy_wh
+
+        # Convertir a kWh
+        current_month_generation_sum = current_month_generation_sum / 1000.0
+
+        # Cálculo para el mes anterior
+        previous_month_generation = Measurement.objects.filter(
             device__in=inverters,
             date__date__range=(start_previous_month, end_previous_month),
             data__acPower__isnull=False
-        ).aggregate(
-            total_sum=Sum(Cast(F('data__acPower'), FloatField()))
-        )['total_sum'] or 0.0
-        logger.info(f"Generación total - Mes actual: {current_month_generation_sum:.2f} Wh, Mes anterior: {previous_month_generation_sum:.2f} Wh")
+        ).annotate(
+            day=TruncDay('date')
+        ).values('day').annotate(
+            total_power=Sum(Cast(F('data__acPower'), FloatField())),
+            measurements_count=Count('id')
+        ).order_by('day')
+
+        previous_month_generation_sum = 0
+        for day_data in previous_month_generation:
+            hours_in_day = 24
+            daily_energy_wh = (day_data['total_power'] / day_data['measurements_count']) * hours_in_day
+            previous_month_generation_sum += daily_energy_wh
+
+        # Convertir a kWh
+        previous_month_generation_sum = previous_month_generation_sum / 1000.0
+
+        logger.info(f"Generación total - Mes actual: {current_month_generation_sum:.2f} kWh, Mes anterior: {previous_month_generation_sum:.2f} kWh")
 
         # --- Cálculo de Potencia Instantánea Promedio (Inversores) ---
         logger.info("Calculando potencia instantánea promedio (inversores)...")
@@ -302,17 +334,35 @@ def calculate_and_save_daily_data(self, start_date_str: str = None, end_date_str
             daily_generation_sum = daily_aggregation.get('daily_generation') or 0.0
             daily_temp_avg = daily_temp_aggregation.get('avg_daily_temp') or 0.0
             
-            # Se convierte la generación de Wh a kWh antes de la resta para uniformar las unidades
-            daily_generation_in_kwh = daily_generation_sum / 1000.0
-            daily_balance_sum = daily_generation_in_kwh - daily_consumption_sum
+            # Convertir consumo de Wh a kWh
+            daily_consumption_kwh = daily_consumption_sum / 1000.0
+
+            # Calcular generación correctamente (convertir potencia promedio a energía)
+            # Primero obtener el número de mediciones para calcular el promedio
+            inverter_measurements_count = Measurement.objects.filter(
+                date__date=single_date,
+                device__in=inverter_ids,
+                data__acPower__isnull=False
+            ).count()
+
+            if inverter_measurements_count > 0:
+                # Calcular potencia promedio del día
+                avg_power_w = daily_generation_sum / inverter_measurements_count
+                # Convertir a energía (24 horas)
+                daily_generation_kwh = (avg_power_w * 24) / 1000.0
+            else:
+                daily_generation_kwh = 0.0
+
+            # Calcular balance energético (ambos en kWh)
+            daily_balance_sum = daily_generation_kwh - daily_consumption_kwh
 
             daily_data_obj, created = DailyChartData.objects.update_or_create(
                 date=single_date,
                 defaults={
-                    'daily_consumption': daily_consumption_sum,
-                    'daily_generation': daily_generation_sum,
+                    'daily_consumption': daily_consumption_kwh,  # Ahora en kWh
+                    'daily_generation': daily_generation_kwh,    # Ahora en kWh
                     'daily_balance': daily_balance_sum,
-                    'avg_daily_temp': daily_temp_avg # Nuevo campo
+                    'avg_daily_temp': daily_temp_avg
                 }
             )
             
@@ -324,8 +374,8 @@ def calculate_and_save_daily_data(self, start_date_str: str = None, end_date_str
                 action = "actualizado"
                 
             logger.info(f"  Dato diario {action} para {single_date}:")
-            logger.info(f"    - Consumo: {daily_consumption_sum:.2f} Wh")
-            logger.info(f"    - Generación: {daily_generation_sum:.2f} Wh")
+            logger.info(f"    - Consumo: {daily_consumption_kwh:.2f} kWh")
+            logger.info(f"    - Generación: {daily_generation_kwh:.2f} kWh")
             logger.info(f"    - Balance: {daily_balance_sum:.2f} kWh")
             logger.info(f"    - Temperatura promedio: {daily_temp_avg:.2f} °C")
 

@@ -1,5 +1,5 @@
 // Importaciones necesarias de React y componentes personalizados
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { KpiCard } from "./KPI/KpiCard";
 import { ChartCard } from "./KPI/ChartCard";
 import TransitionOverlay from './TransitionOverlay';
@@ -45,228 +45,516 @@ ChartJS.register(
   zoomPlugin
 );
 
+// Constantes para las unidades y sus conversiones
+export const unitConversions = {
+  power: {
+    W: 1,
+    kW: 1000,
+    MW: 1000000,
+    VAr: 1,
+    kVAR: 1000,
+    MVAR: 1000000,
+    VA: 1,
+    kVA: 1000,
+    MVA: 1000000
+  },
+  energy: {
+    Wh: 1,
+    kWh: 1000,
+    MWh: 1000000,
+    VArh: 1,
+    kVARh: 1000,
+    MVARh: 1000000,
+    VAh: 1,
+    kVAh: 1000,
+    MVAh: 1000000
+  },
+  temperature: {
+    '°C': 1,
+    '°F': 'special'
+  },
+  humidity: {
+    '%RH': 1
+  },
+  speed: {
+    'km/h': 1,
+    'm/s': 3.6
+  }
+};
+
+/**
+ * Convierte un valor de una unidad a otra
+ * @param {number} value - Valor a convertir
+ * @param {string} fromUnit - Unidad original
+ * @param {string} toUnit - Unidad destino
+ * @param {string} type - Tipo de medida (power, energy, etc.)
+ * @returns {number} - Valor convertido
+ */
+export const convertUnit = (value, fromUnit, toUnit, type = 'power') => {
+  if (value === null || value === undefined) return 0;
+  if (fromUnit === toUnit) return value;
+
+  const conversions = unitConversions[type];
+  if (!conversions) throw new Error(`Tipo de unidad no soportado: ${type}`);
+
+  // Manejo especial para conversiones de temperatura
+  if (type === 'temperature') {
+    if (fromUnit === '°F' && toUnit === '°C') {
+      return (value - 32) * (5/9);
+    } else if (fromUnit === '°C' && toUnit === '°F') {
+      return (value * (9/5)) + 32;
+    }
+  }
+
+  return (value * conversions[fromUnit]) / conversions[toUnit];
+};
+
+/**
+ * Formatea un valor numérico con su unidad
+ * @param {number} value - Valor a formatear
+ * @param {string} unit - Unidad del valor
+ * @param {number} decimals - Número de decimales
+ * @returns {string} - Valor formateado con unidad
+ */
+export const formatWithUnit = (value, unit, decimals = 2) => {
+  if (value === null || value === undefined) return 'N/A';
+  return `${value.toFixed(decimals)} ${unit}`;
+};
+
+/**
+ * Determina el estado de un valor basado en umbrales
+ * @param {number} value - Valor a evaluar
+ * @param {Object} thresholds - Umbrales para cada estado
+ * @returns {string} - Estado del valor (success, warning, error, normal)
+ */
+export const getValueStatus = (value, thresholds) => {
+  if (!thresholds) return 'normal';
+  
+  if (value >= thresholds.error) return 'error';
+  if (value >= thresholds.warning) return 'warning';
+  if (value >= thresholds.success) return 'success';
+  return 'normal';
+};
+
+/**
+ * Objeto con las configuraciones de umbrales para diferentes medidas
+ */
+export const defaultThresholds = {
+  temperature: {
+    success: 18,
+    warning: 25,
+    error: 30
+  },
+  humidity: {
+    success: 30,
+    warning: 60,
+    error: 80
+  },
+  powerFactor: {
+    success: 0.95,
+    warning: 0.85,
+    error: 0.8
+  }
+};
+
+// Configuración base de la API
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
+
+// Endpoints organizados por categoría
+export const ENDPOINTS = {
+  dashboard: {
+    kpi: '/api/dashboard/summary/',
+    charts: '/api/dashboard/chart-data/',
+    tasks: '/api/dashboard/tasks/'
+  },
+  electrical: {
+    meters: '/api/electrical/meters/',
+    consumption: '/api/electrical/consumption/',
+    details: '/api/electrical/details/'
+  },
+  inverters: {
+    status: '/api/inverters/status/',
+    generation: '/api/inverters/generation/',
+    details: '/api/inverters/details/'
+  },
+  weather: {
+    current: '/api/weather/current/',
+    forecast: '/api/weather/forecast/',
+    details: '/api/weather/details/'
+  },
+  tasks: {
+    sync: '/tasks/fetch-historical/',
+    deviceSync: '/local/sync-devices/',
+    kpiCalculation: '/api/dashboard/calculate-kpis/',
+    dailyData: '/api/dashboard/calculate-daily-data/'
+  }
+};
+
+/**
+ * Función para construir URLs completas de la API
+ * @param {string} endpoint - Endpoint de la API
+ * @param {Object} params - Parámetros de consulta
+ * @returns {string} - URL completa
+ */
+export const buildApiUrl = (endpoint, params = {}) => {
+  const url = new URL(API_BASE_URL + endpoint, window.location.origin);
+  Object.keys(params).forEach(key => {
+    if (params[key] !== undefined && params[key] !== null) {
+      url.searchParams.append(key, params[key]);
+    }
+  });
+  return url.toString();
+};
+
+/**
+ * Opciones por defecto para las peticiones fetch
+ * @param {string} authToken - Token de autenticación
+ * @returns {Object} - Opciones de configuración
+ */
+export const getDefaultFetchOptions = (authToken) => ({
+        headers: { 
+          'Authorization': `Token ${authToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+/**
+ * Función para manejar errores de la API
+ * @param {Response} response - Respuesta de fetch
+ * @returns {Promise} - Promesa resuelta con los datos o rechazada con error
+ */
+export const handleApiResponse = async (response) => {
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({
+      detail: 'Error de red desconocido'
+    }));
+    throw new Error(error.detail || `Error ${response.status}: ${response.statusText}`);
+  }
+  return response.json();
+};
+
+// Estados posibles para las tareas
+export const TaskStatus = {
+  IDLE: 'idle',
+  RUNNING: 'running',
+  COMPLETED: 'completed',
+  ERROR: 'error'
+};
+
+/**
+ * Clase para manejar las tareas de Celery
+ */
+export class TaskManager {
+  constructor(authToken, onStatusChange) {
+    this.authToken = authToken;
+    this.onStatusChange = onStatusChange;
+    this.activeTasks = new Map();
+  }
+
+  /**
+   * Ejecuta una tarea específica
+   * @param {string} taskType - Tipo de tarea a ejecutar
+   * @param {Object} params - Parámetros para la tarea
+   * @returns {Promise} - Promesa con el resultado de la tarea
+   */
+  async executeTask(taskType, params = {}) {
+    this._updateTaskStatus(taskType, TaskStatus.RUNNING);
+
+    try {
+      const endpoint = this._getEndpointForTask(taskType);
+      const response = await fetch(buildApiUrl(endpoint), {
+        method: 'POST',
+        ...getDefaultFetchOptions(this.authToken),
+        body: JSON.stringify(params)
+      });
+
+      const data = await handleApiResponse(response);
+      this._updateTaskStatus(taskType, TaskStatus.COMPLETED);
+      return data;
+    } catch (error) {
+      this._updateTaskStatus(taskType, TaskStatus.ERROR, error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Ejecuta una secuencia de tareas en orden
+   * @param {Array} tasks - Array de objetos de tarea
+   * @returns {Promise} - Promesa con los resultados de todas las tareas
+   */
+  async executeTaskSequence(tasks) {
+    const results = [];
+    for (const task of tasks) {
+      try {
+        const result = await this.executeTask(task.type, task.params);
+        results.push({ type: task.type, success: true, data: result });
+      } catch (error) {
+        results.push({ type: task.type, success: false, error: error.message });
+        if (task.critical) break;
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Obtiene el endpoint correspondiente a un tipo de tarea
+   * @private
+   */
+  _getEndpointForTask(taskType) {
+    switch (taskType) {
+      case 'sync':
+        return ENDPOINTS.tasks.sync;
+      case 'deviceSync':
+        return ENDPOINTS.tasks.deviceSync;
+      case 'kpiCalculation':
+        return ENDPOINTS.tasks.kpiCalculation;
+      case 'dailyData':
+        return ENDPOINTS.tasks.dailyData;
+      default:
+        throw new Error(`Tipo de tarea no soportado: ${taskType}`);
+    }
+  }
+
+  /**
+   * Actualiza el estado de una tarea
+   * @private
+   */
+  _updateTaskStatus(taskType, status, error = null) {
+    const taskState = {
+      status,
+      timestamp: new Date(),
+      error
+    };
+    
+    this.activeTasks.set(taskType, taskState);
+    if (this.onStatusChange) {
+      this.onStatusChange(taskType, taskState);
+    }
+  }
+}
+
+// Definir los iconos fuera del componente ya que son constantes
+const Icons = {
+  consumption: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 11-12h-9l1-8z"></path></svg>,
+  
+  generation: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-solar-panel" aria-hidden="true"><path d="M12 2v20"></path><path d="M2 12h20"></path><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"></path><path d="M4 12V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8"></path><path d="M12 6v4"></path><path d="M8 8h8"></path></svg>,
+  
+  balance: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-scale" aria-hidden="true"><path d="M12 3V19"></path><path d="M6 15H18"></path><path d="M14 11V19"></path><path d="M10 11V19"></path><path d="M12 19L19 12L22 15L12 19"></path><path d="M12 19L5 12L2 15L12 19"></path></svg>,
+  
+  inverters: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-cpu" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 1v3"></path><path d="M15 1v3"></path><path d="M9 21v3"></path><path d="M15 21v3"></path><path d="M1 9h3"></path><path d="M1 15h3"></path><path d="M21 9h3"></path><path d="M21 15h3"></path></svg>,
+  
+  power: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-power" aria-hidden="true"><path d="M12 2v5"></path><path d="M18 13v-2"></path><path d="M6 13v-2"></path><path d="M4.9 16.5l3.5-3.5"></path><path d="M19.1 16.5l-3.5-3.5"></path><path d="M12 19v3"></path><path d="M12 12v4"></path></svg>,
+  
+  temperature: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-thermometer" aria-hidden="true"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"></path></svg>,
+  
+  humidity: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-droplets" aria-hidden="true"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg>,
+  
+  wind: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wind" aria-hidden="true"><path d="M5 8h10"></path><path d="M4 12h16"></path><path d="M8 16h8"></path></svg>,
+  
+  task: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play-circle" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polygon points="10,8 16,12 10,16"></polygon></svg>
+};
+
 // Componente principal del dashboard
 function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isSidebarMinimized, setIsSidebarMinimized }) {
-  // Estados para control de carga y errores
+  // Primero definimos la función showTransitionAnimation
+  const showTransitionAnimation = useCallback((type = 'info', message = '', duration = 2000) => {
+    setTransitionType(type);
+    setTransitionMessage(message);
+    setShowTransition(true);
+    
+      setTimeout(() => {
+      setShowTransition(false);
+    }, duration);
+  }, []);
+
+  // Luego definimos handleTaskStatusChange que usa showTransitionAnimation
+  const handleTaskStatusChange = useCallback((taskType, taskState) => {
+    setTaskStates(prev => ({
+      ...prev,
+      [taskType]: taskState
+    }));
+
+    if (taskState.status === TaskStatus.RUNNING) {
+      showTransitionAnimation('info', `Ejecutando tarea: ${taskType}...`);
+    } else if (taskState.status === TaskStatus.COMPLETED) {
+      showTransitionAnimation('success', `Tarea ${taskType} completada`);
+    } else if (taskState.status === TaskStatus.ERROR) {
+      showTransitionAnimation('error', `Error en tarea ${taskType}: ${taskState.error}`);
+    }
+  }, [showTransitionAnimation]);
+
+  // Ahora declaramos todos los estados
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Estados para los filtros del encabezado (aún sin lógica activa)
   const [selectedTimeRange, setSelectedTimeRange] = useState('Últimos 30 días');
   const [selectedLocation, setSelectedLocation] = useState('Todas');
   const [selectedDevice, setSelectedDevice] = useState('Todos');
-
-  // Estados para el botón de ejecución de tareas
   const [taskExecuting, setTaskExecuting] = useState(false);
   const [taskStatus, setTaskStatus] = useState('');
-
-  // Estado para la animación de transición
+  const [taskStates, setTaskStates] = useState({});
   const [showTransition, setShowTransition] = useState(false);
   const [transitionType, setTransitionType] = useState('info');
   const [transitionMessage, setTransitionMessage] = useState('');
+  
+  // Creamos el taskManager después de tener todas las funciones necesarias
+  const [taskManager] = useState(() => new TaskManager(authToken, handleTaskStatusChange));
 
-  // Iconos mejorados más acordes a cada título
-  const consumptionIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 11-12h-9l1-8z"></path></svg>;
-  
-  const generationIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-solar-panel" aria-hidden="true"><path d="M12 2v20"></path><path d="M2 12h20"></path><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"></path><path d="M4 12V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8"></path><path d="M12 6v4"></path><path d="M8 8h8"></path></svg>;
-  
-  const balanceIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-scale" aria-hidden="true"><path d="M12 3V19"></path><path d="M6 15H18"></path><path d="M14 11V19"></path><path d="M10 11V19"></path><path d="M12 19L19 12L22 15L12 19"></path><path d="M12 19L5 12L2 15L12 19"></path></svg>;
-  
-  const invertersIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-cpu" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 1v3"></path><path d="M15 1v3"></path><path d="M9 21v3"></path><path d="M15 21v3"></path><path d="M1 9h3"></path><path d="M1 15h3"></path><path d="M21 9h3"></path><path d="M21 15h3"></path></svg>;
-  
-  const powerIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-power" aria-hidden="true"><path d="M12 2v5"></path><path d="M18 13v-2"></path><path d="M6 13v-2"></path><path d="M4.9 16.5l3.5-3.5"></path><path d="M19.1 16.5l-3.5-3.5"></path><path d="M12 19v3"></path><path d="M12 12v4"></path></svg>;
-  
-  const temperatureIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-thermometer" aria-hidden="true"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"></path></svg>;
-  
-  const humidityIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-droplets" aria-hidden="true"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg>;
-  
-  const windIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wind" aria-hidden="true"><path d="M5 8h10"></path><path d="M4 12h16"></path><path d="M8 16h8"></path></svg>;
-  
-  const taskIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play-circle" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polygon points="10,8 16,12 10,16"></polygon></svg>;
-
-  // Estado con datos simulados para los KPIs
+  // Estados para los datos
   const [kpiData, setKpiData] = useState({
-    totalConsumption: { title: "Consumo total", value: "Cargando...", unit: "", change: "", status: "normal", icon: consumptionIcon },
-    totalGeneration: { title: "Generación total", value: "Cargando...", unit: "", change: "", status: "normal", icon: generationIcon },
-    energyBalance: { title: "Equilibrio energético", value: "Cargando...", unit: "", description: "", status: "normal", icon: balanceIcon },
-    activeInverters: { title: "Inversores activos", value: "Cargando...", unit: "", description: "", status: "normal", icon: invertersIcon },
-    averageInstantaneousPower: { title: "Pot. instan. promedio", value: "Cargando...", unit: "W", description: "", status: "normal", icon: powerIcon },
-    avgDailyTemp: { title: "Temp. prom. diaria", value: "Cargando...", unit: "°C", description: "Rango normal", status: "normal", icon: temperatureIcon },
-    relativeHumidity: { title: "Humedad relativa", value: "Cargando...", unit: "%", description: "", status: "normal", icon: humidityIcon },
-    windSpeed: { title: "Velocidad del viento", value: "Cargando...", unit: "km/h", description: "Moderado", status: "moderado", icon: windIcon },
-    taskExecution: { 
+    totalConsumption: { title: "Consumo total", value: "Cargando...", unit: "", change: "", status: "normal", icon: Icons.consumption },
+    totalGeneration: { title: "Generación total", value: "Cargando...", unit: "", change: "", status: "normal", icon: Icons.generation },
+    energyBalance: { title: "Equilibrio energético", value: "Cargando...", unit: "", description: "", status: "normal", icon: Icons.balance },
+    activeInverters: { title: "Inversores activos", value: "Cargando...", unit: "", description: "", status: "normal", icon: Icons.inverters },
+    averageInstantaneousPower: { title: "Pot. instan. promedio", value: "Cargando...", unit: "W", description: "", status: "normal", icon: Icons.power },
+    avgDailyTemp: { title: "Temp. prom. diaria", value: "Cargando...", unit: "°C", description: "Rango normal", status: "normal", icon: Icons.temperature },
+    relativeHumidity: { title: "Humedad relativa", value: "Cargando...", unit: "%", description: "", status: "normal", icon: Icons.humidity },
+    windSpeed: { title: "Velocidad del viento", value: "Cargando...", unit: "km/h", description: "Moderado", status: "moderado", icon: Icons.wind },
+        taskExecution: {
       title: "Ejecutar Tareas", 
       value: taskExecuting ? "Ejecutando..." : "Ejecutar", 
       unit: "", 
       description: taskStatus || "Sincronizar metadatos y datos SCADA", 
       status: taskExecuting ? "loading" : "normal", 
-      icon: taskIcon,
-      onClick: null // Se asignará después
+      icon: Icons.task,
+      onClick: null
     }
   });
 
-  // Estados para almacenar los datos de cada gráfico
   const [electricityConsumptionData, setElectricityConsumptionData] = useState(null);
   const [inverterGenerationData, setInverterGenerationData] = useState(null);
   const [temperatureTrendsData, setTemperatureTrendsData] = useState(null);
   const [energyBalanceData, setEnergyBalanceData] = useState(null);
 
-  // URLs de los endpoints de tu API
-  const KPI_API_URL = '/api/dashboard/summary/';
-  const CHART_API_URL = '/api/dashboard/chart-data/';
-  const TASK_API_URL = '/tasks/fetch-historical/';
-  const SYNC_API_URL = '/local/sync-devices/';
-  const KPI_CALCULATION_API_URL = '/api/dashboard/calculate-kpis/';
-  const DAILY_DATA_API_URL = '/api/dashboard/calculate-daily-data/';
-
-  // Función para ejecutar todas las tareas programadas
-  async function executeAllTasks() {
-    if (taskExecuting) return; // Evitar múltiples ejecuciones
-
+  // Función mejorada para ejecutar todas las tareas
+  const executeAllTasks = async () => {
+    if (taskExecuting) return;
     setTaskExecuting(true);
-    setTaskStatus('Iniciando sincronización...');
-    showTransitionAnimation('info', 'Ejecutando tareas de sincronización...', 3000);
 
     try {
-      // 1. Sincronizar metadatos de SCADA (instituciones, categorías, dispositivos)
-      setTaskStatus('Sincronizando metadatos de SCADA...');
-      const syncResponse = await fetch(SYNC_API_URL, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Token ${authToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const tasks = [
+        { type: 'deviceSync', critical: true },
+        { type: 'sync', params: { time_range_seconds: 172800 }, critical: false },
+        { type: 'kpiCalculation', critical: false },
+        { type: 'dailyData', params: { days_back: 3 }, critical: false }
+      ];
 
-      if (!syncResponse.ok) {
-        throw new Error(`Error en sincronización: ${syncResponse.status}`);
+      const results = await taskManager.executeTaskSequence(tasks);
+      const hasErrors = results.some(result => !result.success);
+
+      if (hasErrors) {
+        showTransitionAnimation('warning', 'Algunas tareas no se completaron correctamente', 3000);
+      } else {
+        showTransitionAnimation('success', 'Todas las tareas completadas exitosamente', 2000);
       }
 
-      // 2. Ejecutar tarea de mediciones históricas (2 días = 172800 segundos)
-      setTaskStatus('Iniciando recolección de datos históricos...');
-      const taskResponse = await fetch(TASK_API_URL, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Token ${authToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          time_range_seconds: 172800 // 2 días en segundos
-        })
-      });
-
-      if (!taskResponse.ok) {
-        throw new Error(`Error al iniciar tarea: ${taskResponse.status}`);
-      }
-
-      // 3. Calcular KPIs mensuales
-      setTaskStatus('Calculando KPIs mensuales...');
-      const kpiResponse = await fetch(KPI_CALCULATION_API_URL, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Token ${authToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!kpiResponse.ok) {
-        throw new Error(`Error al calcular KPIs: ${kpiResponse.status}`);
-      }
-
-      // 4. Calcular datos diarios para gráficos (últimos 3 días)
-      setTaskStatus('Calculando datos diarios para gráficos...');
-      const dailyDataResponse = await fetch(DAILY_DATA_API_URL, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Token ${authToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          days_back: 3 // Calcular para los últimos 3 días
-        })
-      });
-
-      if (!dailyDataResponse.ok) {
-        throw new Error(`Error al calcular datos diarios: ${dailyDataResponse.status}`);
-      }
-
-      // Mostrar éxito
-      showTransitionAnimation('success', 'Tareas ejecutadas exitosamente', 2000);
-      setTaskStatus('Tareas completadas exitosamente');
-
-      // 5. Actualizar el estado del KPI
-      setKpiData(prevKpiData => ({
-        ...prevKpiData,
-        taskExecution: {
-          ...prevKpiData.taskExecution,
-          value: "Completado",
-          description: "Sincronización, recolección y cálculos iniciados",
-          status: "success"
-        }
-      }));
-
-      // 6. Recargar datos del dashboard después de un breve delay
-      setTimeout(() => {
-        fetchDashboardData();
-      }, 3000); // Aumentado a 3 segundos para dar más tiempo a las tareas
+      // Recargar datos después de completar las tareas
+      await fetchDashboardData();
 
     } catch (error) {
-      console.error('Error ejecutando tareas:', error);
-      showTransitionAnimation('error', 'Error al ejecutar las tareas', 3000);
-      setTaskStatus('Error al ejecutar las tareas');
-      
-      setKpiData(prevKpiData => ({
-        ...prevKpiData,
-        taskExecution: {
-          ...prevKpiData.taskExecution,
-          value: "Error",
-          description: `Error: ${error.message}`,
-          status: "error"
-        }
-      }));
+      console.error('Error en la ejecución de tareas:', error);
+      showTransitionAnimation('error', 'Error en la ejecución de tareas', 3000);
     } finally {
       setTaskExecuting(false);
     }
-  }
+  };
 
   // Hook de efecto para cargar datos desde la API
   const fetchDashboardData = async () => {
     setLoading(true);
     setError(null);
+
     try {
-      if (!authToken) {
-        throw new Error("No hay token de autenticación. Por favor, inicia sesión.");
-      }
+      // Fechas para las consultas
+      const dates = {
+        currentMonth: {
+          start: getCurrentMonthStart(),
+          end: getCurrentMonthEnd()
+        },
+        prevMonth: {
+          start: getPreviousMonthStart(),
+          end: getPreviousMonthEnd()
+        }
+      };
 
-      // --- CALCULAR FECHAS PARA LAS LLAMADAS A LA API ---
-      // Usar las utilidades de fecha estandarizadas para Colombia
-      const currentMonthStart = getCurrentMonthStart();
-      const currentMonthEnd = getCurrentMonthEnd();
-      const prevMonthStart = getPreviousMonthStart();
-      const prevMonthEnd = getPreviousMonthEnd();
+      // Realizar todas las llamadas en paralelo
+      const [kpisResponse, currentMonthChartsResponse, prevMonthChartsResponse] = 
+        await Promise.all([
+          fetch(buildApiUrl(ENDPOINTS.dashboard.kpi), getDefaultFetchOptions(authToken)),
+          fetch(buildApiUrl(ENDPOINTS.dashboard.charts, {
+            start_date: formatDateForAPI(dates.currentMonth.start),
+            end_date: formatDateForAPI(dates.currentMonth.end)
+          }), getDefaultFetchOptions(authToken)),
+          fetch(buildApiUrl(ENDPOINTS.dashboard.charts, {
+            start_date: formatDateForAPI(dates.prevMonth.start),
+            end_date: formatDateForAPI(dates.prevMonth.end)
+          }), getDefaultFetchOptions(authToken))
+        ]);
 
-      // --- REALIZAR LLAMADAS A LA API ---
-      const [kpisResponse, currentMonthChartsResponse, prevMonthChartsResponse] = await Promise.allSettled([
-        fetch(KPI_API_URL, { headers: { 'Authorization': `Token ${authToken}` } }),
-        fetch(`${CHART_API_URL}?start_date=${formatDateForAPI(currentMonthStart)}&end_date=${formatDateForAPI(currentMonthEnd)}`, { headers: { 'Authorization': `Token ${authToken}` } }),
-        fetch(`${CHART_API_URL}?start_date=${formatDateForAPI(prevMonthStart)}&end_date=${formatDateForAPI(prevMonthEnd)}`, { headers: { 'Authorization': `Token ${authToken}` } }),
+      // Procesar las respuestas
+      const [kpisData, currentMonthCharts, prevMonthCharts] = await Promise.all([
+        handleApiResponse(kpisResponse),
+        handleApiResponse(currentMonthChartsResponse),
+        handleApiResponse(prevMonthChartsResponse)
       ]);
 
-      let hasError = false;
+      // Actualizar KPIs con las unidades correctas
+      updateKPIs(kpisData);
 
-      // Verificamos y manejamos la respuesta de los KPIs
-      if (kpisResponse.status === 'fulfilled' && kpisResponse.value.ok) {
-        const kpisDataFetched = await kpisResponse.value.json();
+      // Procesar y actualizar datos de gráficos
+      updateCharts(currentMonthCharts, prevMonthCharts);
+
+    } catch (error) {
+      setError(error.message);
+      console.error('Error al cargar datos del dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para actualizar KPIs
+  const updateKPIs = (data) => {
         setKpiData(prevKpiData => ({
           ...prevKpiData,
-          totalConsumption: { ...kpisDataFetched.totalConsumption, icon: consumptionIcon },
-          totalGeneration: { ...kpisDataFetched.totalGeneration, icon: generationIcon },
-          energyBalance: { ...kpisDataFetched.energyBalance, icon: balanceIcon },
-          averageInstantaneousPower: { ...kpisDataFetched.averageInstantaneousPower, icon: powerIcon },
-          avgDailyTemp: { ...kpisDataFetched.avgDailyTemp, icon: temperatureIcon },
-          relativeHumidity: { ...kpisDataFetched.relativeHumidity, icon: humidityIcon },
-          windSpeed: { ...kpisDataFetched.windSpeed, icon: windIcon },
-          activeInverters: { ...kpisDataFetched.activeInverters, icon: invertersIcon },
+      totalConsumption: {
+        ...data.totalConsumption,
+        value: parseFloat(data.totalConsumption.value), // Usar el valor tal como viene del backend
+        icon: Icons.consumption
+      },
+      totalGeneration: {
+        ...data.totalGeneration,
+        value: parseFloat(data.totalGeneration.value), // Usar el valor tal como viene del backend
+        icon: Icons.generation
+      },
+      energyBalance: {
+        ...data.energyBalance,
+        value: parseFloat(data.energyBalance.value), // Usar el valor tal como viene del backend
+        icon: Icons.balance
+      },
+      averageInstantaneousPower: {
+        ...data.averageInstantaneousPower,
+        value: parseFloat(data.averageInstantaneousPower.value), // Usar el valor tal como viene del backend
+        icon: Icons.power
+      },
+      avgDailyTemp: {
+        ...data.avgDailyTemp,
+        value: parseFloat(data.avgDailyTemp.value), // Usar el valor tal como viene del backend
+        icon: Icons.temperature
+      },
+      relativeHumidity: {
+        ...data.relativeHumidity,
+        value: parseFloat(data.relativeHumidity.value), // Usar el valor tal como viene del backend
+        icon: Icons.humidity
+      },
+      windSpeed: {
+        ...data.windSpeed,
+        value: parseFloat(data.windSpeed.value), // Usar el valor tal como viene del backend
+        icon: Icons.wind
+      },
+      activeInverters: {
+        ...data.activeInverters,
+        value: parseInt(data.activeInverters.value), // Usar el valor tal como viene del backend
+        icon: Icons.inverters
+      },
           taskExecution: { 
             ...prevKpiData.taskExecution,
             onClick: executeAllTasks,
@@ -275,69 +563,57 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
             status: taskExecuting ? "loading" : "normal"
           }
         }));
-      } else {
-        console.error("Error al cargar los KPIs:", kpisResponse.reason);
-        hasError = true;
-      }
+  };
 
-      // Verificamos y manejamos las respuestas de los gráficos
-      if (currentMonthChartsResponse.status === 'fulfilled' && currentMonthChartsResponse.value.ok && prevMonthChartsResponse.status === 'fulfilled' && prevMonthChartsResponse.value.ok) {
-        const currentMonthChartsData = await currentMonthChartsResponse.value.json();
-        const prevMonthChartsData = await prevMonthChartsResponse.value.json();
+  // Función para actualizar gráficos
+  const updateCharts = (currentData, previousData) => {
+    // Ordenar datos por fecha
+    const sortedCurrentData = currentData.sort((a, b) => 
+      parseISODateToColombia(a.date) - parseISODateToColombia(b.date)
+    );
+    const sortedPrevData = previousData.sort((a, b) => 
+      parseISODateToColombia(a.date) - parseISODateToColombia(b.date)
+    );
 
-        // --- PROCESAMIENTO DE DATOS PARA GRÁFICOS ---
-        // Ordenar los datos por fecha antes de procesarlos
-        const sortByDate = (a, b) => parseISODateToColombia(a.date) - parseISODateToColombia(b.date);
-        const sortedCurrentMonthData = currentMonthChartsData.sort(sortByDate);
-        const sortedPrevMonthData = prevMonthChartsData.sort(sortByDate);
+    // Actualizar cada gráfico con los datos procesados
+    updateConsumptionChart(sortedCurrentData, sortedPrevData);
+    updateGenerationChart(sortedCurrentData, sortedPrevData);
+    updateBalanceChart(sortedCurrentData, sortedPrevData);
+    updateTemperatureChart(sortedCurrentData, sortedPrevData);
+  };
 
-        // Extraemos los labels (fechas) usando la función específica para fechas de la API
-        const currentMonthLabels = sortedCurrentMonthData.map(item => {
-          return formatAPIDateForDisplay(item.date);
-        });
-
-        // Datos de consumo del mes actual (usar datos ordenados)
-        const dailyConsumptionCurrentMonth = sortedCurrentMonthData.map(item => item.daily_consumption / 1000);
-
-        // Datos de consumo del mes pasado (usar datos ordenados)
-        const dailyConsumptionPrevMonth = sortedPrevMonthData.map(item => item.daily_consumption / 1000);
-
-        // 1. Datos para Consumo comparativo (gráfico de líneas)
+  // Funciones específicas para actualizar cada gráfico
+  const updateConsumptionChart = (currentData, prevData) => {
         setElectricityConsumptionData({
-          labels: currentMonthLabels,
+      labels: currentData.map(item => formatAPIDateForDisplay(item.date)),
           datasets: [
             {
               label: 'Actual (MWh)',
-              data: dailyConsumptionCurrentMonth,
+          data: currentData.map(item => parseFloat(item.daily_consumption)), // Usar valor tal como viene del backend
               borderColor: '#3B82F6',
               backgroundColor: 'rgba(59, 130, 246, 0.2)',
               fill: true,
-              tension: 0.4,
-              pointRadius: 3,
+          tension: 0.4
             },
             {
               label: 'Anterior (MWh)',
-              data: dailyConsumptionPrevMonth,
+          data: prevData.map(item => parseFloat(item.daily_consumption)), // Usar valor tal como viene del backend
               borderColor: '#A1A1AA',
               backgroundColor: 'rgba(161, 161, 170, 0.2)',
               fill: true,
-              tension: 0.4,
-              pointRadius: 3,
-            },
-          ],
-        });
-        
-        // Usar datos ordenados para generación también
-        const dailyGenerationCurrentMonth = sortedCurrentMonthData.map(item => item.daily_generation / 1000000);
-        const dailyGenerationPrevMonth = sortedPrevMonthData.map(item => item.daily_generation / 1000000);
+          tension: 0.4
+        }
+      ]
+    });
+  };
 
-        // 2. Datos para Generación de los inversores (gráfico de barras)
+  const updateGenerationChart = (currentData, prevData) => {
         setInverterGenerationData({
-          labels: currentMonthLabels,
+      labels: currentData.map(item => formatAPIDateForDisplay(item.date)),
           datasets: [
             {
               label: 'Actual (MWh)',
-              data: dailyGenerationCurrentMonth,
+          data: currentData.map(item => parseFloat(item.daily_generation)), // Usar valor tal como viene del backend
               backgroundColor: '#10B981',
               borderColor: '#059669',
               borderWidth: 1,
@@ -345,25 +621,23 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
             },
             {
               label: 'Anterior (MWh)',
-              data: dailyGenerationPrevMonth,
+          data: prevData.map(item => parseFloat(item.daily_generation)), // Usar valor tal como viene del backend
               backgroundColor: 'rgba(161, 161, 170, 0.6)',
               borderColor: 'rgba(161, 161, 170, 1)',
               borderWidth: 1,
               borderRadius: 5,
-            },
-          ],
+        }
+      ]
         });
+  };
 
-        // 3. Datos para el Balance de energía (usar datos ordenados)
-        const dailyEnergyBalanceDataCurrent = sortedCurrentMonthData.map(item => item.daily_balance / 1000);
-        const dailyEnergyBalanceDataPrevious = sortedPrevMonthData.map(item => item.daily_balance / 1000);
-
+  const updateBalanceChart = (currentData, prevData) => {
         setEnergyBalanceData({
-          labels: currentMonthLabels,
+      labels: currentData.map(item => formatAPIDateForDisplay(item.date)),
           datasets: [
             {
               label: 'Actual (MWh)',
-              data: dailyEnergyBalanceDataCurrent,
+          data: currentData.map(item => parseFloat(item.daily_balance)), // Usar valor tal como viene del backend
               borderColor: '#8B5CF6',
               backgroundColor: (context) => {
                 const chart = context.chart;
@@ -380,25 +654,23 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
             },
             {
               label: 'Anterior (MWh)',
-              data: dailyEnergyBalanceDataPrevious,
+          data: prevData.map(item => parseFloat(item.daily_balance)), // Usar valor tal como viene del backend
               borderColor: '#3B82F6',
               backgroundColor: 'rgba(59, 130, 246, 0.2)',
               fill: false,
               tension: 0.4,
-            },
-          ],
+        }
+      ]
         });
+  };
 
-        // 4. Datos para Temperatura (usar datos ordenados)
-        const dailyTempDataCurrent = sortedCurrentMonthData.map(item => item.avg_daily_temp);
-        const dailyTempDataPrevious = sortedPrevMonthData.map(item => item.avg_daily_temp);
-
+  const updateTemperatureChart = (currentData, prevData) => {
         setTemperatureTrendsData({
-          labels: currentMonthLabels,
+      labels: currentData.map(item => formatAPIDateForDisplay(item.date)),
           datasets: [
             {
               label: 'Actual (°C)',
-              data: dailyTempDataCurrent,
+          data: currentData.map(item => parseFloat(item.avg_daily_temp)), // Usar valor tal como viene del backend
               borderColor: 'rgb(255, 159, 64)',
               backgroundColor: 'rgba(255, 159, 64, 0.5)',
               tension: 0.4,
@@ -406,32 +678,14 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
             },
             {
               label: 'Anterior (°C)',
-              data: dailyTempDataPrevious,
+          data: prevData.map(item => parseFloat(item.avg_daily_temp)), // Usar valor tal como viene del backend
               borderColor: 'rgb(75, 192, 192)',
               backgroundColor: 'rgba(75, 192, 192, 0.5)',
               tension: 0.4,
               fill: false,
-            },
-          ],
-        });
-
-      } else {
-        console.error("Error al cargar los datos de los gráficos:", currentMonthChartsResponse.reason, prevMonthChartsResponse.reason);
-        hasError = true;
-      }
-
-      // Si ha habido algún error, establece el estado de error
-      if (hasError) {
-          setError("Se ha producido un error al cargar algunos datos del dashboard.");
-      }
-
-
-    } catch (e) {
-      setError(e.message);
-      console.error("Error al cargar datos del dashboard:", e);
-    } finally {
-      setLoading(false);
-    }
+        }
+      ]
+    });
   };
 
   // Agregar un useEffect que se ejecute cuando el componente se monta
@@ -444,17 +698,6 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     }, 300);
   }
 }, []); // Se ejecuta solo al montar el componente
-
-  // Función para mostrar transición
-  const showTransitionAnimation = (type = 'info', message = '', duration = 2000) => {
-    setTransitionType(type);
-    setTransitionMessage(message);
-    setShowTransition(true);
-    
-    setTimeout(() => {
-      setShowTransition(false);
-    }, duration);
-  };
 
   // Modificar onLogout para incluir animación
   const handleLogout = () => {

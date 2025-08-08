@@ -8,8 +8,8 @@ class MonthlyConsumptionKPI(models.Model):
     total_consumption_current_month = models.FloatField(default=0.0, help_text="Consumo total acumulado del mes actual en kWh.")
     total_consumption_previous_month = models.FloatField(default=0.0, help_text="Consumo total acumulado del mes anterior en kWh.")
     
-    total_generation_current_month = models.FloatField(default=0.0, help_text="Generación total acumulada del mes actual en Wh.")
-    total_generation_previous_month = models.FloatField(default=0.0, help_text="Generación total acumulada del mes anterior en Wh.")
+    total_generation_current_month = models.FloatField(default=0.0, help_text="Generación total acumulada del mes actual en kWh.")
+    total_generation_previous_month = models.FloatField(default=0.0, help_text="Generación total acumulada del mes anterior en kWh.")
 
     avg_instantaneous_power_current_month = models.FloatField(default=0.0, help_text="Potencia instantánea promedio de inversores del mes actual en Watts.")
     avg_instantaneous_power_previous_month = models.FloatField(default=0.0, help_text="Potencia instantánea promedio de inversores del mes anterior en Watts.")
@@ -41,9 +41,8 @@ class DailyChartData(models.Model):
     """
     date = models.DateField(unique=True, help_text="Fecha del registro.")
     daily_consumption = models.FloatField(default=0.0, help_text="Consumo total diario en kWh.")
-    daily_generation = models.FloatField(default=0.0, help_text="Generación total diaria en Wh.")
-    daily_balance = models.FloatField(default=0.0, help_text="Balance energético diario (Generación en kWh - Consumo en kWh).")
-    # Nuevo campo para la temperatura promedio diaria
+    daily_generation = models.FloatField(default=0.0, help_text="Generación total diaria en kWh.")  # Cambiar a kWh
+    daily_balance = models.FloatField(default=0.0, help_text="Balance energético diario en kWh.")
     avg_daily_temp = models.FloatField(default=0.0, help_text="Temperatura promedio diaria en °C.")
 
     class Meta:

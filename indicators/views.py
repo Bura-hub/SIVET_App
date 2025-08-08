@@ -107,8 +107,9 @@ class ConsumptionSummaryView(APIView):
             total_generation_previous_month = kpi_record.total_generation_previous_month
 
             # --- Balance Energético (Generación - Consumo) ---
-            net_balance_current_month = (total_generation_current_month / 1000.0) - total_consumption_current_month
-            net_balance_previous_month = (total_generation_previous_month / 1000.0) - total_consumption_previous_month
+            # Ahora ambos valores están en kWh
+            net_balance_current_month = total_generation_current_month - total_consumption_current_month
+            net_balance_previous_month = total_generation_previous_month - total_consumption_previous_month
 
             logger.info(f"Retrieved pre-calculated KPIs: Consumption (C:{total_consumption_current_month}, P:{total_consumption_previous_month}), Generation (C:{total_generation_current_month}, P:{total_generation_previous_month}), Balance (C:{net_balance_current_month}, P:{net_balance_previous_month})")
 
@@ -183,17 +184,8 @@ class ConsumptionSummaryView(APIView):
                 inverter_description_text = "Error interno"
 
             # Función de conversión de unidades
-            def format_energy_value(value_base_unit, base_unit_name="Wh"):
-                if base_unit_name == "Wh":
-                    if value_base_unit >= 1_000_000_000:
-                        return f"{value_base_unit / 1_000_000_000:.2f}", "GWh"
-                    elif value_base_unit >= 1_000_000:
-                        return f"{value_base_unit / 1_000_000:.2f}", "MWh"
-                    elif value_base_unit >= 1_000:
-                        return f"{value_base_unit / 1_000:.2f}", "kWh"
-                    else:
-                        return f"{value_base_unit:.2f}", "Wh"
-                elif base_unit_name == "kWh": 
+            def format_energy_value(value_base_unit, base_unit_name="kWh"):
+                if base_unit_name == "kWh":
                     if value_base_unit >= 1_000_000:
                         return f"{value_base_unit / 1_000_000:.2f}", "GWh"
                     elif value_base_unit >= 1_000:
@@ -321,7 +313,7 @@ class ConsumptionSummaryView(APIView):
                 total_generation_current_month,
                 total_generation_previous_month,
                 "Generación total",
-                "Wh" 
+                "kWh" 
             )
 
             # KPI de Equilibrio Energético (Generación - Consumo)

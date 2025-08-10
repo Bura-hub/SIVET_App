@@ -843,3 +843,289 @@ def _calculate_monthly_energy_data(meter, start_date, end_date):
         current_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
     
     return records_created, records_updated
+
+@shared_task
+def calculate_electric_meter_indicators(device_id, date_str, time_range='daily'):
+    """
+    Calcula todos los indicadores eléctricos para un medidor específico en una fecha dada.
+    """
+    try:
+        from datetime import datetime, timedelta
+        from django.db.models import Max, Min, Avg
+        from scada_proxy.models import Device, Institution
+        from .models import ElectricMeterIndicators, Measurement
+        
+        # Parsear la fecha
+        if isinstance(date_str, str):
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        else:
+            date = date_str
+        
+        # Obtener el dispositivo y la institución
+        device = Device.objects.get(id=device_id)
+        institution = device.institution
+        
+        # Determinar el rango de fechas
+        if time_range == 'daily':
+            start_date = date
+            end_date = date + timedelta(days=1)
+        else:  # monthly
+            start_date = date.replace(day=1)
+            if date.month == 12:
+                end_date = date.replace(year=date.year + 1, month=1, day=1)
+            else:
+                end_date = date.replace(month=date.month + 1, day=1)
+        
+        # Obtener todas las mediciones del período
+        measurements = Measurement.objects.filter(
+            device=device,
+            date__gte=start_date,
+            date__lt=end_date
+        ).order_by('date')
+        
+        if not measurements.exists():
+            return f"No hay mediciones para {device.name} en {date}"
+        
+        # Inicializar variables para cálculos
+        imported_energy_low_start = None
+        imported_energy_high_start = None
+        exported_energy_low_start = None
+        exported_energy_high_start = None
+        
+        imported_energy_low_end = None
+        imported_energy_high_end = None
+        exported_energy_low_end = None
+        exported_energy_high_end = None
+        
+        total_active_power_values = []
+        power_factor_values = []
+        voltage_phases = []
+        current_phases = []
+        voltage_thd_values = []
+        current_thd_values = []
+        current_tdd_values = []
+        
+        # Procesar cada medición
+        for measurement in measurements:
+            data = measurement.data
+            
+            # Energía acumulada (primer y último valor)
+            if imported_energy_low_start is None:
+                imported_energy_low_start = data.get('importedActivePowerLow', 0)
+                imported_energy_high_start = data.get('importedActivePowerHigh', 0)
+                exported_energy_low_start = data.get('exportedActivePowerLow', 0)
+                exported_energy_high_start = data.get('exportedActivePowerHigh', 0)
+            
+            imported_energy_low_end = data.get('importedActivePowerLow', 0)
+            imported_energy_high_end = data.get('importedActivePowerHigh', 0)
+            exported_energy_low_end = data.get('exportedActivePowerLow', 0)
+            exported_energy_high_end = data.get('exportedActivePowerHigh', 0)
+            
+            # Potencia activa para demanda pico
+            total_active_power = data.get('totalActivePower', 0)
+            if total_active_power is not None:
+                total_active_power_values.append(total_active_power)
+            
+            # Factor de potencia
+            power_factor = data.get('totalPowerFactor', 0)
+            if power_factor is not None:
+                power_factor_values.append(power_factor)
+            
+            # Voltajes por fase
+            voltage_a = data.get('voltagePhaseA', 0)
+            voltage_b = data.get('voltagePhaseB', 0)
+            voltage_c = data.get('voltagePhaseC', 0)
+            if all(v is not None for v in [voltage_a, voltage_b, voltage_c]):
+                voltage_phases.append([voltage_a, voltage_b, voltage_c])
+            
+            # Corrientes por fase
+            current_a = data.get('currentPhaseA', 0)
+            current_b = data.get('currentPhaseB', 0)
+            current_c = data.get('currentPhaseC', 0)
+            if all(c is not None for c in [current_a, current_b, current_c]):
+                current_phases.append([current_a, current_b, current_c])
+            
+            # THD y TDD
+            voltage_thd_a = data.get('voltageTHDPhaseA', 0)
+            voltage_thd_b = data.get('voltageTHDPhaseB', 0)
+            voltage_thd_c = data.get('voltageTHDPhaseC', 0)
+            if all(thd is not None for thd in [voltage_thd_a, voltage_thd_b, voltage_thd_c]):
+                voltage_thd_values.extend([voltage_thd_a, voltage_thd_b, voltage_thd_c])
+            
+            current_thd_a = data.get('currentTHDPhaseA', 0)
+            current_thd_b = data.get('currentTHDPhaseB', 0)
+            current_thd_c = data.get('currentTHDPhaseC', 0)
+            if all(thd is not None for thd in [current_thd_a, current_thd_b, current_thd_c]):
+                current_thd_values.extend([current_thd_a, current_thd_b, current_thd_c])
+            
+            current_tdd_a = data.get('currentTDDPhaseA', 0)
+            current_tdd_b = data.get('currentTDDPhaseB', 0)
+            current_tdd_c = data.get('currentTDDPhaseC', 0)
+            if all(tdd is not None for tdd in [current_tdd_a, current_tdd_b, current_tdd_c]):
+                current_tdd_values.extend([current_tdd_a, current_tdd_b, current_tdd_c])
+        
+        # Calcular indicadores
+        
+        # 3.2. Energía Consumida Acumulada
+        imported_energy_kwh = (
+            (imported_energy_high_end - imported_energy_high_start) * 1000 +
+            (imported_energy_low_end - imported_energy_low_start)
+        )
+        exported_energy_kwh = (
+            (exported_energy_high_end - exported_energy_high_start) * 1000 +
+            (exported_energy_low_end - exported_energy_low_start)
+        )
+        net_energy_consumption_kwh = imported_energy_kwh - exported_energy_kwh
+        
+        # 3.3. Demanda Pico
+        if total_active_power_values:
+            # Calcular demanda pico usando promedio móvil de 15 minutos
+            # Como tenemos datos cada 2 minutos, 15 minutos = 7-8 mediciones
+            window_size = 7
+            moving_averages = []
+            for i in range(len(total_active_power_values) - window_size + 1):
+                window_avg = sum(total_active_power_values[i:i+window_size]) / window_size
+                moving_averages.append(window_avg)
+            
+            peak_demand_kw = max(moving_averages) if moving_averages else max(total_active_power_values)
+            avg_demand_kw = sum(total_active_power_values) / len(total_active_power_values)
+        else:
+            peak_demand_kw = 0
+            avg_demand_kw = 0
+        
+        # 3.4. Factor de Carga
+        if peak_demand_kw > 0:
+            hours_in_period = 24 if time_range == 'daily' else 24 * 30
+            load_factor_pct = (net_energy_consumption_kwh / (peak_demand_kw * hours_in_period)) * 100
+        else:
+            load_factor_pct = 0
+        
+        # 3.5. Factor de Potencia Promedio
+        if power_factor_values:
+            avg_power_factor = sum(power_factor_values) / len(power_factor_values)
+        else:
+            avg_power_factor = 0
+        
+        # 3.6. Desbalance de Fases
+        max_voltage_unbalance_pct = 0
+        max_current_unbalance_pct = 0
+        
+        if voltage_phases:
+            voltage_unbalances = []
+            for v_phases in voltage_phases:
+                v_avg = sum(v_phases) / 3
+                max_deviation = max(abs(v - v_avg) for v in v_phases)
+                unbalance_pct = (max_deviation / v_avg) * 100 if v_avg > 0 else 0
+                voltage_unbalances.append(unbalance_pct)
+            max_voltage_unbalance_pct = max(voltage_unbalances) if voltage_unbalances else 0
+        
+        if current_phases:
+            current_unbalances = []
+            for c_phases in current_phases:
+                c_avg = sum(c_phases) / 3
+                max_deviation = max(abs(c - c_avg) for c in c_phases)
+                unbalance_pct = (max_deviation / c_avg) * 100 if c_avg > 0 else 0
+                current_unbalances.append(unbalance_pct)
+            max_current_unbalance_pct = max(current_unbalances) if current_unbalances else 0
+        
+        # 3.7. THD y TDD
+        max_voltage_thd_pct = max(voltage_thd_values) if voltage_thd_values else 0
+        max_current_thd_pct = max(current_thd_values) if current_thd_values else 0
+        max_current_tdd_pct = max(current_tdd_values) if current_tdd_values else 0
+        
+        # Guardar o actualizar los indicadores
+        indicators, created = ElectricMeterIndicators.objects.update_or_create(
+            device=device,
+            institution=institution,
+            date=date,
+            time_range=time_range,
+            defaults={
+                'imported_energy_kwh': imported_energy_kwh,
+                'exported_energy_kwh': exported_energy_kwh,
+                'net_energy_consumption_kwh': net_energy_consumption_kwh,
+                'peak_demand_kw': peak_demand_kw,
+                'avg_demand_kw': avg_demand_kw,
+                'load_factor_pct': load_factor_pct,
+                'avg_power_factor': avg_power_factor,
+                'max_voltage_unbalance_pct': max_voltage_unbalance_pct,
+                'max_current_unbalance_pct': max_current_unbalance_pct,
+                'max_voltage_thd_pct': max_voltage_thd_pct,
+                'max_current_thd_pct': max_current_thd_pct,
+                'max_current_tdd_pct': max_current_tdd_pct,
+                'measurement_count': measurements.count(),
+                'last_measurement_date': measurements.last().date if measurements.exists() else None,
+            }
+        )
+        
+        action = "creado" if created else "actualizado"
+        return f"Indicadores eléctricos {action} para {device.name} en {date} ({time_range})"
+        
+    except Exception as e:
+        return f"Error calculando indicadores eléctricos: {str(e)}"
+
+
+@shared_task
+def calculate_all_electric_meter_indicators(time_range='daily', start_date=None, end_date=None):
+    """
+    Calcula indicadores eléctricos para todos los medidores en un rango de fechas.
+    """
+    try:
+        from datetime import datetime, timedelta
+        from scada_proxy.models import Device, DeviceCategory
+        
+        # Obtener todos los medidores eléctricos
+        electric_meter_category = DeviceCategory.objects.filter(name='electricMeter').first()
+        if not electric_meter_category:
+            return "No se encontró la categoría de medidores eléctricos"
+        
+        electric_meters = Device.objects.filter(
+            category=electric_meter_category,
+            is_active=True
+        )
+        
+        if not electric_meters.exists():
+            return "No se encontraron medidores eléctricos activos"
+        
+        # Determinar fechas si no se proporcionan
+        if not start_date:
+            if time_range == 'daily':
+                start_date = datetime.now().date() - timedelta(days=7)  # Últimos 7 días
+            else:
+                start_date = datetime.now().date().replace(day=1) - timedelta(days=30)  # Último mes
+        
+        if not end_date:
+            end_date = datetime.now().date()
+        
+        # Calcular indicadores para cada medidor y fecha
+        total_calculations = 0
+        successful_calculations = 0
+        
+        current_date = start_date
+        while current_date <= end_date:
+            for meter in electric_meters:
+                try:
+                    result = calculate_electric_meter_indicators.delay(
+                        meter.id, 
+                        current_date.strftime('%Y-%m-%d'), 
+                        time_range
+                    )
+                    total_calculations += 1
+                    successful_calculations += 1
+                except Exception as e:
+                    total_calculations += 1
+                    print(f"Error calculando indicadores para {meter.name} en {current_date}: {e}")
+            
+            # Avanzar al siguiente período
+            if time_range == 'daily':
+                current_date += timedelta(days=1)
+            else:
+                # Avanzar al siguiente mes
+                if current_date.month == 12:
+                    current_date = current_date.replace(year=current_date.year + 1, month=1)
+                else:
+                    current_date = current_date.replace(month=current_date.month + 1)
+        
+        return f"Proceso completado. {successful_calculations}/{total_calculations} cálculos exitosos."
+        
+    except Exception as e:
+        return f"Error en el proceso masivo: {str(e)}"

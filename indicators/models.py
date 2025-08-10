@@ -159,3 +159,61 @@ class ElectricMeterEnergyConsumption(models.Model):
             models.Index(fields=['device', 'date', 'time_range']),
             models.Index(fields=['institution', 'date', 'time_range'])
         ]
+
+
+class ElectricMeterIndicators(models.Model):
+    """
+    Modelo para almacenar todos los indicadores eléctricos calculados por medidor
+    en diferentes rangos de tiempo (diario/mensual).
+    """
+    device = models.ForeignKey('scada_proxy.Device', on_delete=models.CASCADE, related_name='electric_indicators')
+    institution = models.ForeignKey('scada_proxy.Institution', on_delete=models.CASCADE, related_name='electric_indicators')
+    
+    # Rangos de tiempo
+    date = models.DateField(help_text="Fecha del registro (para datos diarios) o primer día del mes (para datos mensuales).")
+    time_range = models.CharField(max_length=20, choices=[
+        ('daily', 'Diario'),
+        ('monthly', 'Mensual')
+    ], help_text="Tipo de rango de tiempo del registro.")
+    
+    # 3.2. Energía Consumida Acumulada
+    imported_energy_kwh = models.FloatField(default=0.0, help_text="Energía importada total en kWh.")
+    exported_energy_kwh = models.FloatField(default=0.0, help_text="Energía exportada total en kWh.")
+    net_energy_consumption_kwh = models.FloatField(default=0.0, help_text="Energía neta consumida en kWh.")
+    
+    # 3.3. Demanda Pico
+    peak_demand_kw = models.FloatField(default=0.0, help_text="Demanda pico en kW.")
+    avg_demand_kw = models.FloatField(default=0.0, help_text="Demanda promedio en kW.")
+    
+    # 3.4. Factor de Carga
+    load_factor_pct = models.FloatField(default=0.0, help_text="Factor de carga en porcentaje.")
+    
+    # 3.5. Factor de Potencia Promedio
+    avg_power_factor = models.FloatField(default=0.0, help_text="Factor de potencia promedio.")
+    
+    # 3.6. Desbalance de Fases
+    max_voltage_unbalance_pct = models.FloatField(default=0.0, help_text="Desbalance máximo de tensión en porcentaje.")
+    max_current_unbalance_pct = models.FloatField(default=0.0, help_text="Desbalance máximo de corriente en porcentaje.")
+    
+    # 3.7. Distorsión Armónica Total (THD) y Demanda de Distorsión Total (TDD)
+    max_voltage_thd_pct = models.FloatField(default=0.0, help_text="THD máximo de tensión en porcentaje.")
+    max_current_thd_pct = models.FloatField(default=0.0, help_text="THD máximo de corriente en porcentaje.")
+    max_current_tdd_pct = models.FloatField(default=0.0, help_text="TDD máximo de corriente en porcentaje.")
+    
+    # Metadatos
+    measurement_count = models.IntegerField(default=0, help_text="Número de mediciones procesadas.")
+    last_measurement_date = models.DateTimeField(null=True, blank=True, help_text="Fecha de la última medición procesada.")
+    calculated_at = models.DateTimeField(auto_now=True, help_text="Fecha y hora del cálculo.")
+    
+    class Meta:
+        verbose_name = "Indicadores de Medidor Eléctrico"
+        verbose_name_plural = "Indicadores de Medidores Eléctricos"
+        unique_together = ['device', 'date', 'time_range']
+        indexes = [
+            models.Index(fields=['device', 'date', 'time_range']),
+            models.Index(fields=['institution', 'date', 'time_range']),
+            models.Index(fields=['date', 'time_range']),
+        ]
+    
+    def __str__(self):
+        return f"{self.device.name} - {self.date} ({self.get_time_range_display()})"

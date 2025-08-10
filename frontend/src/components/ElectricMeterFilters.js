@@ -4,6 +4,8 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
   const [timeRange, setTimeRange] = useState('daily');
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [selectedDevice, setSelectedDevice] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [institutions, setInstitutions] = useState([]);
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,9 +29,11 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
     onFiltersChange({
       timeRange,
       institutionId: selectedInstitution,
-      deviceId: selectedDevice
+      deviceId: selectedDevice,
+      startDate,
+      endDate
     });
-  }, [timeRange, selectedInstitution, selectedDevice, onFiltersChange]);
+  }, [timeRange, selectedInstitution, selectedDevice, startDate, endDate, onFiltersChange]);
 
   const fetchInstitutions = async () => {
     try {
@@ -126,6 +130,28 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Filtro de fecha de inicio */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium text-gray-700 mb-1">Fecha de Inicio</label>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+
+      {/* Filtro de fecha de fin */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium text-gray-700 mb-1">Fecha de Fin</label>
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-2 focus:border-transparent"
+        />
       </div>
 
       {/* Indicador de carga */}

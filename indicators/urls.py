@@ -10,11 +10,13 @@ from .views import (
     ElectricMetersListView,
     CalculateElectricMeterDataView,
     TriggerElectricMeterCalculationView,
-    ElectricMeterEnergyViewSet
+    ElectricMeterEnergyViewSet,
+    ElectricMeterIndicatorsViewSet
 )
 
 router = DefaultRouter()
 router.register(r'electrical/energy', ElectricMeterEnergyViewSet, basename='electrical-energy')
+router.register(r'electric-meter-indicators', ElectricMeterIndicatorsViewSet, basename='electric-meter-indicators')
 
 # Definición de las rutas de URL asociadas a esta aplicación
 urlpatterns = [

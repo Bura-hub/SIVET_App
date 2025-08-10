@@ -16,7 +16,7 @@ import calendar
 import pytz
 
 # Importa los modelos de indicadores
-from .models import ElectricMeterEnergyConsumption, MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData
+from .models import ElectricMeterEnergyConsumption, MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterIndicators
 # Importa el cliente SCADA y los modelos DeviceCategory, Measurement, Device de scada_proxy
 from scada_proxy.scada_client import ScadaConnectorClient 
 from scada_proxy.models import DeviceCategory, Measurement, Device, Institution
@@ -24,9 +24,9 @@ from scada_proxy.models import DeviceCategory, Measurement, Device, Institution
 from .tasks import calculate_monthly_consumption_kpi, calculate_and_save_daily_data
 
 # Importaciones adicionales para los nuevos modelos - CORREGIDAS
-from django.db.models import Q, Sum, Avg, Max, F, FloatField, Count
+from django.db.models import Q, Sum, Avg, Max, F, FloatField, Count, Min
 from django.db.models.functions import Cast
-from .serializers import ElectricMeterEnergySerializer, MonthlyConsumptionKPISerializer, DailyChartDataSerializer, ElectricMeterConsumptionSerializer, ElectricMeterChartDataSerializer, ElectricMeterCalculationRequestSerializer, ElectricMeterCalculationResponseSerializer
+from .serializers import ElectricMeterEnergySerializer, MonthlyConsumptionKPISerializer, DailyChartDataSerializer, ElectricMeterConsumptionSerializer, ElectricMeterChartDataSerializer, ElectricMeterCalculationRequestSerializer, ElectricMeterCalculationResponseSerializer, ElectricMeterIndicatorsSerializer
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
@@ -1362,3 +1362,72 @@ class ElectricMeterEnergyViewSet(viewsets.ReadOnlyModelViewSet):
                 pass
 
         return queryset.order_by('date')
+
+class ElectricMeterIndicatorsViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Vista para obtener indicadores eléctricos de medidores.
+    """
+    serializer_class = ElectricMeterIndicatorsSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        queryset = ElectricMeterIndicators.objects.all()
+        
+        # Filtros
+        institution_id = self.request.query_params.get('institution_id')
+        device_id = self.request.query_params.get('device_id')
+        time_range = self.request.query_params.get('time_range', 'daily')
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        
+        if institution_id:
+            queryset = queryset.filter(institution_id=institution_id)
+        
+        if device_id:
+            queryset = queryset.filter(device_id=device_id)
+        
+        if time_range:
+            queryset = queryset.filter(time_range=time_range)
+        
+        if start_date:
+            queryset = queryset.filter(date__gte=start_date)
+        
+        if end_date:
+            queryset = queryset.filter(date__lte=end_date)
+        
+        return queryset.order_by('-date', 'device__name')
+    
+    def list(self, request, *args, **kwargs):
+        """
+        Lista los indicadores eléctricos con opciones de filtrado.
+        """
+        queryset = self.get_queryset()
+        
+        # Agregar información de resumen
+        summary = {
+            'total_records': queryset.count(),
+            'institutions': list(queryset.values('institution__name').distinct()),
+            'devices': list(queryset.values('device__name').distinct()),
+            'date_range': {
+                'min_date': queryset.aggregate(Min('date'))['date__min'],
+                'max_date': queryset.aggregate(Max('date'))['date__max']
+            }
+        }
+        
+        # Paginación
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = {
+                'summary': summary,
+                'results': serializer.data,
+                'pagination': self.paginator.get_paginated_response(serializer.data).data
+            }
+            return Response(response_data)
+        
+        serializer = self.get_serializer(queryset, many=True)
+        response_data = {
+            'summary': summary,
+            'results': serializer.data
+        }
+        return Response(response_data)

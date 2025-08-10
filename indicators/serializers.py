@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterEnergyConsumption
+from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterEnergyConsumption, ElectricMeterIndicators
 
 class MonthlyConsumptionKPISerializer(serializers.ModelSerializer):
     class Meta:
@@ -98,3 +98,21 @@ class ElectricMeterCalculationResponseSerializer(serializers.Serializer):
     estimated_completion_time = serializers.CharField(
         help_text="Tiempo estimado de finalización de la tarea"
     )
+
+class ElectricMeterIndicatorsSerializer(serializers.ModelSerializer):
+    device_name = serializers.CharField(source='device.name', read_only=True)
+    institution_name = serializers.CharField(source='institution.name', read_only=True)
+    time_range_display = serializers.CharField(source='get_time_range_display', read_only=True)
+    
+    class Meta:
+        model = ElectricMeterIndicators
+        fields = [
+            'id', 'device', 'device_name', 'institution', 'institution_name',
+            'date', 'time_range', 'time_range_display',
+            'imported_energy_kwh', 'exported_energy_kwh', 'net_energy_consumption_kwh',
+            'peak_demand_kw', 'avg_demand_kw', 'load_factor_pct', 'avg_power_factor',
+            'max_voltage_unbalance_pct', 'max_current_unbalance_pct',
+            'max_voltage_thd_pct', 'max_current_thd_pct', 'max_current_tdd_pct',
+            'measurement_count', 'last_measurement_date', 'calculated_at'
+        ]
+        read_only_fields = ['calculated_at']

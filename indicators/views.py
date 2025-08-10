@@ -1384,7 +1384,11 @@ class ElectricMeterIndicatorsViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(institution_id=institution_id)
         
         if device_id:
-            queryset = queryset.filter(device_id=device_id)
+            # Aceptar tanto el id entero local como el scada_id (UUID/string)
+            if str(device_id).isdigit():
+                queryset = queryset.filter(device_id=int(device_id))
+            else:
+                queryset = queryset.filter(device__scada_id=device_id)
         
         if time_range:
             queryset = queryset.filter(time_range=time_range)

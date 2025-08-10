@@ -65,14 +65,14 @@ class Command(BaseCommand):
 
         # Obtener dispositivos a procesar
         if device_id:
-            devices = Device.objects.filter(id=device_id, category__name='electricmeter')
+            devices = Device.objects.filter(id=device_id, category__name='electricMeter')
         elif institution_id:
             devices = Device.objects.filter(
                 institution_id=institution_id,
-                category__name='electricmeter'
+                category__name='electricMeter'
             )
         else:
-            devices = Device.objects.filter(category__name='electricmeter')
+            devices = Device.objects.filter(category__name='electricMeter')
 
         self.stdout.write(f'Procesando {devices.count()} dispositivos...')
 

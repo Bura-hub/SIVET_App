@@ -9,10 +9,13 @@ export const ENDPOINTS = {
     tasks: '/api/dashboard/tasks/'
   },
   electrical: {
-    meters: '/api/electrical/meters/',
-    consumption: '/api/electrical/consumption/',
-    details: '/api/electrical/details/',
-    energy: '/api/electrical/energy/',  // Nuevo endpoint
+    meters: '/api/electric-meters/',
+    consumption: '/api/electric-meters/',
+    details: '/api/electric-meters/',
+    energy: '/api/electrical/energy/',
+    indicators: '/api/electric-meter-indicators/',
+    institutions: '/api/institutions/',
+    devices: '/api/electric-meters/list/',
   },
   inverters: {
     status: '/api/inverters/status/',

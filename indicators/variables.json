@@ -1,0 +1,728 @@
+[
+    {
+      "id": 1,
+      "scada_id": "54245a70-483f-4485-b3ad-a16875c6b9aa",
+      "name": "inverter",
+      "description": "Inversores fotovoltaicos",
+      "charts": [
+        {
+          "name": "Potencia DC",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potecia DC",
+              "key": "dcPower",
+              "unit": "[W]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia AC",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potecia AC",
+              "key": "acPower",
+              "unit": "[W]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia reactiva",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potecia reactiva",
+              "key": "reactivePower",
+              "unit": "[VAr]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia aparente",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potecia aparente",
+              "key": "apparentPower",
+              "unit": "[VA]"
+            }
+          ]
+        },
+        {
+          "name": "Corriente AC Total",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Corriente AC",
+              "key": "acTotalCurrent",
+              "unit": "[A]"
+            }
+          ]
+        },
+        {
+          "name": "Corriente DC",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Corriente DC",
+              "key": "dcCurrent",
+              "unit": "[A]"
+            }
+          ]
+        },
+        {
+          "name": "Voltaje DC",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Voltaje DC",
+              "key": "dcVoltage",
+              "unit": "[V]"
+            }
+          ]
+        },
+        {
+          "name": "Voltaje AC",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Voltaje AC fase A",
+              "key": "acVoltagePhaseA",
+              "unit": "[V]"
+            },
+            {
+              "name": "Voltaje AC fase B",
+              "key": "acVoltagePhaseB",
+              "unit": "[V]"
+            },
+            {
+              "name": "Voltaje AC fase C",
+              "key": "acVoltagePhaseC",
+              "unit": "[V]"
+            }
+          ]
+        },
+        {
+          "name": "Corriente AC",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Corriente AC fase A",
+              "key": "acCurrentPhaseA",
+              "unit": "[A]"
+            },
+            {
+              "name": "Corriente AC fase B",
+              "key": "acCurrentPhaseB",
+              "unit": "[A]"
+            },
+            {
+              "name": "Corriente AC fase C",
+              "key": "acCurrentPhaseC",
+              "unit": "[A]"
+            }
+          ]
+        },
+        {
+          "name": "Voltaje AC entre fases",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Voltaje AC fase A-B",
+              "key": "phaseVoltagePhaseAB",
+              "unit": "[V]"
+            },
+            {
+              "name": "Voltaje AC fase B-C",
+              "key": "phaseVoltagePhaseBC",
+              "unit": "[V]"
+            },
+            {
+              "name": "Voltaje AC fase C-A",
+              "key": "phaseVoltagePhaseCA",
+              "unit": "[V]"
+            }
+          ]
+        },
+        {
+          "name": "Factor de potencia",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Factor de potencia",
+              "key": "powerFactor",
+              "unit": "[%]"
+            }
+          ]
+        },
+        {
+          "name": "Frecuencia AC",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Frecuencia AC",
+              "key": "acFrequency",
+              "unit": "[Hz]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "scada_id": "930ef038-5aa2-4d57-99f3-4a2662483836",
+      "name": "electricMeter",
+      "description": "Medidores eléctricos",
+      "charts": [
+        {
+          "name": "Total Factor de Potencia",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Total Factor de Potencia",
+              "key": "totalPowerFactor",
+              "unit": null
+            }
+          ]
+        },
+        {
+          "name": "Total Potencia Activa",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Total Potencia Activa",
+              "key": "totalActivePower",
+              "unit": "[kW]"
+            }
+          ]
+        },
+        {
+          "name": "Total Potencia Reactiva",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Total Potencia Reactiva",
+              "key": "totalReactivePower",
+              "unit": "[kVAR]"
+            }
+          ]
+        },
+        {
+          "name": "Total Potencia Aparente",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Total Potencia Aparente",
+              "key": "totalApparentPower",
+              "unit": "[kVA]"
+            }
+          ]
+        },
+        {
+          "name": "Corriente Neutro",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Corriente Neutro",
+              "key": "neutralCurrent",
+              "unit": "[A]"
+            }
+          ]
+        },
+        {
+          "name": "Frecuencia",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Frecuencia",
+              "key": "frequency",
+              "unit": "[Hz]"
+            }
+          ]
+        },
+        {
+          "name": "Demanda Máxima de Potencia Activa en Ventana Deslizante",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Demanda Máxima de Potencia Activa en Ventana Deslizante",
+              "key": "maxActivePowerDemand",
+              "unit": "[kW]"
+            }
+          ]
+        },
+        {
+          "name": "Demanda de Importación Acumulada de Potencia Activa",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Demanda de Importación Acumulada de Potencia Activa",
+              "key": "cumulativeActivePower",
+              "unit": "[kW]"
+            }
+          ]
+        },
+        {
+          "name": "Demanda Máxima de Potencia Aparente en Ventana Deslizante",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Demanda Máxima de Potencia Aparente en Ventana Deslizante",
+              "key": "maxApparentPowerDemand",
+              "unit": "[kVA]"
+            }
+          ]
+        },
+        {
+          "name": "Demanda Acumulada de Potencia Aparente",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Demanda Acumulada de Potencia Aparente",
+              "key": "cumulativeApparentPower",
+              "unit": "[kVA]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia Activa Importada (LOW)",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Activa Importada (LOW)",
+              "key": "importedActivePowerLow",
+              "unit": "[kWh]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia Activa Importada (HIGH)",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Activa Importada (HIGH)",
+              "key": "importedActivePowerHigh",
+              "unit": "[MWh]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia Activa Exportada (LOW)",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Activa Exportada (LOW)",
+              "key": "exportedActivePowerLow",
+              "unit": "[kWh]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia Activa Exportada (HIGH)",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Activa Exportada (HIGH)",
+              "key": "exportedActivePowerHigh",
+              "unit": "[MWh]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia Reactiva Positiva en la Red (LOW)",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Reactiva Positiva en la Red (LOW)",
+              "key": "positiveReactivePowerLow",
+              "unit": "[kVARh]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia Reactiva Negativa en la Red (LOW)",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Reactiva Negativa en la Red (LOW)",
+              "key": "negativeReactivePowerLow",
+              "unit": "[kVARh]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia Reactiva Positiva en la Red (HIGH)",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Reactiva Positiva en la Red (HIGH)",
+              "key": "positiveReactivePowerHigh",
+              "unit": "[MVARh]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia Reactiva Negativa en la Red (HIGH)",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Reactiva Negativa en la Red (HIGH)",
+              "key": "negativeReactivePowerHigh",
+              "unit": "[MVARh]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia Aparente (LOW)",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Aparente (LOW)",
+              "key": "apparentPowerLow",
+              "unit": "[kVA]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia Aparente (HIGH)",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Aparente (HIGH)",
+              "key": "apparentPowerHigh",
+              "unit": "[kVA]"
+            }
+          ]
+        },
+        {
+          "name": "Demanda Actual de Potencia Activa Importada",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Demanda Actual de Potencia Activa Importada",
+              "key": "currentActivePowerDemand",
+              "unit": "[kW]"
+            }
+          ]
+        },
+        {
+          "name": "Demanda Actual de Potencia Aparente Importada",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Demanda Actual de Potencia Aparente Importada",
+              "key": "currentApparentPowerDemand",
+              "unit": "[kVA]"
+            }
+          ]
+        },
+        {
+          "name": "Factor de Potencia (Importación) en el Máximo de Potencia Aparente Importada",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Factor de Potencia (Importación) en el Máximo de Potencia Aparente Importada",
+              "key": "powerFactorMaxImportedApparentPower",
+              "unit": null
+            }
+          ]
+        },
+        {
+          "name": "Voltaje",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Voltaje Fase A",
+              "key": "voltagePhaseA",
+              "unit": "[V]"
+            },
+            {
+              "name": "Voltaje Fase B",
+              "key": "voltagePhaseB",
+              "unit": "[V]"
+            },
+            {
+              "name": "Voltaje Fase C",
+              "key": "voltagePhaseC",
+              "unit": "[V]"
+            }
+          ]
+        },
+        {
+          "name": "Corriente",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Corriente Fase A",
+              "key": "currentPhaseA",
+              "unit": "[A]"
+            },
+            {
+              "name": "Corriente Fase B",
+              "key": "currentPhaseB",
+              "unit": "[A]"
+            },
+            {
+              "name": "Corriente Fase C",
+              "key": "currentPhaseC",
+              "unit": "[A]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia activa",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Activa Fase A",
+              "key": "activePowerPhaseA",
+              "unit": "[kW]"
+            },
+            {
+              "name": "Potencia Activa Fase B",
+              "key": "activePowerPhaseB",
+              "unit": "[kW]"
+            },
+            {
+              "name": "Potencia Activa Fase C",
+              "key": "activePowerPhaseC",
+              "unit": "[kW]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia reactiva",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Reactiva Fase A",
+              "key": "reactivePowerPhaseA",
+              "unit": "[kVAR]"
+            },
+            {
+              "name": "Potencia Reactiva Fase B",
+              "key": "reactivePowerPhaseB",
+              "unit": "[kVAR]"
+            },
+            {
+              "name": "Potencia Reactiva Fase C",
+              "key": "reactivePowerPhaseC",
+              "unit": "[kVAR]"
+            }
+          ]
+        },
+        {
+          "name": "Potencia aparente",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Potencia Aparente Fase A",
+              "key": "apparentPowerPhaseA",
+              "unit": "[kVA]"
+            },
+            {
+              "name": "Potencia Aparente Fase B",
+              "key": "apparentPowerPhaseB",
+              "unit": "[kVA]"
+            },
+            {
+              "name": "Potencia Aparente Fase C",
+              "key": "apparentPowerPhaseC",
+              "unit": "[kVA]"
+            }
+          ]
+        },
+        {
+          "name": "Factor de potencia",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Factor de Potencia Fase A",
+              "key": "powerFactorPhaseA",
+              "unit": null
+            },
+            {
+              "name": "Factor de Potencia Fase B",
+              "key": "powerFactorPhaseB",
+              "unit": null
+            },
+            {
+              "name": "Factor de Potencia Fase C",
+              "key": "powerFactorPhaseC",
+              "unit": null
+            }
+          ]
+        },
+        {
+          "name": "Corriente máxima",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Corriente Máxima Fase A",
+              "key": "maxCurrentPhaseA",
+              "unit": "[A]"
+            },
+            {
+              "name": "Corriente Máxima Fase B",
+              "key": "maxCurrentPhaseB",
+              "unit": "[A]"
+            },
+            {
+              "name": "Corriente Máxima Fase C",
+              "key": "maxCurrentPhaseC",
+              "unit": "[A]"
+            }
+          ]
+        },
+        {
+          "name": "Voltaje THD",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Voltaje THD Fase A",
+              "key": "voltageTHDPhaseA",
+              "unit": "[%]"
+            },
+            {
+              "name": "Voltaje THD Fase B",
+              "key": "voltageTHDPhaseB",
+              "unit": "[%]"
+            },
+            {
+              "name": "Voltaje THD Fase C",
+              "key": "voltageTHDPhaseC",
+              "unit": "[%]"
+            }
+          ]
+        },
+        {
+          "name": "Corriente THD",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Corriente THD Fase A",
+              "key": "currentTHDPhaseA",
+              "unit": "[%]"
+            },
+            {
+              "name": "Corriente THD Fase B",
+              "key": "currentTHDPhaseB",
+              "unit": "[%]"
+            },
+            {
+              "name": "Corriente THD Fase C",
+              "key": "currentTHDPhaseC",
+              "unit": "[%]"
+            }
+          ]
+        },
+        {
+          "name": "Corriente TDD",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Corriente TDD Fase A",
+              "key": "currentTDDPhaseA",
+              "unit": "[%]"
+            },
+            {
+              "name": "Corriente TDD Fase B",
+              "key": "currentTDDPhaseB",
+              "unit": "[%]"
+            },
+            {
+              "name": "Corriente TDD Fase C",
+              "key": "currentTDDPhaseC",
+              "unit": "[%]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "scada_id": "374335a0-1eb8-441e-94f3-54f86e1d44ea",
+      "name": "weatherStation",
+      "description": "Estaciones meteorológicas",
+      "charts": [
+        {
+          "name": "Temperatura",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Temperatura",
+              "key": "temperature",
+              "unit": "°C"
+            }
+          ]
+        },
+        {
+          "name": "Humedad",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Humedad",
+              "key": "humidity",
+              "unit": "%RH"
+            }
+          ]
+        },
+        {
+          "name": "Irradiancia",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Irradiancia",
+              "key": "irradiance",
+              "unit": "W/m2"
+            }
+          ]
+        },
+        {
+          "name": "Velocidad Viento",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Velocidad Viento",
+              "key": "windSpeed",
+              "unit": "km/h"
+            }
+          ]
+        },
+        {
+          "name": "Dirección Viento",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Dirección Viento",
+              "key": "windDirection",
+              "unit": "°"
+            }
+          ]
+        },
+        {
+          "name": "Precipitaciones",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Precipitaciones",
+              "key": "precipitation",
+              "unit": "cm/día"
+            }
+          ]
+        },
+        {
+          "name": "Voltaje Batería",
+          "type": "line",
+          "variables": [
+            {
+              "name": "Voltaje Batería",
+              "key": "batteryVoltage",
+              "unit": "V"
+            }
+          ]
+        }
+      ]
+    }
+  ]

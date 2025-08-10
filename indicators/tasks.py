@@ -1,22 +1,21 @@
 from celery import shared_task
 from datetime import datetime, timedelta, timezone
-from django.db.models import Sum, Avg, F, FloatField, Max, Count # Importa Max y Count
+from django.db.models import Sum, Avg, F, FloatField, Max, Count, Min, Q, QuerySet
 from django.db.models.functions import Cast, TruncDay
 import logging
 import calendar
-from django.db.models import Sum, F, FloatField, QuerySet, Q
 from django.utils import timezone as django_timezone
 import pytz
-
-from scada_proxy.models import Measurement, Device # Necesitas esto para el modelo Measurement
-from scada_proxy.models import TaskProgress # También puedes necesitar TaskProgress
-from .models import MonthlyConsumptionKPI, DailyChartData
-
-# Importaciones adicionales
-from .models import ElectricMeterConsumption, ElectricMeterChartData
-from scada_proxy.models import Institution, DeviceCategory
-from django.db.models import Q, Sum, Avg, Max, Min
 from collections import defaultdict
+
+from scada_proxy.models import Measurement, Device, Institution, DeviceCategory, TaskProgress
+from .models import (
+    ElectricMeterEnergyConsumption, 
+    MonthlyConsumptionKPI, 
+    DailyChartData,
+    ElectricMeterConsumption, 
+    ElectricMeterChartData
+)
 
 logger = logging.getLogger(__name__)
 
@@ -435,9 +434,9 @@ def calculate_electric_meter_data(self, time_range='daily', start_date_str=None,
             logger.info(f"Procesando medidor: {meter.name} (ID: {meter.id}, SCADA ID: {meter.scada_id})")
             
             if time_range == 'daily':
-                records_created, records_updated = self._calculate_daily_data(meter, start_date, end_date)
+                records_created, records_updated = _calculate_daily_data(meter, start_date, end_date)
             else:  # monthly
-                records_created, records_updated = self._calculate_monthly_data(meter, start_date, end_date)
+                records_created, records_updated = _calculate_monthly_data(meter, start_date, end_date)
             
             total_records_created += records_created
             total_records_updated += records_updated
@@ -454,7 +453,7 @@ def calculate_electric_meter_data(self, time_range='daily', start_date_str=None,
         logger.error(f"Error calculando datos de medidores eléctricos: {e}", exc_info=True)
         raise
 
-def _calculate_daily_data(self, meter, start_date, end_date):
+def _calculate_daily_data(meter, start_date, end_date):
     """
     Calcula datos diarios para un medidor específico
     """
@@ -518,7 +517,7 @@ def _calculate_daily_data(self, meter, start_date, end_date):
             records_updated += 1
 
         # Calcular datos para gráficos (consumo por hora)
-        hourly_consumption = self._calculate_hourly_consumption(daily_measurements)
+        hourly_consumption = _calculate_hourly_consumption(daily_measurements)
         
         # Encontrar hora pico
         peak_hour = 0
@@ -545,7 +544,7 @@ def _calculate_daily_data(self, meter, start_date, end_date):
 
     return records_created, records_updated
 
-def _calculate_monthly_data(self, meter, start_date, end_date):
+def _calculate_monthly_data(meter, start_date, end_date):
     """
     Calcula datos mensuales para un medidor específico
     """
@@ -616,7 +615,7 @@ def _calculate_monthly_data(self, meter, start_date, end_date):
 
     return records_created, records_updated
 
-def _calculate_hourly_consumption(self, measurements):
+def _calculate_hourly_consumption(measurements):
     """
     Calcula el consumo por hora del día basado en las mediciones
     """
@@ -634,3 +633,213 @@ def _calculate_hourly_consumption(self, measurements):
             hourly_consumption[hour] = sum(hourly_data[hour]) / len(hourly_data[hour])
     
     return hourly_consumption
+
+# indicators/tasks.py
+@shared_task(bind=True, retry_backoff=60, max_retries=3)
+def calculate_electric_meter_energy_consumption(
+    self, 
+    time_range='daily', 
+    start_date_str=None, 
+    end_date_str=None, 
+    institution_id=None, 
+    device_id=None
+):
+    """
+    Calcula el consumo de energía para medidores eléctricos según las fórmulas del documento técnico
+    """
+    logger.info("=== INICIANDO TAREA: calculate_electric_meter_energy_consumption ===")
+    
+    try:
+        # Parsear fechas
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date() if start_date_str else get_colombia_date() - timedelta(days=30)
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else get_colombia_date()
+        
+        # Obtener medidores eléctricos
+        meters_query = Device.objects.filter(category__name='electricMeter', is_active=True)
+        if institution_id:
+            meters_query = meters_query.filter(institution_id=institution_id)
+        if device_id:
+            meters_query = meters_query.filter(scada_id=device_id)
+        
+        meters = meters_query.select_related('institution')
+        logger.info(f"Procesando {meters.count()} medidores eléctricos")
+        
+        records_created = 0
+        records_updated = 0
+        
+        for meter in meters:
+            logger.info(f"Procesando medidor: {meter.name} ({meter.institution.name})")
+            
+            if time_range == 'daily':
+                created, updated = _calculate_daily_energy_data(meter, start_date, end_date)
+            else:  # monthly
+                created, updated = _calculate_monthly_energy_data(meter, start_date, end_date)
+            
+            records_created += created
+            records_updated += updated
+        
+        logger.info(f"=== RESUMEN: {records_created} creados, {records_updated} actualizados ===")
+        return records_created, records_updated
+        
+    except Exception as e:
+        logger.error(f"Error en cálculo de energía: {e}", exc_info=True)
+        raise
+
+def _calculate_daily_energy_data(meter, start_date, end_date):
+    """Calcula datos diarios de energía según la fórmula del documento técnico"""
+    records_created = 0
+    records_updated = 0
+    
+    current_date = start_date
+    while current_date <= end_date:
+        # Obtener mediciones del día
+        day_start = datetime.combine(current_date, datetime.min.time())
+        day_end = datetime.combine(current_date, datetime.max.time())
+        
+        measurements = Measurement.objects.filter(
+            device=meter,
+            date__range=(day_start, day_end),
+            data__importedActivePowerLow__isnull=False,
+            data__importedActivePowerHigh__isnull=False
+        ).order_by('date')
+        
+        if measurements.exists():
+            # Primera y última medición del día
+            first_measurement = measurements.first()
+            last_measurement = measurements.last()
+            
+            # Calcular energía importada según fórmula del documento
+            start_imported_high = first_measurement.data.get('importedActivePowerHigh', 0) * 1000  # MWh a kWh
+            start_imported_low = first_measurement.data.get('importedActivePowerLow', 0)
+            start_total = start_imported_high + start_imported_low
+            
+            end_imported_high = last_measurement.data.get('importedActivePowerHigh', 0) * 1000  # MWh a kWh
+            end_imported_low = last_measurement.data.get('importedActivePowerLow', 0)
+            end_total = end_imported_high + end_imported_low
+            
+            # Energía diaria importada = diferencia entre final e inicio del día
+            daily_imported_energy = max(0, end_total - start_total)
+            
+            # Calcular energía exportada de manera similar
+            start_exported_high = first_measurement.data.get('exportedActivePowerHigh', 0) * 1000
+            start_exported_low = first_measurement.data.get('exportedActivePowerLow', 0)
+            start_exported_total = start_exported_high + start_exported_low
+            
+            end_exported_high = last_measurement.data.get('exportedActivePowerHigh', 0) * 1000
+            end_exported_low = last_measurement.data.get('exportedActivePowerLow', 0)
+            end_exported_total = end_exported_high + end_exported_low
+            
+            daily_exported_energy = max(0, end_exported_total - start_exported_total)
+            
+            # Balance neto
+            net_energy_consumption = daily_imported_energy - daily_exported_energy
+            
+            # Crear o actualizar registro
+            consumption_record, created = ElectricMeterEnergyConsumption.objects.update_or_create(
+                device=meter,
+                institution=meter.institution,
+                date=current_date,
+                time_range='daily',
+                defaults={
+                    'imported_energy_low': start_imported_low,
+                    'imported_energy_high': start_imported_high / 1000,  # Guardar en MWh
+                    'total_imported_energy': daily_imported_energy,
+                    'exported_energy_low': start_exported_low,
+                    'exported_energy_high': start_exported_high / 1000,  # Guardar en MWh
+                    'total_exported_energy': daily_exported_energy,
+                    'net_energy_consumption': net_energy_consumption,
+                    'measurement_count': measurements.count(),
+                    'last_measurement_date': last_measurement.date
+                }
+            )
+            
+            if created:
+                records_created += 1
+            else:
+                records_updated += 1
+        
+        current_date += timedelta(days=1)
+    
+    return records_created, records_updated
+
+def _calculate_monthly_energy_data(meter, start_date, end_date):
+    """Calcula datos mensuales de energía según la fórmula del documento técnico"""
+    records_created = 0
+    records_updated = 0
+    
+    # Agrupar por mes
+    current_date = start_date.replace(day=1)  # Primer día del mes
+    while current_date <= end_date:
+        month_end = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        month_end = min(month_end, end_date)
+        
+        # Obtener mediciones del mes
+        month_start = datetime.combine(current_date, datetime.min.time())
+        month_end_datetime = datetime.combine(month_end, datetime.max.time())
+        
+        measurements = Measurement.objects.filter(
+            device=meter,
+            date__range=(month_start, month_end_datetime),
+            data__importedActivePowerLow__isnull=False,
+            data__importedActivePowerHigh__isnull=False
+        ).order_by('date')
+        
+        if measurements.exists():
+            # Primera y última medición del mes
+            first_measurement = measurements.first()
+            last_measurement = measurements.last()
+            
+            # Calcular energía importada según fórmula del documento
+            start_imported_high = first_measurement.data.get('importedActivePowerHigh', 0) * 1000  # MWh a kWh
+            start_imported_low = first_measurement.data.get('importedActivePowerLow', 0)
+            start_total = start_imported_high + start_imported_low
+            
+            end_imported_high = last_measurement.data.get('importedActivePowerHigh', 0) * 1000  # MWh a kWh
+            end_imported_low = last_measurement.data.get('importedActivePowerLow', 0)
+            end_total = end_imported_high + end_imported_low
+            
+            # Energía mensual importada = diferencia entre final e inicio del mes
+            monthly_imported_energy = max(0, end_total - start_total)
+            
+            # Calcular energía exportada de manera similar
+            start_exported_high = first_measurement.data.get('exportedActivePowerHigh', 0) * 1000
+            start_exported_low = first_measurement.data.get('exportedActivePowerLow', 0)
+            start_exported_total = start_exported_high + start_exported_low
+            
+            end_exported_high = last_measurement.data.get('exportedActivePowerHigh', 0) * 1000
+            end_exported_low = last_measurement.data.get('exportedActivePowerLow', 0)
+            end_exported_total = end_exported_high + end_exported_low
+            
+            monthly_exported_energy = max(0, end_exported_total - start_exported_total)
+            
+            # Balance neto
+            net_energy_consumption = monthly_imported_energy - monthly_exported_energy
+            
+            # Crear o actualizar registro
+            consumption_record, created = ElectricMeterEnergyConsumption.objects.update_or_create(
+                device=meter,
+                institution=meter.institution,
+                date=current_date,
+                time_range='monthly',
+                defaults={
+                    'imported_energy_low': start_imported_low,
+                    'imported_energy_high': start_imported_high / 1000,  # Guardar en MWh
+                    'total_imported_energy': monthly_imported_energy,
+                    'exported_energy_low': start_exported_low,
+                    'exported_energy_high': start_exported_high / 1000,  # Guardar en MWh
+                    'total_exported_energy': monthly_exported_energy,
+                    'net_energy_consumption': net_energy_consumption,
+                    'measurement_count': measurements.count(),
+                    'last_measurement_date': last_measurement.date
+                }
+            )
+            
+            if created:
+                records_created += 1
+            else:
+                records_updated += 1
+        
+        # Avanzar al siguiente mes
+        current_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
+    
+    return records_created, records_updated

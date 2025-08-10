@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (
     ConsumptionSummaryView, 
     ChartDataView, 
@@ -8,8 +9,12 @@ from .views import (
     InstitutionsListView,
     ElectricMetersListView,
     CalculateElectricMeterDataView,
-    TriggerElectricMeterCalculationView
+    TriggerElectricMeterCalculationView,
+    ElectricMeterEnergyViewSet
 )
+
+router = DefaultRouter()
+router.register(r'electrical/energy', ElectricMeterEnergyViewSet, basename='electrical-energy')
 
 # Definición de las rutas de URL asociadas a esta aplicación
 urlpatterns = [
@@ -24,5 +29,5 @@ urlpatterns = [
     path('electric-meters/list/', ElectricMetersListView.as_view(), name='electric-meters-list'),
     path('institutions/', InstitutionsListView.as_view(), name='institutions-list'),
     path('electric-meters/calculate/', CalculateElectricMeterDataView.as_view(), name='calculate-electric-meter-data'),
-    path('electric-meters/trigger-calculation/', TriggerElectricMeterCalculationView.as_view(), name='trigger-electric-meter-calculation'),
+    path('', include(router.urls)),
 ]

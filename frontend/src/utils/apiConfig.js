@@ -11,7 +11,8 @@ export const ENDPOINTS = {
   electrical: {
     meters: '/api/electrical/meters/',
     consumption: '/api/electrical/consumption/',
-    details: '/api/electrical/details/'
+    details: '/api/electrical/details/',
+    energy: '/api/electrical/energy/',  // Nuevo endpoint
   },
   inverters: {
     status: '/api/inverters/status/',

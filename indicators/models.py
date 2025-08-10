@@ -123,3 +123,39 @@ class ElectricMeterChartData(models.Model):
     
     def __str__(self):
         return f"{self.device.name} - {self.date}"
+
+# indicators/models.py    
+class ElectricMeterEnergyConsumption(models.Model):
+    device = models.ForeignKey('scada_proxy.Device', on_delete=models.CASCADE)
+    institution = models.ForeignKey('scada_proxy.Institution', on_delete=models.CASCADE)
+    date = models.DateField()
+    time_range = models.CharField(max_length=20, choices=[
+        ('daily', 'Diario'),
+        ('monthly', 'Mensual')
+    ])
+    
+    # Energía importada (kWh)
+    imported_energy_low = models.FloatField(default=0.0)  # kWh
+    imported_energy_high = models.FloatField(default=0.0)  # MWh convertido a kWh
+    total_imported_energy = models.FloatField(default=0.0)  # Total en kWh
+    
+    # Energía exportada (kWh)
+    exported_energy_low = models.FloatField(default=0.0)  # kWh
+    exported_energy_high = models.FloatField(default=0.0)  # MWh convertido a kWh
+    total_exported_energy = models.FloatField(default=0.0)  # Total en kWh
+    
+    # Balance neto
+    net_energy_consumption = models.FloatField(default=0.0)  # kWh
+    
+    # Metadatos
+    measurement_count = models.IntegerField(default=0)
+    last_measurement_date = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['device', 'institution', 'date', 'time_range']
+        indexes = [
+            models.Index(fields=['device', 'date', 'time_range']),
+            models.Index(fields=['institution', 'date', 'time_range'])
+        ]

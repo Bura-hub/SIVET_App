@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { KpiCard } from "./KPI/KpiCard";
 import { ChartCard } from "./KPI/ChartCard";
 import TransitionOverlay from './TransitionOverlay';
 import ElectricMeterFilters from './ElectricMeterFilters';
 
+//###########################################################################
 // Importaciones Chart.js
 import {
   Chart as ChartJS,
@@ -287,6 +288,9 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
   const [meterData, setMeterData] = useState(null);
   const [meterLoading, setMeterLoading] = useState(false);
   const [meterError, setMeterError] = useState(null);
+  const requestSeqRef = useRef(0);
+  const debounceRef = useRef(null);
+  const lastFiltersRef = useRef(null);
 
   // KPIs con iconos inline
   const [kpiData] = useState({
@@ -329,56 +333,94 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     showTransitionAnimation('info', message, 1500);
   };
 
-  const fetchMeterData = async (filters) => {
-    if (!filters.institutionId) {
-      setMeterData(null);
-      return;
-    }
-
-    setMeterLoading(true);
-    setMeterError(null);
-
+  const fetchMeterData = useCallback(async (filters) => {
+    let seq = 0;
     try {
-      const params = new URLSearchParams({
-        time_range: filters.timeRange,
-        institution_id: filters.institutionId,
+      seq = ++requestSeqRef.current;
+      if (!filters || !filters.institutionId) return; // no tocar UI si no hay institución
+      setMeterLoading(true);
+      setMeterError(null);
+      const timeRange = filters.timeRange || 'daily';
+      const baseParams = {
+        time_range: timeRange,
+        ...(filters.institutionId && { institution_id: filters.institutionId }),
         ...(filters.deviceId && { device_id: filters.deviceId }),
-        start_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        end_date: new Date().toISOString().split('T')[0]
-      });
+        ...(filters.startDate && { start_date: filters.startDate }),
+        ...(filters.endDate && { end_date: filters.endDate })
+      };
 
-      const response = await fetch(`/api/electric-meters/?${params}`, {
-        headers: { 'Authorization': `Token ${authToken}`, 'Content-Type': 'application/json' }
-      });
+      const indicatorsParams = new URLSearchParams(baseParams);
+      const energyParams = new URLSearchParams(baseParams);
 
-      if (response.ok) {
-        setMeterData(await response.json());
-      } else {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      const [indicatorsResp, energyResp] = await Promise.all([
+        fetch(`/api/electric-meters/?${indicatorsParams.toString()}`, {
+          headers: {
+            'Authorization': `Token ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`/api/electrical/energy/?${energyParams.toString()}`, {
+          headers: {
+            'Authorization': `Token ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+
+      if (!indicatorsResp.ok) {
+        const errText = await indicatorsResp.text();
+        throw new Error(errText || indicatorsResp.statusText);
+      }
+      if (!energyResp.ok) {
+        const errText = await energyResp.text();
+        throw new Error(errText || energyResp.statusText);
+      }
+
+      const [indicatorsData, energyData] = await Promise.all([
+        indicatorsResp.json(),
+        energyResp.json()
+      ]);
+
+      const energySeries = Array.isArray(energyData) ? energyData : (energyData.results || []);
+      if (seq === requestSeqRef.current) {
+        setMeterData({ ...indicatorsData, energy_series: energySeries });
       }
     } catch (error) {
-      setMeterError(error.message);
-      console.error('Error fetching meter data:', error);
+      // Mostrar error solo si esta solicitud sigue siendo la vigente
+      if (seq === requestSeqRef.current) {
+        setMeterError(error.message || 'Error desconocido');
+      }
     } finally {
-      setMeterLoading(false);
-    }
-  };
-
-  const handleFiltersChange = (newFilters) => {
-    fetchMeterData(newFilters);
-  };
-
-  // Cargar datos al montar
-  useEffect(() => {
-    if (authToken) {
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-      }, 1500);
+      if (seq === requestSeqRef.current) setMeterLoading(false);
     }
   }, [authToken]);
 
-  // Estados de carga y error
+  const handleFiltersChange = useCallback((newFilters) => {
+    // Evitar fetch si filtros no cambiaron
+    const prev = lastFiltersRef.current || {};
+    const same = prev.timeRange === newFilters.timeRange &&
+                 prev.institutionId === newFilters.institutionId &&
+                 prev.deviceId === newFilters.deviceId &&
+                 prev.startDate === newFilters.startDate &&
+                 prev.endDate === newFilters.endDate;
+    if (same) return;
+    lastFiltersRef.current = newFilters;
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    // Ocultar loader mientras debouncing para evitar parpadeos si el usuario cambia rápidamente
+    setMeterLoading(false);
+    debounceRef.current = setTimeout(() => {
+      fetchMeterData(newFilters);
+    }, 450);
+  }, [fetchMeterData]);
+
+  // Cargar datos al montar: solo una vez
+  useEffect(() => {
+    if (!authToken) return;
+    setLoading(false);
+  }, []);
+
+  // Estados de carga y error (suavizados)
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -487,10 +529,10 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
           <ElectricMeterFilters onFiltersChange={handleFiltersChange} authToken={authToken} />
 
           {meterLoading && (
-            <div className="flex items-center justify-center py-8">
+            <div className="flex items-center justify-center py-8 transition-opacity duration-300 ease-in-out opacity-80">
               <div className="flex flex-col items-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
-                <p className="mt-4 text-lg text-gray-700">Cargando datos de medidores...</p>
+                <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500"></div>
+                <p className="mt-3 text-base text-gray-700">Cargando datos de medidores...</p>
               </div>
             </div>
           )}
@@ -558,30 +600,42 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                     options={{...CHART_OPTIONS, plugins: {...CHART_OPTIONS.plugins, title: {display: true, text: 'Energía Consumida Acumulada', font: {size: 16, weight: 'bold'}, color: '#374151'}}}}
                   />
                   <ChartCard
-                    title="Demanda Pico por Período"
-                    type="bar"
+                    title="Importación vs Exportación (kWh)"
+                    type="line"
                     data={{
-                      labels: meterData.consumption_data.map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                      labels: (meterData.energy_series || []).map(item => new Date(item.date).toLocaleDateString('es-ES')),
                       datasets: [
                         {
-                          label: 'Demanda Pico (kW)',
-                          data: meterData.consumption_data.map(item => item.peak_demand),
-                          backgroundColor: '#F59E0B',
-                          borderColor: '#D97706',
-                          borderWidth: 1,
-                          borderRadius: 5,
+                          label: 'Energía Importada (kWh)',
+                          data: (meterData.energy_series || []).map(item => item.total_imported_energy),
+                          borderColor: '#10B981',
+                          backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                          fill: true,
+                          tension: 0.4,
+                          pointRadius: 2,
                         },
                         {
-                          label: 'Demanda Promedio (kW)',
-                          data: meterData.consumption_data.map(item => item.avg_demand),
-                          backgroundColor: '#10B981',
-                          borderColor: '#059669',
-                          borderWidth: 1,
-                          borderRadius: 5,
+                          label: 'Energía Exportada (kWh)',
+                          data: (meterData.energy_series || []).map(item => item.total_exported_energy),
+                          borderColor: '#F59E0B',
+                          backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                          fill: true,
+                          tension: 0.4,
+                          pointRadius: 2,
+                        },
+                        {
+                          label: 'Energía Neta (kWh)',
+                          data: (meterData.energy_series || []).map(item => item.net_energy_consumption),
+                          borderColor: '#8B5CF6',
+                          backgroundColor: 'rgba(139, 92, 246, 0.15)',
+                          fill: false,
+                          borderDash: [6, 4],
+                          tension: 0.4,
+                          pointRadius: 2,
                         }
-                      ],
+                      ]
                     }}
-                    options={{...CHART_OPTIONS, plugins: {...CHART_OPTIONS.plugins, title: {display: true, text: 'Demanda Pico y Promedio', font: {size: 16, weight: 'bold'}, color: '#374151'}}}}
+                    options={{...CHART_OPTIONS, plugins: {...CHART_OPTIONS.plugins, title: {display: true, text: 'Energía Importada / Exportada / Neta', font: {size: 16, weight: 'bold'}, color: '#374151'}}}}
                   />
                 </div>
               )}

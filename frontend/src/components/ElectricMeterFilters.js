@@ -39,18 +39,18 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
           'Content-Type': 'application/json'
         }
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setInstitutions(data);
-      } else {
-        console.error('Error fetching institutions:', response.statusText);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}`);
       }
+      const data = await response.json();
+      // Espera formato: [{id, name}]
+      setInstitutions(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error('Error fetching institutions:', error);
+      setInstitutions([]);
     }
   };
-
+  
   const fetchDevices = async (institutionId) => {
     setLoading(true);
     try {
@@ -60,14 +60,13 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
           'Content-Type': 'application/json'
         }
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setDevices(data.devices || []);
-      } else {
-        console.error('Error fetching devices:', response.statusText);
-        setDevices([]);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}`);
       }
+      const data = await response.json();
+      // Backend devuelve { devices: [ { scada_id, name, ... } ], total_count }
+      const parsed = Array.isArray(data) ? data : (data.devices || []);
+      setDevices(parsed);
     } catch (error) {
       console.error('Error fetching devices:', error);
       setDevices([]);

@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from rest_framework import viewsets
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiRequest, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 import logging
 from datetime import datetime, timedelta, timezone, date
@@ -15,18 +16,17 @@ import calendar
 import pytz
 
 # Importa los modelos de indicadores
-from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData
+from .models import ElectricMeterEnergyConsumption, MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData
 # Importa el cliente SCADA y los modelos DeviceCategory, Measurement, Device de scada_proxy
 from scada_proxy.scada_client import ScadaConnectorClient 
 from scada_proxy.models import DeviceCategory, Measurement, Device, Institution
 # Importa las tareas de Celery
-from .tasks import calculate_electric_meter_data, calculate_monthly_consumption_kpi, calculate_and_save_daily_data
+from .tasks import calculate_monthly_consumption_kpi, calculate_and_save_daily_data
 
 # Importaciones adicionales para los nuevos modelos - CORREGIDAS
 from django.db.models import Q, Sum, Avg, Max, F, FloatField, Count
 from django.db.models.functions import Cast
-from drf_spectacular.utils import extend_schema, OpenApiTypes, OpenApiParameter, OpenApiRequest, OpenApiResponse
-from .serializers import MonthlyConsumptionKPISerializer, DailyChartDataSerializer, ElectricMeterConsumptionSerializer, ElectricMeterChartDataSerializer, ElectricMeterCalculationRequestSerializer, ElectricMeterCalculationResponseSerializer
+from .serializers import ElectricMeterEnergySerializer, MonthlyConsumptionKPISerializer, DailyChartDataSerializer, ElectricMeterConsumptionSerializer, ElectricMeterChartDataSerializer, ElectricMeterCalculationRequestSerializer, ElectricMeterCalculationResponseSerializer
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
@@ -1225,7 +1225,8 @@ class CalculateElectricMeterDataView(APIView):
             validated_data = serializer.validated_data
             
             # Ejecutar tarea de cálculo
-            task = calculate_electric_meter_data.delay(
+            from .tasks import calculate_electric_meter_energy_consumption
+            task = calculate_electric_meter_energy_consumption.delay(
                 time_range=validated_data['time_range'],
                 start_date_str=validated_data['start_date'].isoformat(),
                 end_date_str=validated_data['end_date'].isoformat(),
@@ -1293,7 +1294,8 @@ class TriggerElectricMeterCalculationView(APIView):
             validated_data = serializer.validated_data
             
             # Ejecutar tarea de cálculo
-            task = calculate_electric_meter_data.delay(
+            from .tasks import calculate_electric_meter_energy_consumption
+            task = calculate_electric_meter_energy_consumption.delay(
                 time_range=validated_data['time_range'],
                 start_date_str=validated_data['start_date'].isoformat(),
                 end_date_str=validated_data['end_date'].isoformat(),
@@ -1316,3 +1318,47 @@ class TriggerElectricMeterCalculationView(APIView):
                 "detail": "Error al iniciar el cálculo",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+# indicators/views.py
+class ElectricMeterEnergyViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API para datos de energía de medidores eléctricos
+    """
+    serializer_class = ElectricMeterEnergySerializer
+    
+    def get_queryset(self):
+        queryset = ElectricMeterEnergyConsumption.objects.all()
+
+        # Filtros
+        time_range = self.request.query_params.get('time_range', 'daily')
+        institution_id = self.request.query_params.get('institution_id')
+        device_id = self.request.query_params.get('device_id')
+        start_date_str = self.request.query_params.get('start_date')
+        end_date_str = self.request.query_params.get('end_date')
+
+        if time_range:
+            queryset = queryset.filter(time_range=time_range)
+        if institution_id:
+            queryset = queryset.filter(institution_id=institution_id)
+        if device_id:
+            # Aceptar tanto el id entero local como el scada_id (UUID/string)
+            if str(device_id).isdigit():
+                queryset = queryset.filter(device_id=int(device_id))
+            else:
+                queryset = queryset.filter(device__scada_id=device_id)
+        # Parseo seguro de fechas (YYYY-MM-DD)
+        from datetime import datetime
+        if start_date_str:
+            try:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                queryset = queryset.filter(date__gte=start_date)
+            except ValueError:
+                pass
+        if end_date_str:
+            try:
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                queryset = queryset.filter(date__lte=end_date)
+            except ValueError:
+                pass
+
+        return queryset.order_by('date')

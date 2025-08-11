@@ -19,14 +19,24 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
   // Cargar dispositivos cuando cambie la institución
   useEffect(() => {
     if (selectedInstitution) {
+      console.log('Institution changed, fetching devices for:', selectedInstitution);
       fetchDevices(selectedInstitution);
     } else {
+      console.log('No institution selected, clearing devices');
       setDevices([]);
+      setSelectedDevice(''); // Reset device selection when institution changes
     }
   }, [selectedInstitution]);
 
+  // Monitorear cambios en el estado de dispositivos
+  useEffect(() => {
+    console.log('Devices state changed:', devices);
+    console.log('Devices count:', devices.length);
+  }, [devices]);
+
   // Notificar cambios en los filtros
   useEffect(() => {
+    console.log('Filters changed:', { timeRange, selectedInstitution, selectedDevice, startDate, endDate });
     onFiltersChange({
       timeRange,
       institutionId: selectedInstitution,
@@ -56,16 +66,42 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
   const fetchDevices = async (institutionId) => {
     setLoading(true);
     try {
-      const response = await fetch(`${ENDPOINTS.electrical.devices}?institution_id=${institutionId}`, {
+      console.log('Fetching devices for institution:', institutionId, 'Type:', typeof institutionId);
+      console.log('Institutions available:', institutions);
+      
+      const url = `${ENDPOINTS.electrical.devices}?institution_id=${institutionId}`;
+      console.log('Request URL:', url);
+      console.log('Request headers:', getDefaultFetchOptions(authToken));
+      
+      const response = await fetch(url, {
         ...getDefaultFetchOptions(authToken)
       });
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
       if (!response.ok) {
         throw new Error(`Error ${response.status}`);
       }
       const data = await response.json();
+      console.log('Devices response:', data);
+      
       // Backend devuelve { devices: [ { scada_id, name, ... } ], total_count }
       const parsed = Array.isArray(data) ? data : (data.devices || []);
+      console.log('Parsed devices:', parsed);
+      console.log('Number of devices found:', parsed.length);
+      
+      // Verificar si los dispositivos tienen la estructura esperada
+      if (parsed.length > 0) {
+        console.log('First device structure:', parsed[0]);
+        console.log('Device keys:', Object.keys(parsed[0]));
+      }
+      
       setDevices(parsed);
+      
+      // Si solo hay un dispositivo, seleccionarlo automáticamente
+      if (parsed.length === 1) {
+        setSelectedDevice(parsed[0].scada_id);
+      }
     } catch (error) {
       console.error('Error fetching devices:', error);
       setDevices([]);
@@ -148,6 +184,25 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
           className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-2 focus:border-transparent"
         />
       </div>
+
+      {devices.length === 0 && selectedInstitution && !loading && (
+          <p className="text-xs text-orange-600 mt-1">
+            No se encontraron medidores para esta institución
+          </p>
+        )}
+        
+        {/* Información de depuración */}
+        <div className="text-xs text-gray-500 mt-1">
+        {devices.length > 0 && (
+          <p className="text-xs text-green-600 mt-1">
+            {devices.length} medidor{devices.length !== 1 ? 'es' : ''} encontrado{devices.length !== 1 ? 's' : ''}
+          </p>
+        )}
+          <p>Institution ID: {selectedInstitution}</p>
+          <p>Devices count: {devices.length}</p>
+          <p>Loading: {loading ? 'Yes' : 'No'}</p>
+          <p>Selected device: {selectedDevice}</p>
+        </div>
 
       {/* Indicador de carga */}
       {loading && (

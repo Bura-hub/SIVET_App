@@ -8,7 +8,8 @@ from .views import (
     LocalDeviceListView,                # Vista para listar los dispositivos locales
     HistoricalMeasurementsView,         # Vista para consultar mediciones históricas de los dispositivos locales
     DailySummaryMeasurementsView,       # Vista para obtener un resumen diario de mediciones locales
-    SyncLocalDevicesView                # Vista encargada de sincronizar dispositivos locales con una fuente externa
+    SyncLocalDevicesView,               # Vista encargada de sincronizar dispositivos locales con una fuente externa
+    RepairDeviceRelationshipsView       # Vista para reparar relaciones faltantes de dispositivos
 )
 
 # Definición del conjunto de rutas disponibles para la API local SCADA
@@ -30,4 +31,7 @@ urlpatterns = [
 
     # Ruta para sincronizar dispositivos locales con otra fuente (por ejemplo, un sistema SCADA centralizado)
     path('sync-devices/', SyncLocalDevicesView.as_view(), name='sync-local-devices'),
+
+    # Ruta para reparar relaciones faltantes de dispositivos
+    path('repair-devices/', RepairDeviceRelationshipsView.as_view(), name='repair-device-relationships'),
 ]

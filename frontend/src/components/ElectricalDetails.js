@@ -458,11 +458,11 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       {/* Header */}
       <header className="flex p-8 justify-between items-center bg-gray-100 p-4 -mx-8 -mt-8">
         <h1 className="text-3xl font-bold text-gray-800">Detalles Eléctricos</h1>
-    
+
       </header>
 
       {/* KPIs */}
-      <section className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 -mx-8 mb-8">
+      <section className="bg-gray-100 p-8 -mx-8 mb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {Object.keys(kpiData).map((key) => {
             const item = kpiData[key];

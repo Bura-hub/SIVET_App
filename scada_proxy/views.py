@@ -271,6 +271,79 @@ class LocalDeviceListView(generics.ListAPIView):
     search_fields = ['name', 'scada_id']
     ordering_fields = ['name', 'category__name', 'institution__name']
 
+    def get_queryset(self):
+        """
+        Obtiene el queryset base y asegura que las relaciones estén completas.
+        Si hay dispositivos con relaciones faltantes, intenta repararlos automáticamente.
+        """
+        queryset = super().get_queryset()
+        
+        # Verificar si hay dispositivos con relaciones faltantes
+        devices_with_issues = queryset.filter(
+            models.Q(category__isnull=True) | models.Q(institution__isnull=True)
+        )
+        
+        if devices_with_issues.exists():
+            logger.warning(f"Se encontraron {devices_with_issues.count()} dispositivos con relaciones faltantes. Intentando reparar...")
+            
+            # Intentar reparar las relaciones faltantes
+            repaired_count = self._repair_missing_relationships_in_queryset(devices_with_issues)
+            
+            if repaired_count > 0:
+                logger.info(f"Se repararon {repaired_count} dispositivos. Refrescando queryset...")
+                # Refrescar el queryset para incluir las reparaciones
+                queryset = Device.objects.filter(is_active=True).select_related('category', 'institution')
+        
+        return queryset
+    
+    def _repair_missing_relationships_in_queryset(self, devices_with_issues):
+        """
+        Repara las relaciones faltantes en un queryset específico de dispositivos.
+        """
+        repaired_count = 0
+        
+        try:
+            for device in devices_with_issues:
+                repaired = False
+                
+                # Intentar encontrar categoría por nombre del dispositivo
+                if not device.category:
+                    # Buscar por patrones en el nombre
+                    if 'medidor' in device.name.lower() or 'meter' in device.name.lower():
+                        category = DeviceCategory.objects.filter(name__icontains='electricmeter').first()
+                        if category:
+                            device.category = category
+                            repaired = True
+                    elif 'inversor' in device.name.lower() or 'inverter' in device.name.lower():
+                        category = DeviceCategory.objects.filter(name__icontains='inverter').first()
+                        if category:
+                            device.category = category
+                            repaired = True
+                    elif 'estación' in device.name.lower() or 'weather' in device.name.lower():
+                        category = DeviceCategory.objects.filter(name__icontains='weatherstation').first()
+                        if category:
+                            device.category = category
+                            repaired = True
+                
+                # Intentar encontrar institución por nombre del dispositivo
+                if not device.institution:
+                    # Buscar por patrones en el nombre
+                    for institution in Institution.objects.all():
+                        if institution.name.lower() in device.name.lower():
+                            device.institution = institution
+                            repaired = True
+                            break
+                
+                if repaired:
+                    device.save()
+                    repaired_count += 1
+                    logger.info(f"Dispositivo {device.name} reparado en queryset - Categoría: {device.category}, Institución: {device.institution}")
+            
+        except Exception as e:
+            logger.error(f"Error al reparar relaciones faltantes en queryset: {e}")
+        
+        return repaired_count
+
 @extend_schema(
     tags=["Datos Locales"],
     description="Lista mediciones históricas filtradas por dispositivo y rango de fechas.",
@@ -573,6 +646,7 @@ class TaskHistoryView(generics.ListAPIView):
 # ========================= Sincronización Local =========================
 
 from django.db import transaction
+from django.db import models
 
 @extend_schema(
     tags=["Sincronización"],
@@ -602,6 +676,7 @@ class SyncLocalDevicesView(APIView):
                         defaults={"name": cat["name"], "description": cat.get("description", "")}
                     )
                     category_map[cat["id"]] = category_obj
+                    logger.info(f"Categoría sincronizada: {cat['name']} (SCADA ID: {cat['id']}) -> Local ID: {category_obj.id}")
 
                 # 2. Sincronizar instituciones
                 scada_institutions = scada_client.get_institutions(token).get("data", [])
@@ -612,14 +687,36 @@ class SyncLocalDevicesView(APIView):
                         defaults={"name": inst["name"]}
                     )
                     institution_map[inst["id"]] = institution_obj
+                    logger.info(f"Institución sincronizada: {inst['name']} (SCADA ID: {inst['id']}) -> Local ID: {institution_obj.id}")
 
                 # 3. Sincronizar dispositivos
                 scada_devices = scada_client.get_devices(token).get("data", [])
+                devices_updated = 0
+                devices_with_issues = 0
+                
                 for dev in scada_devices:
-                    category_obj = category_map.get(dev["category"]["id"]) if dev.get("category") else None
-                    institution_obj = institution_map.get(dev["institution"]["id"]) if dev.get("institution") else None
+                    # Extraer información de categoría e institución con mejor manejo de errores
+                    category_obj = None
+                    institution_obj = None
+                    
+                    # Manejar categoría
+                    if dev.get("category") and isinstance(dev["category"], dict) and dev["category"].get("id"):
+                        category_obj = category_map.get(dev["category"]["id"])
+                        if not category_obj:
+                            logger.warning(f"Dispositivo {dev.get('name', 'N/A')} tiene categoría SCADA ID {dev['category']['id']} que no se encontró en el mapeo local")
+                    elif dev.get("category"):
+                        logger.warning(f"Dispositivo {dev.get('name', 'N/A')} tiene formato de categoría inesperado: {dev['category']}")
+                    
+                    # Manejar institución
+                    if dev.get("institution") and isinstance(dev["institution"], dict) and dev["institution"].get("id"):
+                        institution_obj = institution_map.get(dev["institution"]["id"])
+                        if not institution_obj:
+                            logger.warning(f"Dispositivo {dev.get('name', 'N/A')} tiene institución SCADA ID {dev['institution']['id']} que no se encontró en el mapeo local")
+                    elif dev.get("institution"):
+                        logger.warning(f"Dispositivo {dev.get('name', 'N/A')} tiene formato de institución inesperado: {dev['institution']}")
 
-                    Device.objects.update_or_create(
+                    # Crear o actualizar dispositivo
+                    device_obj, created = Device.objects.update_or_create(
                         scada_id=dev["id"],
                         defaults={
                             "name": dev["name"],
@@ -629,9 +726,211 @@ class SyncLocalDevicesView(APIView):
                             "is_active": True
                         }
                     )
+                    
+                    if created:
+                        logger.info(f"Dispositivo creado: {dev['name']} (SCADA ID: {dev['id']})")
+                    else:
+                        logger.info(f"Dispositivo actualizado: {dev['name']} (SCADA ID: {dev['id']})")
+                    
+                    # Verificar si se establecieron las relaciones correctamente
+                    if category_obj and institution_obj:
+                        devices_updated += 1
+                    else:
+                        devices_with_issues += 1
+                        logger.warning(f"Dispositivo {dev['name']} sincronizado con relaciones incompletas - Categoría: {category_obj}, Institución: {institution_obj}")
 
-            return Response({"detail": "Sincronización completada con éxito."}, status=status.HTTP_200_OK)
+                # 4. Intentar reparar dispositivos con relaciones faltantes
+                repaired_devices = self._repair_missing_relationships()
+                
+                logger.info(f"Sincronización completada: {devices_updated} dispositivos completos, {devices_with_issues} con problemas, {repaired_devices} reparados")
+
+            return Response({
+                "detail": "Sincronización completada con éxito.",
+                "summary": {
+                    "devices_updated": devices_updated,
+                    "devices_with_issues": devices_with_issues,
+                    "repaired_devices": repaired_devices
+                }
+            }, status=status.HTTP_200_OK)
 
         except Exception as e:
             logger.error(f"Error al sincronizar datos locales: {e}", exc_info=True)
             return Response({"detail": f"Error: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def _repair_missing_relationships(self):
+        """Intenta reparar dispositivos que tienen categoría o institución como null"""
+        repaired_count = 0
+        
+        try:
+            # Buscar dispositivos con relaciones faltantes
+            devices_with_issues = Device.objects.filter(
+                models.Q(category__isnull=True) | models.Q(institution__isnull=True)
+            ).select_related('category', 'institution')
+            
+            for device in devices_with_issues:
+                repaired = False
+                
+                # Intentar encontrar categoría por nombre del dispositivo
+                if not device.category:
+                    # Buscar por patrones en el nombre
+                    if 'medidor' in device.name.lower() or 'meter' in device.name.lower():
+                        category = DeviceCategory.objects.filter(name__icontains='electricmeter').first()
+                        if category:
+                            device.category = category
+                            repaired = True
+                    elif 'inversor' in device.name.lower() or 'inverter' in device.name.lower():
+                        category = DeviceCategory.objects.filter(name__icontains='inverter').first()
+                        if category:
+                            device.category = category
+                            repaired = True
+                    elif 'estación' in device.name.lower() or 'weather' in device.name.lower():
+                        category = DeviceCategory.objects.filter(name__icontains='weatherstation').first()
+                        if category:
+                            device.category = category
+                            repaired = True
+                
+                # Intentar encontrar institución por nombre del dispositivo
+                if not device.institution:
+                    # Buscar por patrones en el nombre
+                    for institution in Institution.objects.all():
+                        if institution.name.lower() in device.name.lower():
+                            device.institution = institution
+                            repaired = True
+                            break
+                
+                if repaired:
+                    device.save()
+                    repaired_count += 1
+                    logger.info(f"Dispositivo {device.name} reparado - Categoría: {device.category}, Institución: {device.institution}")
+            
+        except Exception as e:
+            logger.error(f"Error al reparar relaciones faltantes: {e}")
+        
+        return repaired_count
+
+
+@extend_schema(
+    tags=["Sincronización"],
+    description="Repara las relaciones faltantes de categoría e institución en dispositivos específicos o todos los dispositivos.",
+    request=OpenApiExample(
+        "Ejemplo Request",
+        value={"device_ids": [15, 16], "repair_all": False}
+    ),
+    responses={200: OpenApiExample(
+        "Ejemplo Respuesta",
+        value={"detail": "Reparación completada con éxito.", "repaired_count": 2}
+    )}
+)
+class RepairDeviceRelationshipsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        Repara las relaciones faltantes de dispositivos.
+        Parámetros opcionales:
+        - device_ids: Lista de IDs de dispositivos específicos a reparar
+        - repair_all: Si es True, repara todos los dispositivos con problemas
+        """
+        try:
+            device_ids = request.data.get('device_ids', [])
+            repair_all = request.data.get('repair_all', False)
+            
+            if repair_all:
+                # Reparar todos los dispositivos con problemas
+                devices_to_repair = Device.objects.filter(
+                    models.Q(category__isnull=True) | models.Q(institution__isnull=True)
+                ).select_related('category', 'institution')
+            elif device_ids:
+                # Reparar dispositivos específicos
+                devices_to_repair = Device.objects.filter(
+                    id__in=device_ids
+                ).select_related('category', 'institution')
+            else:
+                return Response(
+                    {"detail": "Debe especificar device_ids o establecer repair_all=True"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if not devices_to_repair.exists():
+                return Response(
+                    {"detail": "No se encontraron dispositivos para reparar"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            repaired_count = 0
+            failed_count = 0
+            repair_details = []
+            
+            for device in devices_to_repair:
+                try:
+                    repaired = False
+                    repair_info = {"device_id": device.id, "name": device.name, "changes": []}
+                    
+                    # Intentar encontrar categoría por nombre del dispositivo
+                    if not device.category:
+                        if 'medidor' in device.name.lower() or 'meter' in device.name.lower():
+                            category = DeviceCategory.objects.filter(name__icontains='electricmeter').first()
+                            if category:
+                                device.category = category
+                                repaired = True
+                                repair_info["changes"].append(f"Categoría asignada: {category.name}")
+                        elif 'inversor' in device.name.lower() or 'inverter' in device.name.lower():
+                            category = DeviceCategory.objects.filter(name__icontains='inverter').first()
+                            if category:
+                                device.category = category
+                                repaired = True
+                                repair_info["changes"].append(f"Categoría asignada: {category.name}")
+                        elif 'estación' in device.name.lower() or 'weather' in device.name.lower():
+                            category = DeviceCategory.objects.filter(name__icontains='weatherstation').first()
+                            if category:
+                                device.category = category
+                                repaired = True
+                                repair_info["changes"].append(f"Categoría asignada: {category.name}")
+                    
+                    # Intentar encontrar institución por nombre del dispositivo
+                    if not device.institution:
+                        for institution in Institution.objects.all():
+                            if institution.name.lower() in device.name.lower():
+                                device.institution = institution
+                                repaired = True
+                                repair_info["changes"].append(f"Institución asignada: {institution.name}")
+                                break
+                    
+                    if repaired:
+                        device.save()
+                        repaired_count += 1
+                        repair_info["status"] = "success"
+                        logger.info(f"Dispositivo {device.name} reparado - Categoría: {device.category}, Institución: {device.institution}")
+                    else:
+                        failed_count += 1
+                        repair_info["status"] = "failed"
+                        repair_info["changes"].append("No se pudo determinar categoría o institución")
+                    
+                    repair_details.append(repair_info)
+                    
+                except Exception as e:
+                    failed_count += 1
+                    repair_details.append({
+                        "device_id": device.id,
+                        "name": device.name,
+                        "status": "error",
+                        "changes": [f"Error: {str(e)}"]
+                    })
+                    logger.error(f"Error al reparar dispositivo {device.name}: {e}")
+            
+            return Response({
+                "detail": "Reparación completada",
+                "summary": {
+                    "total_processed": len(repair_details),
+                    "repaired_count": repaired_count,
+                    "failed_count": failed_count
+                },
+                "repair_details": repair_details
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error en reparación de relaciones: {e}", exc_info=True)
+            return Response(
+                {"detail": f"Error durante la reparación: {e}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

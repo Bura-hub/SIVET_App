@@ -403,14 +403,23 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
             // KPIs reales cuando hay datos
             Object.keys(kpiData).map((key) => {
               const item = kpiData[key];
+              // Mapear colores del KPI a colores de estilo adaptado
+              const colorMap = {
+                'text-blue-600': { bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
+                'text-red-600': { bgColor: 'bg-red-50', borderColor: 'border-red-200' },
+                'text-green-600': { bgColor: 'bg-green-50', borderColor: 'border-green-200' },
+                'text-purple-600': { bgColor: 'bg-purple-50', borderColor: 'border-purple-200' }
+              };
+              const styleColors = colorMap[item.color] || { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
+              
               return (
-                <div key={key} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                <div key={key} className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg`}>
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 rounded-lg ${item.color.replace('text-', 'bg-').replace('-600', '-100')}`}>
+                    <div className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')}`}>
                       {item.icon}
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-gray-600">{item.change}</p>
+                      <p className="text-xs font-medium text-gray-600">{item.change}</p>
                     </div>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
@@ -494,69 +503,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
 
           {meterData && !meterLoading && (
             <>
-              {/* Resumen de datos con animaciones */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                {[
-                  { 
-                    title: "Energía Consumida", 
-                    value: meterData.results?.[0]?.imported_energy_kwh?.toFixed(2) || "0.00", 
-                    unit: "kWh", 
-                    color: "text-blue-600", 
-                    subtitle: "Energía total importada",
-                    icon: "M13 2L3 14h9l-1 8 11-12h-9l1-8z",
-                    bgColor: "bg-blue-50",
-                    borderColor: "border-blue-200"
-                  },
-                  { 
-                    title: "Demanda Pico", 
-                    value: meterData.results?.[0]?.peak_demand_kw?.toFixed(2) || "0.00", 
-                    unit: "kW", 
-                    color: "text-red-600", 
-                    subtitle: "Máxima demanda registrada",
-                    icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
-                    bgColor: "bg-red-50",
-                    borderColor: "border-red-200"
-                  },
-                  { 
-                    title: "Factor de Carga", 
-                    value: meterData.results?.[0]?.load_factor_pct?.toFixed(1) || "0.0", 
-                    unit: "%", 
-                    color: "text-green-600", 
-                    subtitle: "Factor de carga promedio",
-                    icon: "M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3",
-                    bgColor: "bg-green-50",
-                    borderColor: "border-green-200"
-                  },
-                  { 
-                    title: "Factor de Potencia", 
-                    value: meterData.results?.[0]?.avg_power_factor?.toFixed(2) || "0.00", 
-                    unit: "", 
-                    color: "text-purple-600", 
-                    subtitle: "Factor de potencia promedio",
-                    icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-                    bgColor: "bg-purple-50",
-                    borderColor: "border-purple-200"
-                  }
-                ].map((item, index) => (
-                  <div key={index} className={`${item.bgColor} p-6 rounded-xl shadow-md border ${item.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-2 rounded-lg ${item.bgColor.replace('bg-', 'bg-').replace('-50', '-100')}`}>
-                        <svg className={`w-6 h-6 ${item.color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                        </svg>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs font-medium text-gray-600">{item.subtitle}</p>
-                      </div>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
-                    <div className="flex items-baseline">
-                      <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
-                      <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+
 
               {/* Gráficos con diseño moderno */}
               {meterData.results && meterData.results.length > 0 && (

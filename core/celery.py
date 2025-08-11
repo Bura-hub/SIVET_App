@@ -43,13 +43,13 @@ app.conf.update(
         # Verificar dispositivos cada hora
         'check-devices-status-hourly': {
             'task': 'scada_proxy.tasks.check_devices_status',
-            'schedule': crontab(minute=30),  # Cada hora a los 30 minutos
+            'schedule': crontab(minute=1),  # Cada hora a los 30 minutos
         },
         
         # Reparar relaciones de dispositivos después de la verificación
         'repair-device-relationships-after-check': {
             'task': 'scada_proxy.tasks.repair_device_relationships',
-            'schedule': crontab(minute=35),  # 5 minutos después de check-devices-status
+            'schedule': crontab(minute=2),  # 5 minutos después de check-devices-status
         },
     },
 )

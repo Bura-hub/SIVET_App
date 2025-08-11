@@ -327,15 +327,26 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="flex p-8 justify-between items-center bg-gray-100 p-4 -mx-8 -mt-8">
-        <h1 className="text-3xl font-bold text-gray-800">Detalles Eléctricos</h1>
-
+      <header className="bg-gradient-to-r from-green-600 to-emerald-700 shadow-lg -mx-8 -mt-8">
+        <div className="px-8 py-12">
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-white/20 rounded-xl">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white">Detalles Eléctricos</h1>
+              <p className="text-blue-100 mt-1">Análisis y monitoreo de indicadores eléctricos</p>
+            </div>
+          </div>
+        </div>
       </header>
 
-      {/* KPIs */}
-      <section className="bg-gray-100 p-8 -mx-8 mb-8">
+                                                            {/* KPIs */}
+      <section className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 mx-8 -mt-8 mb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {!filters.institutionId ? (
             // Estado de carga cuando no hay institución seleccionada

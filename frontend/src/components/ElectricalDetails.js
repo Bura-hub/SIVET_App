@@ -483,31 +483,54 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       </section>
 
       {/* Sección de Medidores Eléctricos */}
-      <section className="space-y-6">
-        <SectionHeader
-          title="Indicadores de Medidores Eléctricos"
-          icon="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-          infoText="Datos filtrados por institución y medidor"
-        />
+      <section className="mx-8 mb-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
+          {/* Header de la sección */}
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-700 px-8 py-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-white/20 rounded-xl">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Indicadores de Medidores Eléctricos</h2>
+                <p className="text-indigo-100 mt-1">Análisis detallado por institución y medidor</p>
+              </div>
+            </div>
+          </div>
           
-          <ElectricMeterFilters onFiltersChange={handleFiltersChange} authToken={authToken} />
+          {/* Contenido de la sección */}
+          <div className="p-8">
+            <ElectricMeterFilters onFiltersChange={handleFiltersChange} authToken={authToken} />
 
           {meterLoading && (
-            <div className="flex items-center justify-center py-8 transition-opacity duration-300 ease-in-out opacity-80">
+            <div className="flex items-center justify-center py-12 transition-opacity duration-300 ease-in-out">
               <div className="flex flex-col items-center">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500"></div>
-                <p className="mt-3 text-base text-gray-700">Cargando datos de medidores...</p>
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
+                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-transparent border-t-indigo-600 absolute top-0 left-0"></div>
+                </div>
+                <p className="mt-4 text-lg font-medium text-gray-700">Cargando datos de medidores...</p>
+                <p className="mt-2 text-sm text-gray-500">Procesando indicadores eléctricos</p>
               </div>
             </div>
           )}
 
           {meterError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex">
-                <svg className="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-red-800">Error: {meterError}</p>
+            <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-6 shadow-sm">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-semibold text-red-800 mb-1">Error al cargar datos</h3>
+                  <p className="text-red-700">{meterError}</p>
+                </div>
               </div>
             </div>
           )}
@@ -715,12 +738,19 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                 <div className="px-6 py-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800">Indicadores Eléctricos Detallados</h3>
-                      <p className="text-gray-600 mt-1">Datos históricos y análisis de tendencias</p>
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-indigo-100 rounded-lg">
+                        <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-800">Indicadores Eléctricos Detallados</h3>
+                        <p className="text-gray-600 mt-1">Datos históricos y análisis de tendencias</p>
+                      </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                      <div className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold rounded-lg shadow-sm">
                         {meterData.results?.length || 0} registros
                       </div>
                     </div>
@@ -728,7 +758,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                 </div>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-100">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-gradient-to-r from-indigo-50 to-purple-50">
                       <tr>
                         {[
                           { label: 'Fecha', width: 'w-24' },
@@ -740,7 +770,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                           { label: 'Factor de Carga (%)', width: 'w-36' },
                           { label: 'Factor de Potencia', width: 'w-32' }
                         ].map((header) => (
-                          <th key={header.label} className={`${header.width} px-4 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider`}>
+                          <th key={header.label} className={`${header.width} px-4 py-5 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider border-b border-indigo-100`}>
                             {header.label}
                           </th>
                         ))}
@@ -749,7 +779,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                     <tbody className="bg-white divide-y divide-gray-50">
                       {meterData.results && meterData.results.length > 0 ? (
                         meterData.results.map((item, index) => (
-                          <tr key={index} className="hover:bg-blue-50 transition-colors duration-150">
+                          <tr key={index} className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200 border-b border-gray-50">
                             <td className="px-4 py-4 whitespace-nowrap">
                               <div className="text-sm font-medium text-gray-900">
                                 {new Date(item.date).toLocaleDateString('es-ES')}
@@ -824,7 +854,9 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
               </div>
             </>
           )}
-        </section>
+          </div>
+        </div>
+      </section>
 
 
 

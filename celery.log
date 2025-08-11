@@ -516,3 +516,147 @@ INFO 2025-08-10 23:19:19,880 tasks 22556 42336 Dispositivo 3a5eca15-cd03-4a83-89
 INFO 2025-08-10 23:19:19,884 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[dfd00bec-8b65-42a6-b995-b875e0debd37] received
 INFO 2025-08-10 23:19:19,911 tasks 22556 42336 Obteniendo mediciones para dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b desde 2025-08-08 23:18:26.996788-05:00 hasta 2025-08-10 23:18:26.996788-05:00 (hora Colombia)
 INFO 2025-08-10 23:19:21,679 tasks 22556 42336 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 1 nuevas, 1437 actualizadas
+INFO 2025-08-11 00:00:00,107 strategy 22556 42336 Task scada_proxy.tasks.fetch_historical_measurements_for_all_devices[ae4d3ced-5c1e-4176-9837-88ba144c3405] received
+INFO 2025-08-11 00:00:00,110 tasks 22556 42336 Iniciando la obtención de mediciones históricas para los últimos 2:00:00. Rango: 2025-08-10 22:00:00.110183-05:00 -> 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:00,147 tasks 22556 42336 Tarea creada para dispositivo Medidor 3 - Cesmag (348b47aa-b285-4948-a9fb-a57bc38cedf1) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,148 tasks 22556 42336 Tarea creada para dispositivo Medidor 2 - Cesmag (3ccb420f-e6a0-4461-8dc6-e8568bd699f0) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,149 tasks 22556 42336 Tarea creada para dispositivo Medidor 1 - Cesmag (4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,150 tasks 22556 42336 Tarea creada para dispositivo Medidor 4 - Cesmag (6ebd34d4-4883-4682-aab3-f3243544a67a) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,152 tasks 22556 42336 Tarea creada para dispositivo Inverter 1 - Cesmag (e96986a9-a127-4139-975d-1a711ae25327) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,153 tasks 22556 42336 Tarea creada para dispositivo Estación San Damian - CESMAG (819dfc27-fe61-42e6-9413-0f8820bea03e) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,154 tasks 22556 42336 Tarea creada para dispositivo Medidor 2 - HUDN (6ecb37db-ab95-4640-b8ce-c7f8bb91f611) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,155 tasks 22556 42336 Tarea creada para dispositivo Medidor 4 - HUDN (ad749299-a3a4-4270-b80d-6251389eabcb) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,157 tasks 22556 42336 Tarea creada para dispositivo Medidor 1 - HUDN (628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,158 tasks 22556 42336 Tarea creada para dispositivo Medidor 3 - HUDN (673f11ce-77da-4839-8498-a5948d984d8c) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,159 tasks 22556 42336 Tarea creada para dispositivo Inversor 1 - HUDN (f6893ba9-7175-44ea-8624-a47bf55158c9) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,160 tasks 22556 42336 Tarea creada para dispositivo Estación - HUDN (49435c0b-ada3-4ced-ad15-9418013a30d1) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,161 tasks 22556 42336 Tarea creada para dispositivo Medidor 3 - Alvernia (4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,162 tasks 22556 42336 Tarea creada para dispositivo Medidor 4 - Alvernia (0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,163 tasks 22556 42336 Tarea creada para dispositivo Medidor 1 - Alvernia (b06d770e-ec25-49a0-949d-60c9e169f2bb) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,164 tasks 22556 42336 Tarea creada para dispositivo Medidor 2 - Alvernia (5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,165 tasks 22556 42336 Tarea creada para dispositivo Fronius - Alvernia (0f962572-fab3-4c09-bffc-465b56a22d8d) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,166 tasks 22556 42336 Tarea creada para dispositivo Estación Alvernia (1fb6c4ae-2e7c-4758-80bf-156c7826fead) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,167 tasks 22556 42336 Tarea creada para dispositivo Medidor 1 - UCC (86b9c020-4645-4c39-891a-d1e8a7048c12) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,168 tasks 22556 42336 Tarea creada para dispositivo Medidor 2 - UCC (bc80e209-e290-4aaa-a6e8-931e9fb7b803) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,168 tasks 22556 42336 Tarea creada para dispositivo Medidor 3 - UCC (d6915dc0-4391-4514-b4c6-58a30f1988f3) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,169 tasks 22556 42336 Tarea creada para dispositivo Medidor 4 - UCC (7130f831-d8ca-4fd8-adb5-f02dbc7543b3) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,170 tasks 22556 42336 Tarea creada para dispositivo Fronius - UCC (29630827-0242-492f-9ed0-a48d120da2ac) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,171 tasks 22556 42336 Tarea creada para dispositivo Estación - UCC (74154481-3f6c-4827-a8d7-ea6fbae62fd9) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,173 tasks 22556 42336 Tarea creada para dispositivo Bloque Nuevo - Medidor 3 (19934344-9c79-482f-b74f-50dde3a6079c) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,174 tasks 22556 42336 Tarea creada para dispositivo Bloque Nuevo - Medidor 1 (7ba9fa00-7ef9-4246-8c30-85ea56088e0d) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,175 tasks 22556 42336 Tarea creada para dispositivo Medidor 4 - Udenar (0f7648d7-7575-4419-8192-a4f80b55309b) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,176 tasks 22556 42336 Tarea creada para dispositivo inverter2 (37f796af-7caa-459f-bc86-3e2f7936a879) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,177 tasks 22556 42336 Tarea creada para dispositivo inverter1 (ada64a56-331c-4489-a02c-7aac55d54111) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,178 tasks 22556 42336 Tarea creada para dispositivo estación (46094855-4fe6-4c10-afe3-444a101719e2) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,179 tasks 22556 42336 Tarea creada para dispositivo Prueba (3a5eca15-cd03-4a83-8981-b432d2217344) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,180 tasks 22556 42336 Tarea creada para dispositivo Bloque Nuevo - Medidor 2 (1da46bc5-1655-4ba1-82c2-0b283370a97b) desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia).
+INFO 2025-08-11 00:00:00,180 tasks 22556 42336 Todas las subtareas para obtener mediciones han sido encoladas.
+INFO 2025-08-11 00:00:00,183 strategy 22556 42336 Task scada_proxy.tasks.sync_scada_metadata[4471d6a8-0ebe-449b-b9e4-5c58cb795898] received
+INFO 2025-08-11 00:00:00,814 tasks 22556 42336 Sincronizadas 5 instituciones.
+INFO 2025-08-11 00:00:01,044 tasks 22556 42336 Sincronizadas 3 categorías de dispositivos.
+INFO 2025-08-11 00:00:01,367 tasks 22556 42336 Desactivados 2 dispositivos que ya no se encuentran en la API SCADA.
+INFO 2025-08-11 00:00:01,369 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[086dacfa-9100-4f12-b6c9-dbc54178f8de] received
+INFO 2025-08-11 00:00:01,400 tasks 22556 42336 Obteniendo mediciones para dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:01,612 tasks 22556 42336 Dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:01,615 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2da11351-2058-47a1-8dc4-63bb90cd7fe5] received
+INFO 2025-08-11 00:00:01,644 tasks 22556 42336 Obteniendo mediciones para dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:01,844 tasks 22556 42336 Dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:01,848 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5c866b1a-cde3-4c96-bbcf-9d21f98dbdac] received
+INFO 2025-08-11 00:00:01,874 tasks 22556 42336 Obteniendo mediciones para dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:02,084 tasks 22556 42336 Dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02: 21 nuevas, 39 actualizadas
+INFO 2025-08-11 00:00:02,088 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c771196b-db3d-4773-9971-767b07df1c3c] received
+INFO 2025-08-11 00:00:02,118 tasks 22556 42336 Obteniendo mediciones para dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:02,327 tasks 22556 42336 Dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:02,330 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[ad63b42e-d829-466b-9d26-a6b30174005e] received
+INFO 2025-08-11 00:00:02,355 tasks 22556 42336 Obteniendo mediciones para dispositivo e96986a9-a127-4139-975d-1a711ae25327 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:02,419 tasks 22556 42336 Dispositivo e96986a9-a127-4139-975d-1a711ae25327: 0 nuevas, 0 actualizadas
+INFO 2025-08-11 00:00:02,422 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[f8668095-5659-48f7-80d9-f1fac4ecc519] received
+INFO 2025-08-11 00:00:02,446 tasks 22556 42336 Obteniendo mediciones para dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:02,572 tasks 22556 42336 Dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e: 18 nuevas, 36 actualizadas
+INFO 2025-08-11 00:00:02,575 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[786ce88c-317f-48bb-b638-3b68496582d3] received
+INFO 2025-08-11 00:00:02,602 tasks 22556 42336 Obteniendo mediciones para dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:02,795 tasks 22556 42336 Dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:02,798 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[9aa20f26-7b8a-4df8-a930-49aa02bd3cfd] received
+INFO 2025-08-11 00:00:02,823 tasks 22556 42336 Obteniendo mediciones para dispositivo ad749299-a3a4-4270-b80d-6251389eabcb desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:03,013 tasks 22556 42336 Dispositivo ad749299-a3a4-4270-b80d-6251389eabcb: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:03,016 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5268b7dc-9111-4d2f-b261-887bec119d09] received
+INFO 2025-08-11 00:00:03,042 tasks 22556 42336 Obteniendo mediciones para dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:03,249 tasks 22556 42336 Dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:03,252 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[274407d2-9889-4815-ac85-0fa61e469dd5] received
+INFO 2025-08-11 00:00:03,279 tasks 22556 42336 Obteniendo mediciones para dispositivo 673f11ce-77da-4839-8498-a5948d984d8c desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:03,461 tasks 22556 42336 Dispositivo 673f11ce-77da-4839-8498-a5948d984d8c: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:03,465 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[51b2bd0b-160f-4588-aa86-54698549ea6a] received
+INFO 2025-08-11 00:00:03,491 tasks 22556 42336 Obteniendo mediciones para dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:03,553 tasks 22556 42336 Dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9: 0 nuevas, 0 actualizadas
+INFO 2025-08-11 00:00:03,559 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[6b899945-70e9-4270-a640-d303893fb2eb] received
+INFO 2025-08-11 00:00:03,587 tasks 22556 42336 Obteniendo mediciones para dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:03,649 tasks 22556 42336 Dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1: 0 nuevas, 0 actualizadas
+INFO 2025-08-11 00:00:03,652 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8afcb421-756b-4f91-b401-e2a16ec2a3ca] received
+INFO 2025-08-11 00:00:03,680 tasks 22556 42336 Obteniendo mediciones para dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:03,899 tasks 22556 42336 Dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:03,902 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2b9e3e61-d3a4-4a67-bf8c-0ae7ac4f86cb] received
+INFO 2025-08-11 00:00:03,930 tasks 22556 42336 Obteniendo mediciones para dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:04,122 tasks 22556 42336 Dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:04,125 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[368f8697-0c58-40a2-9edd-f322afebe9f0] received
+INFO 2025-08-11 00:00:04,154 tasks 22556 42336 Obteniendo mediciones para dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:04,369 tasks 22556 42336 Dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:04,372 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c5955a7b-a15c-4ec7-b3f4-fed0d93e8a06] received
+INFO 2025-08-11 00:00:04,401 tasks 22556 42336 Obteniendo mediciones para dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:04,601 tasks 22556 42336 Dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:04,605 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[cf11ab45-e0e1-48f8-aede-d406f3f1d21c] received
+INFO 2025-08-11 00:00:04,633 tasks 22556 42336 Obteniendo mediciones para dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:04,691 tasks 22556 42336 Dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d: 0 nuevas, 0 actualizadas
+INFO 2025-08-11 00:00:04,696 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[fd16f9ff-aed9-4733-81a1-01c696635e7c] received
+INFO 2025-08-11 00:00:04,723 tasks 22556 42336 Obteniendo mediciones para dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:04,915 tasks 22556 42336 Dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead: 21 nuevas, 39 actualizadas
+INFO 2025-08-11 00:00:04,919 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[45def0f1-b086-4d35-9324-fe8899694785] received
+INFO 2025-08-11 00:00:04,953 tasks 22556 42336 Obteniendo mediciones para dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:05,140 tasks 22556 42336 Dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:05,144 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[73cd24e8-d52e-4103-9254-24b923485663] received
+INFO 2025-08-11 00:00:05,171 tasks 22556 42336 Obteniendo mediciones para dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:05,365 tasks 22556 42336 Dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:05,367 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[4b1a9605-758b-46ff-93d4-d1cc931827d3] received
+INFO 2025-08-11 00:00:05,399 tasks 22556 42336 Obteniendo mediciones para dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:05,751 tasks 22556 42336 Dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:05,755 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3f1b102b-aaa7-4a6c-bd7e-6f6213bfbb09] received
+INFO 2025-08-11 00:00:05,782 tasks 22556 42336 Obteniendo mediciones para dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:05,997 tasks 22556 42336 Dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:06,000 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[71c01eaa-125f-4340-adc1-9b44a0393dea] received
+INFO 2025-08-11 00:00:06,026 tasks 22556 42336 Obteniendo mediciones para dispositivo 29630827-0242-492f-9ed0-a48d120da2ac desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:06,086 tasks 22556 42336 Dispositivo 29630827-0242-492f-9ed0-a48d120da2ac: 0 nuevas, 0 actualizadas
+INFO 2025-08-11 00:00:06,092 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1970919e-c9bb-4e92-8ee7-88d8bb910597] received
+INFO 2025-08-11 00:00:06,118 tasks 22556 42336 Obteniendo mediciones para dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:06,177 tasks 22556 42336 Dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9: 0 nuevas, 0 actualizadas
+INFO 2025-08-11 00:00:06,189 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[eb386acc-d299-4f74-b097-bafbe6635839] received
+INFO 2025-08-11 00:00:06,225 tasks 22556 42336 Obteniendo mediciones para dispositivo 19934344-9c79-482f-b74f-50dde3a6079c desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:06,444 tasks 22556 42336 Dispositivo 19934344-9c79-482f-b74f-50dde3a6079c: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:06,448 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[222205db-05d6-4b56-b30b-411dc9bb2fb4] received
+INFO 2025-08-11 00:00:06,474 tasks 22556 42336 Obteniendo mediciones para dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:06,690 tasks 22556 42336 Dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:06,695 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[d6f370ea-d054-467f-8254-4bd110c7c193] received
+INFO 2025-08-11 00:00:06,721 tasks 22556 42336 Obteniendo mediciones para dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:06,967 tasks 22556 42336 Dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b: 21 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:06,970 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[9f6bade0-8ef8-4057-8e5e-2932797c0300] received
+INFO 2025-08-11 00:00:06,996 tasks 22556 42336 Obteniendo mediciones para dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:07,185 tasks 22556 42336 Dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879: 20 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:07,189 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1d44f041-8192-40a1-aca8-5ea6b6099147] received
+INFO 2025-08-11 00:00:07,213 tasks 22556 42336 Obteniendo mediciones para dispositivo ada64a56-331c-4489-a02c-7aac55d54111 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:07,386 tasks 22556 42336 Dispositivo ada64a56-331c-4489-a02c-7aac55d54111: 20 nuevas, 40 actualizadas
+INFO 2025-08-11 00:00:07,391 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7e898a77-7a76-46dc-a673-af80f39d73a0] received
+INFO 2025-08-11 00:00:07,418 tasks 22556 42336 Obteniendo mediciones para dispositivo 46094855-4fe6-4c10-afe3-444a101719e2 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:07,665 tasks 22556 42336 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 38 nuevas, 78 actualizadas
+INFO 2025-08-11 00:00:07,669 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1d341fb7-9d5c-4892-8687-68c7aa24131d] received
+INFO 2025-08-11 00:00:07,694 tasks 22556 42336 Obteniendo mediciones para dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344 desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:07,755 tasks 22556 42336 Dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344: 0 nuevas, 0 actualizadas
+INFO 2025-08-11 00:00:07,760 strategy 22556 42336 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b674413b-9ba4-49b3-b77d-110a7b3e56b3] received
+INFO 2025-08-11 00:00:07,786 tasks 22556 42336 Obteniendo mediciones para dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b desde 2025-08-10 22:00:00.110183-05:00 hasta 2025-08-11 00:00:00.110183-05:00 (hora Colombia)
+INFO 2025-08-11 00:00:08,017 tasks 22556 42336 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 21 nuevas, 40 actualizadas
+ERROR 2025-08-11 00:18:40,994 consumer 23784 23788 consumer: Cannot connect to redis://localhost:6379/0: Error 10061 connecting to localhost:6379. No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión..
+Trying again in 2.00 seconds... (1/100)
+
+ERROR 2025-08-11 00:18:47,077 consumer 23784 23788 consumer: Cannot connect to redis://localhost:6379/0: Error 10061 connecting to localhost:6379. No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión..
+Trying again in 4.00 seconds... (2/100)
+
+INFO 2025-08-11 00:18:52,110 connection 23784 23788 Connected to redis://localhost:6379/0
+INFO 2025-08-11 00:18:52,116 mingle 23784 23788 mingle: searching for neighbors
+INFO 2025-08-11 00:18:53,131 mingle 23784 23788 mingle: all alone

@@ -18,29 +18,7 @@ ChartJS.register(
   Title, Tooltip, Legend, Filler, zoomPlugin
 );
 
-// Configuración de pestañas
-const TAB_CONFIG = {
-  consumptionTrends: {
-    id: 'consumptionTrends',
-    label: 'Tendencias de Consumo',
-    icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
-  },
-  electricMeters: {
-    id: 'electricMeters',
-    label: 'Medidores Eléctricos',
-    icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
-  },
-  generationOverview: {
-    id: 'generationOverview',
-    label: 'Visión General de Generación',
-    icon: 'M13 10V3L4 14h7v7l9-11h-7z'
-  },
-  energyBalance: {
-    id: 'energyBalance',
-    label: 'Balance Energético',
-    icon: 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3'
-  }
-};
+
 
 // Configuración de gráficos
 const CHART_OPTIONS = {
@@ -114,22 +92,7 @@ const CHART_OPTIONS = {
   transitions: { zoom: { animation: { duration: 300, easing: 'easeInOutQuart' } } }
 };
 
-// Componente de pestaña
-const TabButton = ({ tab, isActive, onClick }) => (
-  <button
-    onClick={() => onClick(tab.id)}
-    className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-      isActive ? 'border-blue-500 text-blue-600 bg-blue-50 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-    }`}
-  >
-    <div className="flex items-center">
-      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
-      </svg>
-      {tab.label}
-    </div>
-  </button>
-);
+
 
 // Componente de encabezado de sección
 const SectionHeader = ({ title, icon, infoText }) => (
@@ -153,124 +116,24 @@ const SectionHeader = ({ title, icon, infoText }) => (
 
 
 
-// Datos simulados consolidados
-const MOCK_DATA = {
-  dailyConsumption: {
-    labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
-    datasets: [
-      {
-        label: 'Consumo Diario (kWh)',
-        data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 400) + 300),
-        borderColor: '#3B82F6',
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 2,
-        pointBackgroundColor: '#3B82F6',
-      },
-      {
-        label: 'Pico (kW)',
-        data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 300) + 600),
-        borderColor: '#EF4444',
-        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-        fill: false,
-        tension: 0.4,
-        pointRadius: 2,
-        pointBackgroundColor: '#EF4444',
-        borderDash: [5, 5],
-      },
-      {
-        label: 'Meta (kWh)',
-        data: Array.from({ length: 30 }, () => 550),
-        borderColor: '#10B981',
-        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-        fill: false,
-        tension: 0.4,
-        pointRadius: 0,
-      }
-    ]
-  },
-  hourlyLoad: {
-    labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
-    datasets: [{
-      label: 'Carga Horaria (kW)',
-      data: [100, 90, 80, 70, 60, 80, 150, 250, 350, 400, 420, 410, 380, 350, 320, 300, 280, 250, 200, 180, 160, 140, 120, 110],
-      borderColor: '#3B82F6',
-      backgroundColor: 'rgba(59, 130, 246, 0.2)',
-      fill: true,
-      tension: 0.4,
-      pointRadius: 2,
-      pointBackgroundColor: '#3B82F6',
-    }]
-  },
-  generationOverview: {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [
-      {
-        label: 'Generación Solar (MWh)',
-        data: [120, 140, 160, 180, 200, 220, 240, 230, 210, 190, 170, 150],
-        backgroundColor: '#F59E0B',
-        borderColor: '#D97706',
-        borderWidth: 1,
-        borderRadius: 5,
-      },
-      {
-        label: 'Generación Eólica (MWh)',
-        data: [80, 90, 100, 110, 120, 130, 140, 135, 125, 115, 105, 95],
-        backgroundColor: '#10B981',
-        borderColor: '#059669',
-        borderWidth: 1,
-        borderRadius: 5,
-      }
-    ]
-  },
-  energyBalance: {
-    labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
-    datasets: [
-      {
-        label: 'Consumo (MWh)',
-        data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 8) + 8),
-        borderColor: '#EF4444',
-        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-        fill: true,
-        tension: 0.4,
-      },
-      {
-        label: 'Generación (MWh)',
-        data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 9) + 12),
-        borderColor: '#10B981',
-        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-        fill: true,
-        tension: 0.4,
-      },
-      {
-        label: 'Balance Neto (MWh)',
-        data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 11) - 2),
-        borderColor: '#8B5CF6',
-        backgroundColor: 'rgba(139, 92, 246, 0.2)',
-        fill: false,
-        tension: 0.4,
-        borderDash: [5, 5],
-      }
-    ]
-  }
-};
+
 
 // Componente principal
 function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigateTo, isSidebarMinimized, setIsSidebarMinimized }) {
   // Estados consolidados
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('consumptionTrends');
   const [showTransition, setShowTransition] = useState(false);
   const [transitionType, setTransitionType] = useState('info');
   const [transitionMessage, setTransitionMessage] = useState('');
   
   // Estados de filtros
   const [filters, setFilters] = useState({
-    timeRange: 'Últimos 30 días',
-    location: 'Todas',
-    device: 'Todos'
+    timeRange: 'daily',
+    institutionId: null,
+    deviceId: null,
+    startDate: null,
+    endDate: null
   });
   
   // Estados de medidores eléctricos
@@ -369,34 +232,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       if (seq === requestSeqRef.current) {
         setMeterData(indicatorsData);
         
-        // Actualizar KPIs con datos reales
-        if (indicatorsData.results && indicatorsData.results.length > 0) {
-          const latestData = indicatorsData.results[0];
-          const totalEnergy = indicatorsData.results.reduce((sum, item) => sum + (item.imported_energy_kwh || 0), 0);
-          
-          setKpiData(prev => ({
-            totalEnergyConsumed: {
-              ...prev.totalEnergyConsumed,
-              value: totalEnergy.toFixed(2),
-              change: `${indicatorsData.results.length} registros`
-            },
-            peakDemand: {
-              ...prev.peakDemand,
-              value: (latestData.peak_demand_kw || 0).toFixed(2),
-              change: latestData.date ? new Date(latestData.date).toLocaleDateString('es-ES') : 'Último registro'
-            },
-            loadFactor: {
-              ...prev.loadFactor,
-              value: (latestData.load_factor_pct || 0).toFixed(1),
-              change: latestData.load_factor_pct > 80 ? 'Excelente' : latestData.load_factor_pct > 60 ? 'Bueno' : 'Mejorable'
-            },
-            powerFactor: {
-              ...prev.powerFactor,
-              value: (latestData.avg_power_factor || 0).toFixed(2),
-              change: latestData.avg_power_factor > 0.95 ? 'Óptimo' : latestData.avg_power_factor > 0.85 ? 'Bueno' : 'Mejorable'
-            }
-          }));
-        }
+
       }
     } catch (error) {
       // Mostrar error solo si esta solicitud sigue siendo la vigente
@@ -409,6 +245,10 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
   }, [authToken]);
 
   const handleFiltersChange = useCallback((newFilters) => {
+    console.log('Filters changed in ElectricalDetails:', newFilters);
+    console.log('Previous filters:', filters);
+    setFilters(newFilters);
+    
     // Evitar fetch si filtros no cambiaron
     const prev = lastFiltersRef.current || {};
     const same = prev.timeRange === newFilters.timeRange &&
@@ -427,11 +267,44 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     }, 450);
   }, [fetchMeterData]);
 
+
+
   // Cargar datos al montar: solo una vez
   useEffect(() => {
     if (!authToken) return;
     setLoading(false);
   }, []);
+
+  // Actualizar KPIs cuando cambien los datos del medidor
+  useEffect(() => {
+    if (meterData && meterData.results && meterData.results.length > 0) {
+      const latestData = meterData.results[0];
+      const totalEnergy = meterData.results.reduce((sum, item) => sum + (item.imported_energy_kwh || 0), 0);
+      
+      setKpiData(prev => ({
+        totalEnergyConsumed: {
+          ...prev.totalEnergyConsumed,
+          value: totalEnergy.toFixed(2),
+          change: `${meterData.results.length} registros`
+        },
+        peakDemand: {
+          ...prev.peakDemand,
+          value: (latestData.peak_demand_kw || 0).toFixed(2),
+          change: latestData.date ? new Date(latestData.date).toLocaleDateString('es-ES') : 'Último registro'
+        },
+        loadFactor: {
+          ...prev.loadFactor,
+          value: (latestData.load_factor_pct || 0).toFixed(1),
+          change: latestData.load_factor_pct > 80 ? 'Excelente' : latestData.load_factor_pct > 60 ? 'Bueno' : 'Mejorable'
+        },
+        powerFactor: {
+          ...prev.powerFactor,
+          value: (latestData.avg_power_factor || 0).toFixed(2),
+          change: latestData.avg_power_factor > 0.95 ? 'Óptimo' : latestData.avg_power_factor > 0.85 ? 'Bueno' : 'Mejorable'
+        }
+      }));
+    }
+  }, [meterData]);
 
   // Estados de carga y error (suavizados)
   if (loading) {
@@ -464,70 +337,138 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       {/* KPIs */}
       <section className="bg-gray-100 p-8 -mx-8 mb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {Object.keys(kpiData).map((key) => {
-            const item = kpiData[key];
-            return (
-              <div key={key} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-lg ${item.color.replace('text-', 'bg-').replace('-600', '-100')}`}>
-                    {item.icon}
+          {!filters.institutionId ? (
+            // Estado de carga cuando no hay institución seleccionada
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 overflow-hidden relative">
+                {/* Skeleton loader con animación */}
+                <div className="animate-pulse">
+                  {/* Icono skeleton */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                    <div className="w-20 h-4 bg-gray-200 rounded"></div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-600">{item.change}</p>
+                  
+                  {/* Título skeleton */}
+                  <div className="w-32 h-5 bg-gray-200 rounded mb-2"></div>
+                  
+                  {/* Valor skeleton */}
+                  <div className="flex items-baseline">
+                    <div className="w-24 h-8 bg-gray-200 rounded"></div>
+                    <div className="w-16 h-6 bg-gray-200 rounded ml-2"></div>
+                  </div>
+                  
+                  {/* Línea inferior skeleton */}
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <div className="w-28 h-3 bg-gray-200 rounded"></div>
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
-                <div className="flex items-baseline">
-                  <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
-                  <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
-                </div>
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <p className="text-xs text-gray-500">{item.change}</p>
-                </div>
+                
+                {/* Overlay de shimmer */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer pointer-events-none"></div>
               </div>
-            );
-          })}
+            ))
+          ) : meterLoading ? (
+            // Estado de carga cuando se están cargando los datos
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-lg border border-blue-200 p-6 overflow-hidden relative">
+                {/* Skeleton loader con animación azul */}
+                <div className="animate-pulse">
+                  {/* Icono skeleton */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-blue-200 rounded-lg"></div>
+                    <div className="w-20 h-4 bg-blue-200 rounded"></div>
+                  </div>
+                  
+                  {/* Título skeleton */}
+                  <div className="w-32 h-5 bg-blue-200 rounded mb-2"></div>
+                  
+                  {/* Valor skeleton */}
+                  <div className="flex items-baseline">
+                    <div className="w-24 h-8 bg-blue-200 rounded"></div>
+                    <div className="w-16 h-6 bg-blue-200 rounded ml-2"></div>
+                  </div>
+                  
+                  {/* Línea inferior skeleton */}
+                  <div className="mt-3 pt-3 border-t border-blue-100">
+                    <div className="w-28 h-3 bg-blue-200 rounded"></div>
+                  </div>
+                </div>
+                
+                {/* Overlay de shimmer azul */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/30 to-transparent animate-shimmer pointer-events-none"></div>
+              </div>
+            ))
+          ) : (
+            // KPIs reales cuando hay datos
+            Object.keys(kpiData).map((key) => {
+              const item = kpiData[key];
+              return (
+                <div key={key} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-3 rounded-lg ${item.color.replace('text-', 'bg-').replace('-600', '-100')}`}>
+                      {item.icon}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-600">{item.change}</p>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
+                  <div className="flex items-baseline">
+                    <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
+                    <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <p className="text-xs text-gray-500">{item.change}</p>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
+        
+        {/* Mensaje de estado */}
+        {!filters.institutionId && (
+          <div className="text-center mt-6">
+            <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-full">
+              <svg className="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-blue-700 font-medium">Selecciona una institución para ver los indicadores</span>
+            </div>
+          </div>
+        )}
+        
+        {filters.institutionId && meterLoading && (
+          <div className="text-center mt-6">
+            <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-full">
+              <svg className="w-5 h-5 text-blue-500 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span className="text-blue-700 font-medium">Cargando indicadores de la institución...</span>
+            </div>
+          </div>
+        )}
+        
+        {filters.institutionId && !meterLoading && meterData && (!meterData.results || meterData.results.length === 0) && (
+          <div className="text-center mt-6">
+            <div className="inline-flex items-center px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-full">
+              <svg className="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <span className="text-yellow-700 font-medium">No hay datos disponibles para esta institución en el período seleccionado</span>
+            </div>
+          </div>
+        )}
       </section>
 
-      {/* Navegación */}
-      <div className="mb-8">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-            {Object.values(TAB_CONFIG).map((tab) => (
-              <TabButton
-                key={tab.id}
-                tab={tab}
-                isActive={activeTab === tab.id}
-                onClick={setActiveTab}
-              />
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      {/* Contenido de pestañas */}
-      {activeTab === 'consumptionTrends' && (
-        <section className="space-y-6">
-          <SectionHeader
-            title="Análisis de Consumo Eléctrico"
-            icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-            infoText="Hover sobre los gráficos para ver controles"
-          />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartCard title="Consumo Diario (Últimos 30 Días)" type="line" data={MOCK_DATA.dailyConsumption} options={CHART_OPTIONS} />
-            <ChartCard title="Perfil de Carga Horaria (Hoy)" type="line" data={MOCK_DATA.hourlyLoad} options={CHART_OPTIONS} />
-          </div>
-        </section>
-      )}
-
-      {activeTab === 'electricMeters' && (
-        <section className="space-y-6">
-          <SectionHeader
-            title="Indicadores de Medidores Eléctricos"
-            icon="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            infoText="Datos filtrados por institución y medidor"
-          />
+      {/* Sección de Medidores Eléctricos */}
+      <section className="space-y-6">
+        <SectionHeader
+          title="Indicadores de Medidores Eléctricos"
+          icon="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          infoText="Datos filtrados por institución y medidor"
+        />
           
           <ElectricMeterFilters onFiltersChange={handleFiltersChange} authToken={authToken} />
 
@@ -627,11 +568,11 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                       description="Consumo, exportación y balance energético en el tiempo"
                       type="line"
                       data={{
-                        labels: meterData.results.map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                        labels: meterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
                         datasets: [
                           {
                             label: 'Energía Importada (kWh)',
-                            data: meterData.results.map(item => item.imported_energy_kwh || 0),
+                            data: meterData.results.slice().reverse().map(item => item.imported_energy_kwh || 0),
                             borderColor: '#3B82F6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             fill: true,
@@ -643,7 +584,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                           },
                           {
                             label: 'Energía Exportada (kWh)',
-                            data: meterData.results.map(item => item.exported_energy_kwh || 0),
+                            data: meterData.results.slice().reverse().map(item => item.exported_energy_kwh || 0),
                             borderColor: '#EF4444',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             fill: true,
@@ -655,7 +596,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                           },
                           {
                             label: 'Consumo Neto (kWh)',
-                            data: meterData.results.map(item => item.net_energy_consumption_kwh || 0),
+                            data: meterData.results.slice().reverse().map(item => item.net_energy_consumption_kwh || 0),
                             borderColor: '#10B981',
                             backgroundColor: 'rgba(16, 185, 129, 0.1)',
                             fill: false,
@@ -705,11 +646,11 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                       description="Demanda, factor de carga y eficiencia del sistema"
                       type="line"
                       data={{
-                        labels: meterData.results.map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                        labels: meterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
                         datasets: [
                           {
                             label: 'Demanda Pico (kW)',
-                            data: meterData.results.map(item => item.peak_demand_kw || 0),
+                            data: meterData.results.slice().reverse().map(item => item.peak_demand_kw || 0),
                             borderColor: '#F59E0B',
                             backgroundColor: 'rgba(245, 158, 11, 0.1)',
                             fill: true,
@@ -719,7 +660,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                           },
                           {
                             label: 'Demanda Promedio (kW)',
-                            data: meterData.results.map(item => item.avg_demand_kw || 0),
+                            data: meterData.results.slice().reverse().map(item => item.avg_demand_kw || 0),
                             borderColor: '#8B5CF6',
                             backgroundColor: 'rgba(139, 92, 246, 0.1)',
                             fill: true,
@@ -729,7 +670,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                           },
                           {
                             label: 'Factor de Carga (%)',
-                            data: meterData.results.map(item => item.load_factor_pct || 0),
+                            data: meterData.results.slice().reverse().map(item => item.load_factor_pct || 0),
                             borderColor: '#10B981',
                             backgroundColor: 'rgba(16, 185, 129, 0.1)',
                             fill: false,
@@ -760,11 +701,11 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                       description="Desequilibrios y distorsiones armónicas"
                       type="line"
                       data={{
-                        labels: meterData.results.map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                        labels: meterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
                         datasets: [
                           {
                             label: 'Desequilibrio de Voltaje (%)',
-                            data: meterData.results.map(item => item.max_voltage_unbalance_pct || 0),
+                            data: meterData.results.slice().reverse().map(item => item.max_voltage_unbalance_pct || 0),
                             borderColor: '#EF4444',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             fill: true,
@@ -774,7 +715,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                           },
                           {
                             label: 'Desequilibrio de Corriente (%)',
-                            data: meterData.results.map(item => item.max_current_unbalance_pct || 0),
+                            data: meterData.results.slice().reverse().map(item => item.max_current_unbalance_pct || 0),
                             borderColor: '#F59E0B',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             fill: true,
@@ -784,7 +725,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                           },
                           {
                             label: 'THD de Voltaje (%)',
-                            data: meterData.results.map(item => item.max_voltage_thd_pct || 0),
+                            data: meterData.results.slice().reverse().map(item => item.max_voltage_thd_pct || 0),
                             borderColor: '#8B5CF6',
                             backgroundColor: 'rgba(139, 92, 246, 0.1)',
                             fill: false,
@@ -792,7 +733,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                             pointRadius: 3,
                             borderDash: [6, 3],
                             pointBackgroundColor: '#8B5CF6',
-                          }
+                            },
                         ]
                       }}
                       options={{
@@ -926,33 +867,8 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
             </>
           )}
         </section>
-      )}
 
-      {activeTab === 'generationOverview' && (
-        <section className="space-y-6">
-          <SectionHeader
-            title="Visión General de Generación"
-            icon="M13 10V3L4 14h7v7l9-11h-7z"
-            infoText="Hover sobre los gráficos para ver controles"
-          />
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-            <ChartCard title="Generación por Fuente (Año Actual)" type="bar" data={MOCK_DATA.generationOverview} options={CHART_OPTIONS} />
-          </div>
-        </section>
-      )}
 
-      {activeTab === 'energyBalance' && (
-        <section className="space-y-6">
-          <SectionHeader
-            title="Balance Energético"
-            icon="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
-            infoText="Hover sobre los gráficos para ver controles"
-          />
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-            <ChartCard title="Balance Energético Diario (Últimos 30 Días)" type="line" data={MOCK_DATA.energyBalance} options={CHART_OPTIONS} />
-          </div>
-        </section>
-      )}
 
       <TransitionOverlay show={showTransition} type={transitionType} message={transitionMessage} />
     </div>

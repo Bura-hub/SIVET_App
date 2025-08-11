@@ -7,6 +7,7 @@ from django.db import transaction, IntegrityError
 from datetime import datetime, timedelta, timezone as dt_timezone
 from django.utils import timezone as dj_timezone
 import pytz
+from django.db import models
 
 # Importa tu cliente SCADA y tus modelos
 from .scada_client import ScadaConnectorClient
@@ -78,12 +79,22 @@ def sync_scada_metadata(self):
                 scada_id=str(device_data['id']),
                 defaults={
                     'name': device_data['name'],
-                    'category': category_obj,
-                    'institution': institution_obj,
                     'status': device_data.get('status', ''),
                     'is_active': True, # Asumimos que los dispositivos fetched están activos
+                    # IMPORTANTE: Solo incluir category e institution si tenemos objetos válidos
                 }
             )
+            
+            # Actualizar relaciones solo si tenemos objetos válidos
+            if category_obj:
+                device.category = category_obj
+            if institution_obj:
+                device.institution = institution_obj
+            
+            # Solo guardar si hubo cambios en las relaciones
+            if category_obj or institution_obj:
+                device.save()
+            
             if created:
                 logger.info(f"Dispositivo '{device.name}' ({device.scada_id}) creado/actualizado.")
 
@@ -279,8 +290,32 @@ def check_devices_status(self):
                     device_data = devices_data[0]  # Tomar el primer resultado
                     
                     # Actualizar solo campos básicos sin tocar las relaciones
+                    # IMPORTANTE: Preservar category e institution existentes
                     device.name = device_data.get('name', device.name)
                     device.status = device_data.get('status', device.status)
+                    
+                    # NO actualizar category e institution aquí para evitar sobrescribirlos como null
+                    # Solo actualizar si realmente tenemos datos válidos de SCADA
+                    if device_data.get('category') and isinstance(device_data['category'], dict):
+                        category_scada_id = str(device_data['category'].get('id'))
+                        if category_scada_id:
+                            try:
+                                category_obj = DeviceCategory.objects.get(scada_id=category_scada_id)
+                                device.category = category_obj
+                                logger.debug(f"Actualizada categoría para {device.name}: {category_obj.name}")
+                            except DeviceCategory.DoesNotExist:
+                                logger.warning(f"Categoría SCADA {category_scada_id} no encontrada para {device.name}")
+                    
+                    if device_data.get('institution') and isinstance(device_data['institution'], dict):
+                        institution_scada_id = str(device_data['institution'].get('id'))
+                        if institution_scada_id:
+                            try:
+                                institution_obj = Institution.objects.get(scada_id=institution_scada_id)
+                                device.institution = institution_obj
+                                logger.debug(f"Actualizada institución para {device.name}: {institution_obj.name}")
+                            except Institution.DoesNotExist:
+                                logger.warning(f"Institución SCADA {institution_scada_id} no encontrada para {device.name}")
+                    
                     device.save()
                     updated_count += 1
                     
@@ -364,12 +399,21 @@ def sync_scada_metadata_enhanced(self):
                     scada_id=device_scada_id,
                     defaults={
                         'name': device_data['name'],
-                        'category': category_obj,
-                        'institution': institution_obj,
                         'status': device_data.get('status', ''),
                         'is_active': True
+                        # IMPORTANTE: Solo incluir category e institution si tenemos objetos válidos
                     }
                 )
+                
+                # Actualizar relaciones solo si tenemos objetos válidos
+                if category_obj:
+                    device.category = category_obj
+                if institution_obj:
+                    device.institution = institution_obj
+                
+                # Solo guardar si hubo cambios en las relaciones
+                if category_obj or institution_obj:
+                    device.save()
                 
                 if created:
                     logger.info(f"Nuevo dispositivo creado: {device.name}")
@@ -387,3 +431,77 @@ def sync_scada_metadata_enhanced(self):
     except Exception as e:
         logger.error(f"Error en sincronización mejorada: {e}")
         raise self.retry(exc=e, countdown=self.request.retries * 60)
+
+@shared_task(bind=True, retry_backoff=30, max_retries=3)
+def repair_device_relationships(self):
+    """
+    Repara automáticamente las relaciones faltantes de categoría e institución
+    en dispositivos que las hayan perdido.
+    """
+    try:
+        logger.info("Iniciando reparación automática de relaciones de dispositivos")
+        
+        # Buscar dispositivos con relaciones faltantes
+        devices_with_issues = Device.objects.filter(
+            models.Q(category__isnull=True) | models.Q(institution__isnull=True)
+        ).select_related('category', 'institution')
+        
+        if not devices_with_issues.exists():
+            logger.info("No se encontraron dispositivos con relaciones faltantes")
+            return
+        
+        logger.info(f"Se encontraron {devices_with_issues.count()} dispositivos con relaciones faltantes")
+        
+        repaired_count = 0
+        failed_count = 0
+        
+        for device in devices_with_issues:
+            try:
+                repaired = False
+                
+                # Intentar encontrar categoría por nombre del dispositivo
+                if not device.category:
+                    if 'medidor' in device.name.lower() or 'meter' in device.name.lower():
+                        category = DeviceCategory.objects.filter(name__icontains='electricmeter').first()
+                        if category:
+                            device.category = category
+                            repaired = True
+                            logger.info(f"Reparada categoría para {device.name}: {category.name}")
+                    elif 'inversor' in device.name.lower() or 'inverter' in device.name.lower():
+                        category = DeviceCategory.objects.filter(name__icontains='inverter').first()
+                        if category:
+                            device.category = category
+                            repaired = True
+                            logger.info(f"Reparada categoría para {device.name}: {category.name}")
+                    elif 'estación' in device.name.lower() or 'weather' in device.name.lower():
+                        category = DeviceCategory.objects.filter(name__icontains='weatherstation').first()
+                        if category:
+                            device.category = category
+                            repaired = True
+                            logger.info(f"Reparada categoría para {device.name}: {category.name}")
+                
+                # Intentar encontrar institución por nombre del dispositivo
+                if not device.institution:
+                    for institution in Institution.objects.all():
+                        if institution.name.lower() in device.name.lower():
+                            device.institution = institution
+                            repaired = True
+                            logger.info(f"Reparada institución para {device.name}: {institution.name}")
+                            break
+                
+                if repaired:
+                    device.save()
+                    repaired_count += 1
+                else:
+                    failed_count += 1
+                    logger.warning(f"No se pudo reparar {device.name} - nombre: '{device.name}'")
+                    
+            except Exception as e:
+                failed_count += 1
+                logger.error(f"Error al reparar dispositivo {device.name}: {e}")
+        
+        logger.info(f"Reparación completada: {repaired_count} reparados, {failed_count} fallidos")
+        
+    except Exception as e:
+        logger.error(f"Error en reparación automática de relaciones: {e}")
+        raise self.retry(exc=e, countdown=self.request.retries * 30)

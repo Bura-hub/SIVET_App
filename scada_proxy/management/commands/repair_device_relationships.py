@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.db import models
+from django.db.models import Q
 from scada_proxy.models import Device, DeviceCategory, Institution
 import logging
 
@@ -12,152 +12,195 @@ class Command(BaseCommand):
         parser.add_argument(
             '--dry-run',
             action='store_true',
-            help='Muestra qué se haría sin hacer cambios reales',
+            help='Muestra qué se haría sin realizar cambios',
         )
         parser.add_argument(
             '--force',
             action='store_true',
-            help='Fuerza la reparación incluso si hay inconsistencias',
+            help='Fuerza la reparación incluso si hay errores',
+        )
+        parser.add_argument(
+            '--verbose',
+            action='store_true',
+            help='Muestra información detallada del proceso',
         )
 
     def handle(self, *args, **options):
         dry_run = options['dry_run']
         force = options['force']
+        verbose = options['verbose']
         
         self.stdout.write(
-            self.style.SUCCESS('Iniciando reparación de relaciones de dispositivos...')
+            self.style.SUCCESS('🔧 INICIANDO REPARACIÓN DE RELACIONES DE DISPOSITIVOS')
         )
         
         if dry_run:
             self.stdout.write(
-                self.style.WARNING('MODO DRY-RUN: No se harán cambios reales')
+                self.style.WARNING('⚠️  MODO DRY-RUN: No se realizarán cambios')
             )
         
-        # Buscar dispositivos con relaciones faltantes
+        # 1. Diagnóstico inicial
+        self.stdout.write('\n📊 DIAGNÓSTICO INICIAL:')
+        self._show_diagnosis()
+        
+        # 2. Buscar dispositivos con problemas
         devices_with_issues = Device.objects.filter(
-            models.Q(category__isnull=True) | models.Q(institution__isnull=True)
+            Q(category__isnull=True) | Q(institution__isnull=True)
         ).select_related('category', 'institution')
         
         if not devices_with_issues.exists():
             self.stdout.write(
-                self.style.SUCCESS('No se encontraron dispositivos con relaciones faltantes.')
+                self.style.SUCCESS('✅ No se encontraron dispositivos con problemas')
             )
             return
         
         self.stdout.write(
-            f'Se encontraron {devices_with_issues.count()} dispositivos con relaciones faltantes:'
+            f'\n⚠️  Se encontraron {devices_with_issues.count()} dispositivos con problemas:'
         )
         
-        # Mostrar dispositivos con problemas
+        # 3. Mostrar dispositivos problemáticos
         for device in devices_with_issues:
-            self.stdout.write(
-                f'  - {device.name} (ID: {device.id}): '
-                f'Categoría: {device.category or "NULL"}, '
-                f'Institución: {device.institution or "NULL"}'
-            )
+            category_status = f"✅ {device.category.name}" if device.category else "❌ NULL"
+            institution_status = f"✅ {device.institution.name}" if device.institution else "❌ NULL"
+            
+            self.stdout.write(f'   - {device.name} (ID: {device.id})')
+            self.stdout.write(f'     Categoría: {category_status}')
+            self.stdout.write(f'     Institución: {institution_status}')
+            
+            if verbose:
+                # Mostrar sugerencias de reparación
+                suggestions = self._get_repair_suggestions(device)
+                if suggestions:
+                    self.stdout.write(f'     💡 Sugerencias: {", ".join(suggestions)}')
+            self.stdout.write('')
         
+        # 4. Ejecutar reparación
         if not dry_run:
-            # Confirmar antes de proceder
-            if not force:
-                confirm = input('\n¿Desea continuar con la reparación? (y/N): ')
-                if confirm.lower() != 'y':
-                    self.stdout.write(
-                        self.style.WARNING('Operación cancelada por el usuario.')
-                    )
-                    return
+            self.stdout.write('🔧 EJECUTANDO REPARACIÓN:')
+            repaired_count, failed_count = self._execute_repair(devices_with_issues, force)
+            
+            # 5. Mostrar resultados
+            self.stdout.write('\n📊 RESULTADOS DE LA REPARACIÓN:')
+            self.stdout.write(f'   ✅ Reparados: {repaired_count}')
+            self.stdout.write(f'   ❌ Fallidos: {failed_count}')
+            
+            if repaired_count > 0:
+                self.stdout.write('\n🔍 VERIFICACIÓN POST-REPARACIÓN:')
+                self._show_diagnosis()
+        else:
+            self.stdout.write(
+                self.style.WARNING('⚠️  MODO DRY-RUN: No se realizaron cambios')
+            )
+
+    def _show_diagnosis(self):
+        """Muestra un diagnóstico del estado de las relaciones"""
+        total_devices = Device.objects.count()
+        active_devices = Device.objects.filter(is_active=True).count()
+        devices_with_issues = Device.objects.filter(
+            Q(category__isnull=True) | Q(institution__isnull=True)
+        ).count()
         
-        # Proceder con la reparación
+        self.stdout.write(f'   Total de dispositivos: {total_devices}')
+        self.stdout.write(f'   Dispositivos activos: {active_devices}')
+        self.stdout.write(f'   Con problemas: {devices_with_issues}')
+        
+        # Mostrar estadísticas por categoría
+        categories = DeviceCategory.objects.all()
+        self.stdout.write('\n   📊 Por categoría:')
+        for cat in categories:
+            device_count = Device.objects.filter(category=cat).count()
+            self.stdout.write(f'     - {cat.name}: {device_count} dispositivos')
+        
+        # Mostrar estadísticas por institución
+        institutions = Institution.objects.all()
+        self.stdout.write('\n   📊 Por institución:')
+        for inst in institutions:
+            device_count = Device.objects.filter(institution=inst).count()
+            self.stdout.write(f'     - {inst.name}: {device_count} dispositivos')
+
+    def _get_repair_suggestions(self, device):
+        """Obtiene sugerencias de reparación para un dispositivo"""
+        suggestions = []
+        name_lower = device.name.lower()
+        
+        if not device.category:
+            if 'medidor' in name_lower or 'meter' in name_lower:
+                suggestions.append("electricmeter")
+            elif 'inversor' in name_lower or 'inverter' in name_lower:
+                suggestions.append("inverter")
+            elif 'estación' in name_lower or 'weather' in name_lower:
+                suggestions.append("weatherstation")
+        
+        if not device.institution:
+            for institution in Institution.objects.all():
+                if institution.name.lower() in name_lower:
+                    suggestions.append(f"institución: {institution.name}")
+                    break
+        
+        return suggestions
+
+    def _execute_repair(self, devices_with_issues, force):
+        """Ejecuta la reparación de relaciones"""
         repaired_count = 0
         failed_count = 0
         
         for device in devices_with_issues:
             try:
+                self.stdout.write(f'   Procesando: {device.name}')
                 repaired = False
                 
-                # Intentar encontrar categoría por nombre del dispositivo
+                # Intentar reparar categoría
                 if not device.category:
                     if 'medidor' in device.name.lower() or 'meter' in device.name.lower():
                         category = DeviceCategory.objects.filter(name__icontains='electricmeter').first()
                         if category:
                             device.category = category
                             repaired = True
-                            self.stdout.write(
-                                f'  ✓ Categoría asignada a {device.name}: {category.name}'
-                            )
+                            self.stdout.write(f'     ✅ Categoría asignada: {category.name}')
                     elif 'inversor' in device.name.lower() or 'inverter' in device.name.lower():
                         category = DeviceCategory.objects.filter(name__icontains='inverter').first()
                         if category:
                             device.category = category
                             repaired = True
-                            self.stdout.write(
-                                f'  ✓ Categoría asignada a {device.name}: {category.name}'
-                            )
+                            self.stdout.write(f'     ✅ Categoría asignada: {category.name}')
                     elif 'estación' in device.name.lower() or 'weather' in device.name.lower():
                         category = DeviceCategory.objects.filter(name__icontains='weatherstation').first()
                         if category:
                             device.category = category
                             repaired = True
-                            self.stdout.write(
-                                f'  ✓ Categoría asignada a {device.name}: {category.name}'
-                            )
-                    else:
-                        self.stdout.write(
-                            f'  ⚠ No se pudo determinar categoría para {device.name}'
-                        )
+                            self.stdout.write(f'     ✅ Categoría asignada: {category.name}')
                 
-                # Intentar encontrar institución por nombre del dispositivo
+                # Intentar reparar institución
                 if not device.institution:
-                    institution_found = False
                     for institution in Institution.objects.all():
                         if institution.name.lower() in device.name.lower():
                             device.institution = institution
                             repaired = True
-                            institution_found = True
-                            self.stdout.write(
-                                f'  ✓ Institución asignada a {device.name}: {institution.name}'
-                            )
+                            self.stdout.write(f'     ✅ Institución asignada: {institution.name}')
                             break
-                    
-                    if not institution_found:
-                        self.stdout.write(
-                            f'  ⚠ No se pudo determinar institución para {device.name}'
-                        )
                 
                 if repaired:
-                    if not dry_run:
-                        device.save()
+                    device.save()
                     repaired_count += 1
-                    self.stdout.write(
-                        f'  ✓ Dispositivo {device.name} reparado exitosamente'
-                    )
+                    self.stdout.write(f'     💾 Dispositivo guardado')
                 else:
                     failed_count += 1
-                    self.stdout.write(
-                        f'  ✗ No se pudo reparar {device.name}'
-                    )
-                
+                    self.stdout.write(f'     ❌ No se pudo reparar')
+                    
             except Exception as e:
                 failed_count += 1
-                self.stdout.write(
-                    self.style.ERROR(f'  ✗ Error al reparar {device.name}: {e}')
-                )
+                error_msg = f'Error al reparar dispositivo {device.name}: {e}'
+                self.stdout.write(self.style.ERROR(f'     ❌ {error_msg}'))
+                logger.error(error_msg)
+                
+                if not force:
+                    self.stdout.write(
+                        self.style.WARNING('     ⚠️  Continuando con el siguiente dispositivo...')
+                    )
+                else:
+                    self.stdout.write(
+                        self.style.ERROR('     💥 Error fatal - deteniendo reparación')
+                    )
+                    raise
         
-        # Resumen final
-        self.stdout.write('\n' + '='*50)
-        self.stdout.write('RESUMEN DE LA REPARACIÓN:')
-        self.stdout.write(f'  Dispositivos reparados: {repaired_count}')
-        self.stdout.write(f'  Dispositivos fallidos: {failed_count}')
-        self.stdout.write(f'  Total procesados: {devices_with_issues.count()}')
-        
-        if dry_run:
-            self.stdout.write(
-                self.style.WARNING('\nMODO DRY-RUN: No se realizaron cambios reales')
-            )
-        elif repaired_count > 0:
-            self.stdout.write(
-                self.style.SUCCESS(f'\n¡Reparación completada! {repaired_count} dispositivos fueron reparados.')
-            )
-        else:
-            self.stdout.write(
-                self.style.WARNING('\nNo se pudo reparar ningún dispositivo.')
-            )
+        return repaired_count, failed_count

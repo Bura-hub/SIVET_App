@@ -216,10 +216,10 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       const indicatorsParams = new URLSearchParams(baseParams);
 
       const indicatorsResp = await fetch(`/api/electric-meter-indicators/?${indicatorsParams.toString()}`, {
-        headers: {
-          'Authorization': `Token ${authToken}`,
-          'Content-Type': 'application/json'
-        }
+          headers: {
+            'Authorization': `Token ${authToken}`,
+            'Content-Type': 'application/json'
+          }
       });
 
       if (!indicatorsResp.ok) {
@@ -228,7 +228,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       }
 
       const indicatorsData = await indicatorsResp.json();
-      
+
       if (seq === requestSeqRef.current) {
         setMeterData(indicatorsData);
         
@@ -331,7 +331,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       {/* Header */}
       <header className="bg-gradient-to-r from-green-600 to-emerald-700 shadow-lg -mx-8 -mt-8">
         <div className="px-8 py-12">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4">
             <div className="p-3 bg-white/20 rounded-xl">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -345,7 +345,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
         </div>
       </header>
 
-                                                            {/* KPIs */}
+      {/* KPIs */}
       <section className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 mx-8 -mt-8 mb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {!filters.institutionId ? (
@@ -403,9 +403,9 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                   {/* Línea inferior skeleton */}
                   <div className="mt-3 pt-3 border-t border-blue-100">
                     <div className="w-28 h-3 bg-blue-200 rounded"></div>
-                  </div>
-                </div>
-                
+        </div>
+      </div>
+
                 {/* Overlay de shimmer azul */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/30 to-transparent animate-shimmer pointer-events-none"></div>
               </div>
@@ -502,7 +502,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
           
           {/* Contenido de la sección */}
           <div className="p-8">
-            <ElectricMeterFilters onFiltersChange={handleFiltersChange} authToken={authToken} />
+          <ElectricMeterFilters onFiltersChange={handleFiltersChange} authToken={authToken} />
 
           {meterLoading && (
             <div className="flex items-center justify-center py-12 transition-opacity duration-300 ease-in-out">
@@ -523,8 +523,8 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                 <div className="flex-shrink-0">
                   <div className="p-2 bg-red-100 rounded-lg">
                     <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                   </div>
                 </div>
                 <div className="ml-4">
@@ -544,29 +544,29 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                 <div className="space-y-8">
                   {/* Gráfico principal de energía - Ancho completo */}
                   <div className="w-full">
-                    <ChartCard
+                  <ChartCard
                       title="Análisis de Energía"
                       description="Consumo, exportación y balance energético en el tiempo"
-                      type="line"
-                      data={{
+                    type="line"
+                    data={{
                         labels: meterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
-                        datasets: [
-                          {
+                      datasets: [
+                        {
                             label: 'Energía Importada (kWh)',
                             data: meterData.results.slice().reverse().map(item => item.imported_energy_kwh || 0),
-                            borderColor: '#3B82F6',
+                          borderColor: '#3B82F6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            fill: true,
-                            tension: 0.4,
+                          fill: true,
+                          tension: 0.4,
                             pointRadius: 4,
-                            pointBackgroundColor: '#3B82F6',
+                          pointBackgroundColor: '#3B82F6',
                             pointBorderColor: '#ffffff',
                             pointBorderWidth: 2,
-                          },
-                          {
+                        },
+                        {
                             label: 'Energía Exportada (kWh)',
                             data: meterData.results.slice().reverse().map(item => item.exported_energy_kwh || 0),
-                            borderColor: '#EF4444',
+                          borderColor: '#EF4444',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             fill: true,
                             tension: 0.4,
@@ -580,16 +580,16 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                             data: meterData.results.slice().reverse().map(item => item.net_energy_consumption_kwh || 0),
                             borderColor: '#10B981',
                             backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            fill: false,
-                            tension: 0.4,
+                          fill: false,
+                          tension: 0.4,
                             pointRadius: 4,
                             borderDash: [8, 4],
                             pointBackgroundColor: '#10B981',
                             pointBorderColor: '#ffffff',
                             pointBorderWidth: 2,
-                          }
-                        ],
-                      }}
+                        }
+                      ],
+                    }}
                       options={{
                         ...CHART_OPTIONS,
                         plugins: {
@@ -622,20 +622,20 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                   {/* Gráficos secundarios en grid */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Indicadores de calidad */}
-                    <ChartCard
+                  <ChartCard
                       title="Indicadores de Calidad Eléctrica"
                       description="Demanda, factor de carga y eficiencia del sistema"
-                      type="line"
-                      data={{
+                    type="line"
+                    data={{
                         labels: meterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
-                        datasets: [
-                          {
+                      datasets: [
+                        {
                             label: 'Demanda Pico (kW)',
                             data: meterData.results.slice().reverse().map(item => item.peak_demand_kw || 0),
                             borderColor: '#F59E0B',
                             backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                            fill: true,
-                            tension: 0.4,
+                          fill: true,
+                          tension: 0.4,
                             pointRadius: 3,
                             pointBackgroundColor: '#F59E0B',
                           },
@@ -644,8 +644,8 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                             data: meterData.results.slice().reverse().map(item => item.avg_demand_kw || 0),
                             borderColor: '#8B5CF6',
                             backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                            fill: true,
-                            tension: 0.4,
+                          fill: true,
+                          tension: 0.4,
                             pointRadius: 3,
                             pointBackgroundColor: '#8B5CF6',
                           },
@@ -654,8 +654,8 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                             data: meterData.results.slice().reverse().map(item => item.load_factor_pct || 0),
                             borderColor: '#10B981',
                             backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            fill: false,
-                            tension: 0.4,
+                          fill: false,
+                          tension: 0.4,
                             pointRadius: 3,
                             borderDash: [6, 3],
                             pointBackgroundColor: '#10B981',
@@ -855,8 +855,8 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
             </>
           )}
           </div>
-        </div>
-      </section>
+          </div>
+        </section>
 
 
 

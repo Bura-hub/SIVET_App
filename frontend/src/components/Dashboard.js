@@ -518,49 +518,58 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       totalConsumption: {
         ...data.totalConsumption,
         value: parseFloat(data.totalConsumption.value), // Usar el valor tal como viene del backend
-        icon: Icons.consumption
+        icon: Icons.consumption,
+        color: "text-blue-600"
       },
       totalGeneration: {
         ...data.totalGeneration,
         value: parseFloat(data.totalGeneration.value), // Usar el valor tal como viene del backend
-        icon: Icons.generation
+        icon: Icons.generation,
+        color: "text-green-600"
       },
       energyBalance: {
         ...data.energyBalance,
         value: parseFloat(data.energyBalance.value), // Usar el valor tal como viene del backend
-        icon: Icons.balance
+        icon: Icons.balance,
+        color: "text-purple-600"
       },
       averageInstantaneousPower: {
         ...data.averageInstantaneousPower,
         value: parseFloat(data.averageInstantaneousPower.value), // Usar el valor tal como viene del backend
-        icon: Icons.power
+        icon: Icons.power,
+        color: "text-orange-600"
       },
       avgDailyTemp: {
         ...data.avgDailyTemp,
         value: parseFloat(data.avgDailyTemp.value), // Usar el valor tal como viene del backend
-        icon: Icons.temperature
+        icon: Icons.temperature,
+        color: "text-red-600"
       },
       relativeHumidity: {
         ...data.relativeHumidity,
         value: parseFloat(data.relativeHumidity.value), // Usar el valor tal como viene del backend
-        icon: Icons.humidity
+        icon: Icons.humidity,
+        color: "text-cyan-600"
       },
       windSpeed: {
         ...data.windSpeed,
         value: parseFloat(data.windSpeed.value), // Usar el valor tal como viene del backend
-        icon: Icons.wind
+        icon: Icons.wind,
+        color: "text-teal-600"
       },
       activeInverters: {
         ...data.activeInverters,
         value: parseInt(data.activeInverters.value), // Usar el valor tal como viene del backend
-        icon: Icons.inverters
+        icon: Icons.inverters,
+        color: "text-indigo-600"
       },
           taskExecution: { 
             ...prevKpiData.taskExecution,
             onClick: executeAllTasks,
             value: taskExecuting ? "Ejecutando..." : "Ejecutar",
             description: taskStatus || "Sincronizar metadatos y datos SCADA",
-            status: taskExecuting ? "loading" : "normal"
+            status: taskExecuting ? "loading" : "normal",
+            color: "text-gray-600"
           }
         }));
   };
@@ -904,83 +913,140 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="flex p-8 justify-between items-center bg-gray-100 p-4 -mx-8 -mt-8">
-        <h1 className="text-3xl font-bold text-gray-800">Visión General</h1>
-        <div className="flex items-center space-x-4">
-          {/* Aviso estático para período de tiempo */}
-          <div className="flex items-center bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
-            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" />
-              <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Últimos 30 días
-          </div>
-          
-          {/* Aviso estático para dispositivos */}
-          <div className="flex items-center bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
-            <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <rect x="5" y="3" width="14" height="18" rx="2" ry="2" />
-              <path d="M9 19h6" strokeLinecap="round" />
-            </svg>
-            Todos los Dispositivos
+    <div className="min-h-screen bg-gray-100">
+      {/* Header con banner profesional */}
+      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg -mx-8 -mt-8">
+        <div className="px-8 py-12">
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-white/20 rounded-xl">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white">Dashboard Principal</h1>
+              <p className="text-blue-100 mt-1">Visión general y análisis de indicadores del sistema</p>
+            </div>
           </div>
         </div>
       </header>
 
-            {/* Sección KPI */}
-      <section className="bg-gray-100 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6 p-6">
-        {Object.keys(kpiData).map((key) => {
-          const item = kpiData[key];
-          const description = item.description || (item.change ? item.change : "Datos disponibles");
-          return <KpiCard key={key} {...item} description={description} icon={item.icon} />;
-        })}
+
+
+      {/* Sección KPI superpuesta con el banner */}
+      <section className="mx-8 -mt-8 mb-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
+          {/* Contenido de KPIs */}
+          <div className="p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Object.keys(kpiData).map((key) => {
+                const item = kpiData[key];
+                const description = item.description || (item.change ? item.change : "Datos disponibles");
+                
+                // Mapear colores del KPI a colores de estilo adaptado
+                const colorMap = {
+                  'text-blue-600': { bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
+                  'text-green-600': { bgColor: 'bg-green-50', borderColor: 'border-green-200' },
+                  'text-purple-600': { bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
+                  'text-indigo-600': { bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200' },
+                  'text-orange-600': { bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
+                  'text-red-600': { bgColor: 'bg-red-50', borderColor: 'border-red-200' },
+                  'text-cyan-600': { bgColor: 'bg-cyan-50', borderColor: 'border-cyan-200' },
+                  'text-teal-600': { bgColor: 'bg-teal-50', borderColor: 'border-teal-200' },
+                  'text-gray-600': { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' }
+                };
+                const styleColors = colorMap[item.color] || { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
+                
+                return (
+                  <div 
+                    key={key} 
+                    className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg ${item.onClick ? 'cursor-pointer' : ''}`}
+                    onClick={item.onClick || undefined}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')}`}>
+                        {item.icon}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-medium text-gray-600">{description}</p>
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
+                    <div className="flex items-baseline">
+                      <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
+                      <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-500">{description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Charts Section con diseño mejorado */}
-      <section className="bg-gray-100 space-y-6 p-6 mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-            <svg className="w-6 h-6 mr-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            Análisis de Datos
-          </h2>
-          <div className="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-full border border-gray-300">
-            <span className="flex items-center">
-              <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-              Hover sobre los gráficos para ver controles
-          </span>
+      <section className="mx-8 mb-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
+          {/* Header de la sección */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-white/20 rounded-xl">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Análisis de Datos</h2>
+                <p className="text-blue-100 mt-1">Tendencias y patrones del sistema energético</p>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ChartCard
-            title="Consumo de Electricidad"
-            type="line"
-            data={electricityConsumptionData}
-            options={chartOptions}
-          />
-          <ChartCard
-            title="Generación de los inversores"
-            type="bar"
-            data={inverterGenerationData}
-            options={chartOptions}
-          />
-          <ChartCard
-            title="Balance de energía"
-            type="line"
-            data={energyBalanceData}
-            options={chartOptions}
-          />
-          <ChartCard
-            title="Temperatura media"
-            type="line"
-            data={temperatureTrendsData}
-            options={chartOptions}
-          />
+          
+          {/* Contenido de gráficos */}
+          <div className="p-8">
+            <div className="mb-6">
+              <div className="text-sm text-gray-600 bg-blue-50 px-4 py-3 rounded-xl border border-blue-200 inline-flex items-center">
+                <svg className="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="font-medium">Hover sobre los gráficos para ver controles de zoom y pan</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <ChartCard
+                title="Consumo de Electricidad"
+                description="Análisis del consumo energético diario comparando el mes actual con el anterior"
+                type="line"
+                data={electricityConsumptionData}
+                options={chartOptions}
+              />
+              <ChartCard
+                title="Generación de los Inversores"
+                description="Producción de energía solar diaria y comparación mensual de rendimiento"
+                type="bar"
+                data={inverterGenerationData}
+                options={chartOptions}
+              />
+              <ChartCard
+                title="Balance de Energía"
+                description="Diferencia entre consumo y generación, mostrando la eficiencia del sistema"
+                type="line"
+                data={energyBalanceData}
+                options={chartOptions}
+              />
+              <ChartCard
+                title="Temperatura Media Diaria"
+                description="Seguimiento de las condiciones ambientales y su impacto en el rendimiento"
+                type="line"
+                data={temperatureTrendsData}
+                options={chartOptions}
+              />
+            </div>
+          </div>
         </div>
       </section>
       {/* Overlay de transición */}

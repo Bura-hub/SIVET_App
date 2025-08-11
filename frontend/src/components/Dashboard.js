@@ -928,8 +928,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         </div>
       </header>
 
-      {/* Sección KPI */}
-      <section className="bg-gray-100 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
+            {/* Sección KPI */}
+      <section className="bg-gray-100 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6 p-6">
         {Object.keys(kpiData).map((key) => {
           const item = kpiData[key];
           const description = item.description || (item.change ? item.change : "Datos disponibles");
@@ -938,7 +938,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       </section>
 
       {/* Charts Section con diseño mejorado */}
-      <section className="space-y-6">
+      <section className="bg-gray-100 space-y-6 p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center">
             <svg className="w-6 h-6 mr-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -946,13 +946,13 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
             </svg>
             Análisis de Datos
           </h2>
-          <div className="text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-full border border-gray-200">
+          <div className="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-full border border-gray-300">
             <span className="flex items-center">
               <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            </svg>
               Hover sobre los gráficos para ver controles
-            </span>
+          </span>
           </div>
         </div>
         

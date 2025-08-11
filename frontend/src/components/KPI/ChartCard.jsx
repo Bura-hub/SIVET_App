@@ -3,7 +3,7 @@ import { Line, Bar } from 'react-chartjs-2';
 
 // Componente reutilizable que renderiza una tarjeta con un gráfico (línea o barras),
 // permite resetear el zoom del gráfico y expandirlo a pantalla completa.
-export function ChartCard({ title, type = "line", data, options }) {
+export function ChartCard({ title, description, type = "line", data, options }) {
   const chartRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -195,10 +195,17 @@ export function ChartCard({ title, type = "line", data, options }) {
         {/* Header elegante con título y controles */}
         <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-              <div className="w-1.5 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mr-3"></div>
-              {title}
-            </h3>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <div className="w-1.5 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mr-3"></div>
+                {title}
+              </h3>
+              {description && (
+                <p className="text-sm text-gray-600 mt-1 ml-6">
+                  {description}
+                </p>
+              )}
+            </div>
             
             {/* Botones de acciones con diseño mejorado */}
             <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -262,10 +269,17 @@ export function ChartCard({ title, type = "line", data, options }) {
             {/* Header del modal con diseño elegante */}
             <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-4 text-white">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold flex items-center">
-                  <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full mr-3"></div>
-                  {title}
-                </h3>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold flex items-center">
+                    <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full mr-3"></div>
+                    {title}
+                  </h3>
+                  {description && (
+                    <p className="text-sm text-gray-300 mt-1 ml-6">
+                      {description}
+                    </p>
+                  )}
+                </div>
                 
                 {/* Controles del modal */}
                 <div className="flex items-center space-x-3">

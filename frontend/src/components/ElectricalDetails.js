@@ -151,18 +151,7 @@ const SectionHeader = ({ title, icon, infoText }) => (
   </div>
 );
 
-// Componente de botón de filtro
-const FilterButton = ({ icon, label, value, onClick, gradientFrom, gradientTo, borderColor, textColor }) => (
-  <button 
-    className={`flex items-center bg-gradient-to-r ${gradientFrom} ${gradientTo} border ${borderColor} ${textColor} px-4 py-2 rounded-full text-sm font-medium shadow-sm hover:from-blue-100 hover:to-indigo-100 transition-all duration-200`}
-    onClick={onClick}
-  >
-    <svg className={`w-5 h-5 mr-2 ${textColor.replace('text-', 'text-')}`} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-      {icon}
-    </svg>
-    {label}: {value}
-  </button>
-);
+
 
 // Datos simulados consolidados
 const MOCK_DATA = {
@@ -292,31 +281,43 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
   const debounceRef = useRef(null);
   const lastFiltersRef = useRef(null);
 
-  // KPIs con iconos inline
-  const [kpiData] = useState({
-    dailyAverageLoad: { 
-      title: "Carga Diaria Promedio", 
-      value: "500", 
+  // KPIs dinámicos basados en datos reales
+  const [kpiData, setKpiData] = useState({
+    totalEnergyConsumed: { 
+      title: "Energía Total Consumida", 
+      value: "0.00", 
       unit: "kWh", 
-      change: "", 
+      change: "Este período", 
       status: "normal", 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 11-12h-9l1-8z"></path></svg>
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 11-12h-9l1-8z"></path></svg>,
+      color: "text-blue-600"
     },
     peakDemand: { 
       title: "Demanda Pico", 
-      value: "750", 
+      value: "0.00", 
       unit: "kW", 
-      change: "14:30 ayer", 
-      status: "critico", 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22,7 13.5,15.5 8.5,10.5 2,17"></polyline><polyline points="16,7 22,7 22,13"></polyline></svg>
+      change: "Máximo registrado", 
+      status: "normal", 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22,7 13.5,15.5 8.5,10.5 2,17"></polyline><polyline points="16,7 22,7 22,13"></polyline></svg>,
+      color: "text-red-600"
     },
-    accumulatedConsumption: { 
-      title: "Consumo Acumulado", 
-      value: "3.5", 
-      unit: "MWh", 
-      change: "YTD", 
-      status: "positivo", 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+    loadFactor: { 
+      title: "Factor de Carga", 
+      value: "0.0", 
+      unit: "%", 
+      change: "Eficiencia del sistema", 
+      status: "normal", 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>,
+      color: "text-green-600"
+    },
+    powerFactor: { 
+      title: "Factor de Potencia", 
+      value: "0.00", 
+      unit: "", 
+      change: "Calidad de energía", 
+      status: "normal", 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>,
+      color: "text-purple-600"
     }
   });
 
@@ -367,6 +368,35 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       
       if (seq === requestSeqRef.current) {
         setMeterData(indicatorsData);
+        
+        // Actualizar KPIs con datos reales
+        if (indicatorsData.results && indicatorsData.results.length > 0) {
+          const latestData = indicatorsData.results[0];
+          const totalEnergy = indicatorsData.results.reduce((sum, item) => sum + (item.imported_energy_kwh || 0), 0);
+          
+          setKpiData(prev => ({
+            totalEnergyConsumed: {
+              ...prev.totalEnergyConsumed,
+              value: totalEnergy.toFixed(2),
+              change: `${indicatorsData.results.length} registros`
+            },
+            peakDemand: {
+              ...prev.peakDemand,
+              value: (latestData.peak_demand_kw || 0).toFixed(2),
+              change: latestData.date ? new Date(latestData.date).toLocaleDateString('es-ES') : 'Último registro'
+            },
+            loadFactor: {
+              ...prev.loadFactor,
+              value: (latestData.load_factor_pct || 0).toFixed(1),
+              change: latestData.load_factor_pct > 80 ? 'Excelente' : latestData.load_factor_pct > 60 ? 'Bueno' : 'Mejorable'
+            },
+            powerFactor: {
+              ...prev.powerFactor,
+              value: (latestData.avg_power_factor || 0).toFixed(2),
+              change: latestData.avg_power_factor > 0.95 ? 'Óptimo' : latestData.avg_power_factor > 0.85 ? 'Bueno' : 'Mejorable'
+            }
+          }));
+        }
       }
     } catch (error) {
       // Mostrar error solo si esta solicitud sigue siendo la vigente
@@ -428,46 +458,36 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       {/* Header */}
       <header className="flex p-8 justify-between items-center bg-gray-100 p-4 -mx-8 -mt-8">
         <h1 className="text-3xl font-bold text-gray-800">Detalles Eléctricos</h1>
-        <div className="flex items-center space-x-4">
-          <FilterButton
-            icon={<><circle cx="12" cy="12" r="9" stroke="currentColor" /><path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" /></>}
-            label="Período"
-            value={filters.timeRange}
-            onClick={() => handleFilterChange('timeRange', 'Últimos 30 días', 'Período actualizado: Últimos 30 días')}
-            gradientFrom="from-blue-50"
-            gradientTo="to-indigo-50"
-            borderColor="border-blue-200"
-            textColor="text-blue-800"
-          />
-          <FilterButton
-            icon={<><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /><circle cx="12" cy="9" r="2.5" fill="currentColor" /></>}
-            label="Ubicación"
-            value={filters.location}
-            onClick={() => handleFilterChange('location', 'Todas', 'Ubicación actualizada: Todas')}
-            gradientFrom="from-green-50"
-            gradientTo="to-emerald-50"
-            borderColor="border-green-200"
-            textColor="text-green-800"
-          />
-          <FilterButton
-            icon={<><rect x="5" y="3" width="14" height="18" rx="2" ry="2" /><path d="M9 19h6" strokeLinecap="round" /></>}
-            label="Dispositivo"
-            value={filters.device}
-            onClick={() => handleFilterChange('device', 'Todos', 'Dispositivo actualizado: Todos')}
-            gradientFrom="from-blue-50"
-            gradientTo="to-indigo-50"
-            borderColor="border-blue-200"
-            textColor="text-blue-800"
-          />
-        </div>
+    
       </header>
 
       {/* KPIs */}
-      <section className="bg-gray-100 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
-        {Object.keys(kpiData).map((key) => {
-          const item = kpiData[key];
-          return <KpiCard key={key} {...item} description={item.change || "Datos disponibles"} icon={item.icon} />;
-        })}
+      <section className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 -mx-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Object.keys(kpiData).map((key) => {
+            const item = kpiData[key];
+            return (
+              <div key={key} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`p-3 rounded-lg ${item.color.replace('text-', 'bg-').replace('-600', '-100')}`}>
+                    {item.icon}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-600">{item.change}</p>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
+                <div className="flex items-baseline">
+                  <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
+                  <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">{item.change}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* Navegación */}
@@ -533,176 +553,369 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
 
           {meterData && !meterLoading && (
             <>
-              {/* Resumen de datos */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              {/* Resumen de datos con animaciones */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 {[
-                  { title: "Energía Consumida", value: meterData.results?.[0]?.imported_energy_kwh?.toFixed(2) || "0.00", unit: "kWh", color: "text-blue-600", subtitle: "Energía total importada" },
-                  { title: "Demanda Pico", value: meterData.results?.[0]?.peak_demand_kw?.toFixed(2) || "0.00", unit: "kW", color: "text-red-600", subtitle: "Máxima demanda registrada" },
-                  { title: "Factor de Carga", value: meterData.results?.[0]?.load_factor_pct?.toFixed(1) || "0.0", unit: "%", color: "text-green-600", subtitle: "Factor de carga promedio" },
-                  { title: "Factor de Potencia", value: meterData.results?.[0]?.avg_power_factor?.toFixed(2) || "0.00", unit: "", color: "text-purple-600", subtitle: "Factor de potencia promedio" }
+                  { 
+                    title: "Energía Consumida", 
+                    value: meterData.results?.[0]?.imported_energy_kwh?.toFixed(2) || "0.00", 
+                    unit: "kWh", 
+                    color: "text-blue-600", 
+                    subtitle: "Energía total importada",
+                    icon: "M13 2L3 14h9l-1 8 11-12h-9l1-8z",
+                    bgColor: "bg-blue-50",
+                    borderColor: "border-blue-200"
+                  },
+                  { 
+                    title: "Demanda Pico", 
+                    value: meterData.results?.[0]?.peak_demand_kw?.toFixed(2) || "0.00", 
+                    unit: "kW", 
+                    color: "text-red-600", 
+                    subtitle: "Máxima demanda registrada",
+                    icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
+                    bgColor: "bg-red-50",
+                    borderColor: "border-red-200"
+                  },
+                  { 
+                    title: "Factor de Carga", 
+                    value: meterData.results?.[0]?.load_factor_pct?.toFixed(1) || "0.0", 
+                    unit: "%", 
+                    color: "text-green-600", 
+                    subtitle: "Factor de carga promedio",
+                    icon: "M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3",
+                    bgColor: "bg-green-50",
+                    borderColor: "border-green-200"
+                  },
+                  { 
+                    title: "Factor de Potencia", 
+                    value: meterData.results?.[0]?.avg_power_factor?.toFixed(2) || "0.00", 
+                    unit: "", 
+                    color: "text-purple-600", 
+                    subtitle: "Factor de potencia promedio",
+                    icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+                    bgColor: "bg-purple-50",
+                    borderColor: "border-purple-200"
+                  }
                 ].map((item, index) => (
-                  <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                  <div key={index} className={`${item.bgColor} p-6 rounded-xl shadow-md border ${item.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`p-2 rounded-lg ${item.bgColor.replace('bg-', 'bg-').replace('-50', '-100')}`}>
+                        <svg className={`w-6 h-6 ${item.color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                        </svg>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-medium text-gray-600">{item.subtitle}</p>
+                      </div>
+                    </div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
-                    <p className={`text-3xl font-bold ${item.color}`}>{item.value} {item.unit}</p>
-                    <p className="text-sm text-gray-600 mt-1">{item.subtitle}</p>
+                    <div className="flex items-baseline">
+                      <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
+                      <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              {/* Gráficos */}
+              {/* Gráficos con diseño moderno */}
               {meterData.results && meterData.results.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <ChartCard
-                    title="Energía Consumida vs Exportada"
-                    type="line"
-                    data={{
-                      labels: meterData.results.map(item => new Date(item.date).toLocaleDateString('es-ES')),
-                      datasets: [
-                        {
-                          label: 'Energía Importada (kWh)',
-                          data: meterData.results.map(item => item.imported_energy_kwh || 0),
-                          borderColor: '#3B82F6',
-                          backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                          fill: true,
-                          tension: 0.4,
-                          pointRadius: 3,
-                          pointBackgroundColor: '#3B82F6',
+                <div className="space-y-8">
+                  {/* Gráfico principal de energía - Ancho completo */}
+                  <div className="w-full">
+                    <ChartCard
+                      title="Análisis de Energía"
+                      description="Consumo, exportación y balance energético en el tiempo"
+                      type="line"
+                      data={{
+                        labels: meterData.results.map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                        datasets: [
+                          {
+                            label: 'Energía Importada (kWh)',
+                            data: meterData.results.map(item => item.imported_energy_kwh || 0),
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#3B82F6',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                          },
+                          {
+                            label: 'Energía Exportada (kWh)',
+                            data: meterData.results.map(item => item.exported_energy_kwh || 0),
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#EF4444',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                          },
+                          {
+                            label: 'Consumo Neto (kWh)',
+                            data: meterData.results.map(item => item.net_energy_consumption_kwh || 0),
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            borderDash: [8, 4],
+                            pointBackgroundColor: '#10B981',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                          }
+                        ],
+                      }}
+                      options={{
+                        ...CHART_OPTIONS,
+                        plugins: {
+                          ...CHART_OPTIONS.plugins,
+                          title: {display: false},
+                          legend: {
+                            ...CHART_OPTIONS.plugins.legend,
+                            position: 'top',
+                            align: 'start',
+                            labels: {
+                              ...CHART_OPTIONS.plugins.legend.labels,
+                              usePointStyle: true,
+                              padding: 20,
+                              font: { size: 13, weight: '600' }
+                            }
+                          }
                         },
-                        {
-                          label: 'Energía Exportada (kWh)',
-                          data: meterData.results.map(item => item.exported_energy_kwh || 0),
-                          borderColor: '#EF4444',
-                          backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                          fill: true,
-                          tension: 0.4,
-                          pointRadius: 2,
-                          pointBackgroundColor: '#EF4444',
-                        },
-                        {
-                          label: 'Consumo Neto (kWh)',
-                          data: meterData.results.map(item => item.net_energy_consumption_kwh || 0),
-                          borderColor: '#10B981',
-                          backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                          fill: false,
-                          tension: 0.4,
-                          pointRadius: 2,
-                          borderDash: [5, 5],
+                        scales: {
+                          ...CHART_OPTIONS.scales,
+                          y: {
+                            ...CHART_OPTIONS.scales.y,
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                          }
                         }
-                      ],
-                    }}
-                    options={{...CHART_OPTIONS, plugins: {...CHART_OPTIONS.plugins, title: {display: true, text: 'Energía Consumida vs Exportada', font: {size: 16, weight: 'bold'}, color: '#374151'}}}}
-                  />
-                  <ChartCard
-                    title="Indicadores de Calidad Eléctrica"
-                    type="line"
-                    data={{
-                      labels: meterData.results.map(item => new Date(item.date).toLocaleDateString('es-ES')),
-                      datasets: [
-                        {
-                          label: 'Demanda Pico (kW)',
-                          data: meterData.results.map(item => item.peak_demand_kw || 0),
-                          borderColor: '#F59E0B',
-                          backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                          fill: true,
-                          tension: 0.4,
-                          pointRadius: 2,
-                        },
-                        {
-                          label: 'Demanda Promedio (kW)',
-                          data: meterData.results.map(item => item.avg_demand_kw || 0),
-                          borderColor: '#8B5CF6',
-                          backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                          fill: true,
-                          tension: 0.4,
-                          pointRadius: 2,
-                        },
-                        {
-                          label: 'Factor de Carga (%)',
-                          data: meterData.results.map(item => item.load_factor_pct || 0),
-                          borderColor: '#10B981',
-                          backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                          fill: false,
-                          tension: 0.4,
-                          pointRadius: 2,
-                          borderDash: [5, 5],
+                      }}
+                    />
+                  </div>
+
+                  {/* Gráficos secundarios en grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Indicadores de calidad */}
+                    <ChartCard
+                      title="Indicadores de Calidad Eléctrica"
+                      description="Demanda, factor de carga y eficiencia del sistema"
+                      type="line"
+                      data={{
+                        labels: meterData.results.map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                        datasets: [
+                          {
+                            label: 'Demanda Pico (kW)',
+                            data: meterData.results.map(item => item.peak_demand_kw || 0),
+                            borderColor: '#F59E0B',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#F59E0B',
+                          },
+                          {
+                            label: 'Demanda Promedio (kW)',
+                            data: meterData.results.map(item => item.avg_demand_kw || 0),
+                            borderColor: '#8B5CF6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#8B5CF6',
+                          },
+                          {
+                            label: 'Factor de Carga (%)',
+                            data: meterData.results.map(item => item.load_factor_pct || 0),
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            borderDash: [6, 3],
+                            pointBackgroundColor: '#10B981',
+                          }
+                        ]
+                      }}
+                      options={{
+                        ...CHART_OPTIONS,
+                        plugins: {
+                          ...CHART_OPTIONS.plugins,
+                          title: {display: false},
+                          legend: {
+                            ...CHART_OPTIONS.plugins.legend,
+                            position: 'top',
+                            align: 'start'
+                          }
                         }
-                      ]
-                    }}
-                    options={{...CHART_OPTIONS, plugins: {...CHART_OPTIONS.plugins, title: {display: true, text: 'Indicadores de Calidad Eléctrica', font: {size: 16, weight: 'bold'}, color: '#374151'}}}}
-                  />
-                  <ChartCard
-                    title="Calidad de Energía"
-                    type="line"
-                    data={{
-                      labels: meterData.results.map(item => new Date(item.date).toLocaleDateString('es-ES')),
-                      datasets: [
-                        {
-                          label: 'Desequilibrio de Voltaje (%)',
-                          data: meterData.results.map(item => item.max_voltage_unbalance_pct || 0),
-                          borderColor: '#EF4444',
-                          backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                          fill: true,
-                          tension: 0.4,
-                          pointRadius: 2,
-                        },
-                        {
-                          label: 'Desequilibrio de Corriente (%)',
-                          data: meterData.results.map(item => item.max_current_unbalance_pct || 0),
-                          borderColor: '#F59E0B',
-                          backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                          fill: true,
-                          tension: 0.4,
-                          pointRadius: 2,
-                        },
-                        {
-                          label: 'THD de Voltaje (%)',
-                          data: meterData.results.map(item => item.max_voltage_thd_pct || 0),
-                          borderColor: '#8B5CF6',
-                          backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                          fill: false,
-                          tension: 0.4,
-                          pointRadius: 2,
-                          borderDash: [5, 5],
+                      }}
+                    />
+
+                    {/* Calidad de energía */}
+                    <ChartCard
+                      title="Calidad de Energía"
+                      description="Desequilibrios y distorsiones armónicas"
+                      type="line"
+                      data={{
+                        labels: meterData.results.map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                        datasets: [
+                          {
+                            label: 'Desequilibrio de Voltaje (%)',
+                            data: meterData.results.map(item => item.max_voltage_unbalance_pct || 0),
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#EF4444',
+                          },
+                          {
+                            label: 'Desequilibrio de Corriente (%)',
+                            data: meterData.results.map(item => item.max_current_unbalance_pct || 0),
+                            borderColor: '#F59E0B',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#F59E0B',
+                          },
+                          {
+                            label: 'THD de Voltaje (%)',
+                            data: meterData.results.map(item => item.max_voltage_thd_pct || 0),
+                            borderColor: '#8B5CF6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            borderDash: [6, 3],
+                            pointBackgroundColor: '#8B5CF6',
+                          }
+                        ]
+                      }}
+                      options={{
+                        ...CHART_OPTIONS,
+                        plugins: {
+                          ...CHART_OPTIONS.plugins,
+                          title: {display: false},
+                          legend: {
+                            ...CHART_OPTIONS.plugins.legend,
+                            position: 'top',
+                            align: 'start'
+                          }
                         }
-                      ]
-                    }}
-                    options={{...CHART_OPTIONS, plugins: {...CHART_OPTIONS.plugins, title: {display: true, text: 'Calidad de Energía', font: {size: 16, weight: 'bold'}, color: '#374151'}}}}
-                  />
+                      }}
+                    />
+                  </div>
                 </div>
               )}
 
-              {/* Tabla de datos */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-800">Indicadores Eléctricos Detallados</h3>
+              {/* Tabla de datos moderna */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div className="px-6 py-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">Indicadores Eléctricos Detallados</h3>
+                      <p className="text-gray-600 mt-1">Datos históricos y análisis de tendencias</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                        {meterData.results?.length || 0} registros
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                  <table className="min-w-full divide-y divide-gray-100">
                     <thead className="bg-gray-50">
                       <tr>
-                        {['Fecha', 'Medidor', 'Energía Importada (kWh)', 'Energía Exportada (kWh)', 'Consumo Neto (kWh)', 'Demanda Pico (kW)', 'Factor de Carga (%)', 'Factor de Potencia (%)'].map((header) => (
-                          <th key={header} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{header}</th>
+                        {[
+                          { label: 'Fecha', width: 'w-24' },
+                          { label: 'Medidor', width: 'w-32' },
+                          { label: 'Energía Importada (kWh)', width: 'w-40' },
+                          { label: 'Energía Exportada (kWh)', width: 'w-40' },
+                          { label: 'Consumo Neto (kWh)', width: 'w-36' },
+                          { label: 'Demanda Pico (kW)', width: 'w-32' },
+                          { label: 'Factor de Carga (%)', width: 'w-36' },
+                          { label: 'Factor de Potencia', width: 'w-32' }
+                        ].map((header) => (
+                          <th key={header.label} className={`${header.width} px-4 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider`}>
+                            {header.label}
+                          </th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-50">
                       {meterData.results && meterData.results.length > 0 ? (
                         meterData.results.map((item, index) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(item.date).toLocaleDateString('es-ES')}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.device_name || 'N/A'}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(item.imported_energy_kwh || 0).toFixed(2)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(item.exported_energy_kwh || 0).toFixed(2)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(item.net_energy_consumption_kwh || 0).toFixed(2)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(item.peak_demand_kw || 0).toFixed(2)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(item.load_factor_pct || 0).toFixed(1)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(item.avg_power_factor || 0).toFixed(2)}</td>
+                          <tr key={index} className="hover:bg-blue-50 transition-colors duration-150">
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-900">
+                                {new Date(item.date).toLocaleDateString('es-ES')}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(item.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-900">{item.device_name || 'N/A'}</div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="text-sm font-semibold text-blue-600">
+                                {(item.imported_energy_kwh || 0).toFixed(2)}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="text-sm font-semibold text-red-600">
+                                {(item.exported_energy_kwh || 0).toFixed(2)}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className={`text-sm font-semibold ${(item.net_energy_consumption_kwh || 0) >= 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                                {(item.net_energy_consumption_kwh || 0).toFixed(2)}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="text-sm font-semibold text-orange-600">
+                                {(item.peak_demand_kw || 0).toFixed(2)}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="text-sm font-semibold text-gray-900">
+                                  {(item.load_factor_pct || 0).toFixed(1)}%
+                                </div>
+                                <div className={`ml-2 w-2 h-2 rounded-full ${
+                                  (item.load_factor_pct || 0) > 80 ? 'bg-green-500' : 
+                                  (item.load_factor_pct || 0) > 60 ? 'bg-yellow-500' : 'bg-red-500'
+                                }`}></div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="text-sm font-semibold text-gray-900">
+                                  {(item.avg_power_factor || 0).toFixed(2)}
+                                </div>
+                                <div className={`ml-2 w-2 h-2 rounded-full ${
+                                  (item.avg_power_factor || 0) > 0.95 ? 'bg-green-500' : 
+                                  (item.avg_power_factor || 0) > 0.85 ? 'bg-yellow-500' : 'bg-red-500'
+                                }`}></div>
+                              </div>
+                            </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="8" className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                            No hay datos disponibles para esta institución y medidor.
+                          <td colSpan="8" className="px-6 py-12 text-center">
+                            <div className="flex flex-col items-center">
+                              <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <p className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</p>
+                              <p className="text-gray-500">Selecciona una institución y medidor para ver los indicadores eléctricos</p>
+                            </div>
                           </td>
                         </tr>
                       )}

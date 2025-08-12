@@ -1072,8 +1072,8 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       </div>
     );
   }
-  
-  return (
+
+    return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-gradient-to-r from-red-600 to-red-700 shadow-lg -mx-4 lg:-mx-8 -mt-4 lg:-mt-8">
@@ -1086,11 +1086,11 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
               <path d="M17 16h.01"></path>
               <path d="M17 8h.01"></path>
               </svg>
-            </div>
+        </div>
             <div>
               <h1 className="text-2xl lg:text-4xl font-bold text-white">Detalles de Inversores</h1>
               <p className="text-blue-100 mt-1 text-sm lg:text-base">Análisis y monitoreo de indicadores de inversores fotovoltaicos</p>
-            </div>
+      </div>
           </div>
         </div>
       </header>
@@ -1176,8 +1176,8 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                 'text-pink-600': { bgColor: 'bg-pink-50', borderColor: 'border-pink-200' }
               };
               const styleColors = colorMap[item.color] || { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
-              
-              return (
+
+  return (
                 <div key={key} className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg`}>
                   <div className="flex items-center justify-between mb-4">
                     <div className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')}`}>
@@ -1207,7 +1207,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
             <div className="inline-flex items-center px-3 lg:px-4 py-2 bg-blue-50 border border-blue-200 rounded-full text-sm lg:text-base">
               <svg className="w-4 h-4 lg:w-5 lg:h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            </svg>
               <span className="text-blue-700 font-medium">Selecciona una institución para ver los indicadores</span>
             </div>
           </div>
@@ -1218,7 +1218,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
             <div className="inline-flex items-center px-3 lg:px-4 py-2 bg-blue-50 border border-blue-200 rounded-full text-sm lg:text-base">
               <svg className="w-4 h-4 lg:w-5 lg:h-5 text-blue-500 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
+            </svg>
               <span className="text-blue-700 font-medium">Cargando indicadores de la institución...</span>
             </div>
           </div>
@@ -1233,7 +1233,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
               <span className="text-yellow-700 font-medium">No hay datos disponibles para esta institución en el período seleccionado</span>
             </div>
             <div className="mt-4">
-              <button
+          <button 
                 onClick={calculateInverterData}
                 disabled={inverterLoading}
                 className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1242,7 +1242,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                   <>
                     <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
+            </svg>
                     Calculando...
                   </>
                 ) : (
@@ -1253,8 +1253,8 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                     Calcular Datos de Inversores
                   </>
                 )}
-              </button>
-            </div>
+          </button>
+        </div>
           </div>
         )}
       </section>
@@ -1340,14 +1340,14 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                   <div className="text-center py-8 lg:py-12">
                     <div className="inline-flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-gray-100 mb-4 lg:mb-6">
                       <svg className="w-8 h-8 lg:w-10 lg:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    </div>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
                     <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2">No hay datos disponibles</h3>
                     <p className="text-gray-600 mb-6 lg:mb-8 max-w-md mx-auto">
                       No se encontraron indicadores para los filtros seleccionados. Puedes calcular los datos o ajustar los filtros.
                     </p>
-                    <button
+            <button
                       onClick={calculateInverterData}
                       disabled={inverterLoading}
                       className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1361,14 +1361,14 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                         </>
                       ) : (
                         <>
-                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
                           Calcular Datos de Inversores
                         </>
                       )}
-                    </button>
-                  </div>
+            </button>
+              </div>
                 )}
 
                 {/* Gráficos cuando hay datos */}
@@ -1389,23 +1389,23 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           { id: 'thd', label: 'THD y Calidad de Energía', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
                           { id: 'temperatureVsEfficiency', label: 'Eficiencia vs Temperatura', icon: 'M13 10V3L4 14h7v7l9-11h-7z' }
                         ].map((tab) => (
-                          <button
+            <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`${
                               activeTab === tab.id
                                 ? 'border-indigo-500 text-indigo-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center space-x-2`}
-                          >
+            >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
-                            </svg>
+                </svg>
                             <span>{tab.label}</span>
-                          </button>
+            </button>
                         ))}
-                      </nav>
-                    </div>
+          </nav>
+      </div>
 
                     {/* Contenido de los tabs */}
                     <div className="min-h-[400px]">
@@ -1420,7 +1420,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                       )}
 
                       {activeTab === 'dailyGeneration' && dailyGenerationData && dailyGenerationData.labels && dailyGenerationData.labels.length > 0 && (
-                        <ChartCard
+            <ChartCard
                           title="Generación Diaria de Energía"
                           description="Energía total generada por día (kWh)"
                           data={dailyGenerationData}
@@ -1454,7 +1454,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           title="Estado de Inversores"
                           description="Distribución de inversores por estado operativo"
                           data={inverterStatusData}
-                          type="bar"
+              type="bar"
                           height="400px"
                         />
                       )}
@@ -1470,11 +1470,11 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                       )}
 
                       {activeTab === 'powerFactor' && powerFactorData && powerFactorData.labels && powerFactorData.labels.length > 0 && (
-                        <ChartCard
+            <ChartCard
                           title="Factor de Potencia"
                           description="Factor de potencia promedio por día"
                           data={powerFactorData}
-                          type="line"
+              type="line"
                           height="400px"
                         />
                       )}
@@ -1490,11 +1490,11 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                       )}
 
                       {activeTab === 'thd' && thdData && thdData.labels && thdData.labels.length > 0 && (
-                        <ChartCard
+            <ChartCard
                           title="THD y Calidad de Energía"
                           description="Distorsión armónica total y calidad de energía"
                           data={thdData}
-                          type="line"
+              type="line"
                           height="400px"
                         />
                       )}
@@ -1515,7 +1515,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                             <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
+              </svg>
                           </div>
                           <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay datos para este gráfico</h3>
                           <p className="text-gray-600 mb-6 max-w-md mx-auto">
@@ -1530,7 +1530,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                               <>
                                 <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
+                </svg>
                                 Calculando...
                               </>
                             ) : (
@@ -1542,11 +1542,11 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                               </>
                             )}
                           </button>
-                        </div>
+            </div>
                       )}
-                    </div>
-                  </div>
-                )}
+          </div>
+          </div>
+      )}
               </>
             )}
           </div>
@@ -1554,7 +1554,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       </section>
 
       {/* Overlay de transición */}
-      <TransitionOverlay
+      <TransitionOverlay 
         show={showTransition}
         type={transitionType}
         message={transitionMessage}

@@ -30,7 +30,11 @@ export const ENDPOINTS = {
   weather: {
     current: '/api/weather/current/',
     forecast: '/api/weather/forecast/',
-    details: '/api/weather/details/'
+    details: '/api/weather/details/',
+    indicators: '/api/weather-station-indicators/',
+    chartData: '/api/weather-station-chart-data/',
+    calculate: '/api/weather-stations/calculate/',
+    stations: '/api/weather-stations/list/'
   },
   tasks: {
     sync: '/tasks/fetch-historical/',

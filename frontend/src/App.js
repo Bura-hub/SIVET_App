@@ -4,7 +4,7 @@ import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import ElectricalDetails from './components/ElectricalDetails';
 import InverterDetails from './components/InverterDetails';
-import WeatherDetails from './components/WeatherDetails';
+import WeatherStationDetails from './components/WeatherStationDetails';
 import ExportReports from './components/ExportReports';
 import Sidebar from './components/Sidebar'; // Componente de barra lateral
 
@@ -103,7 +103,7 @@ function App() {
       case 'inverterDetails':
         return <InverterDetails {...commonProps} />;
       case 'weatherDetails':
-        return <WeatherDetails {...commonProps} />;
+        return <WeatherStationDetails {...commonProps} />;
       case 'exportReports':
         return <ExportReports {...commonProps} />;
       default:

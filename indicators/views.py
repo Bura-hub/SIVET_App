@@ -16,7 +16,7 @@ import calendar
 import pytz
 
 # Importa los modelos de indicadores
-from .models import ElectricMeterEnergyConsumption, MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterIndicators, InverterIndicators, InverterChartData
+from .models import ElectricMeterEnergyConsumption, MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterIndicators, InverterIndicators, InverterChartData, WeatherStationIndicators, WeatherStationChartData
 # Importa el cliente SCADA y los modelos DeviceCategory, Measurement, Device de scada_proxy
 from scada_proxy.scada_client import ScadaConnectorClient 
 from scada_proxy.models import DeviceCategory, Measurement, Device, Institution
@@ -26,7 +26,7 @@ from .tasks import calculate_monthly_consumption_kpi, calculate_and_save_daily_d
 # Importaciones adicionales para los nuevos modelos - CORREGIDAS
 from django.db.models import Q, Sum, Avg, Max, F, FloatField, Count, Min
 from django.db.models.functions import Cast
-from .serializers import ElectricMeterEnergySerializer, MonthlyConsumptionKPISerializer, DailyChartDataSerializer, ElectricMeterConsumptionSerializer, ElectricMeterChartDataSerializer, ElectricMeterCalculationRequestSerializer, ElectricMeterCalculationResponseSerializer, ElectricMeterIndicatorsSerializer, InverterIndicatorsSerializer, InverterChartDataSerializer, InverterCalculationRequestSerializer, InverterCalculationResponseSerializer
+from .serializers import ElectricMeterEnergySerializer, MonthlyConsumptionKPISerializer, DailyChartDataSerializer, ElectricMeterConsumptionSerializer, ElectricMeterChartDataSerializer, ElectricMeterCalculationRequestSerializer, ElectricMeterCalculationResponseSerializer, ElectricMeterIndicatorsSerializer, InverterIndicatorsSerializer, InverterChartDataSerializer, InverterCalculationRequestSerializer, InverterCalculationResponseSerializer, WeatherStationIndicatorsSerializer, WeatherStationChartDataSerializer, WeatherStationCalculationRequestSerializer, WeatherStationCalculationResponseSerializer
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
@@ -1809,7 +1809,409 @@ class InvertersListView(APIView):
             
         except Exception as e:
             logger.error(f"Error obteniendo lista de inversores: {str(e)}")
-            return Response({
-                "detail": "Error al obtener lista de inversores",
+            return Response(
+                {"detail": "Error al obtener lista de inversores",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Vistas para estaciones meteorológicas
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class WeatherStationIndicatorsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_scada_token(self):
+        try:
+            return scada_client.get_token()
+        except EnvironmentError as e:
+            logger.error(f"SCADA configuration error: {e}")
+            return Response({"detail": "SCADA server configuration error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error getting SCADA token: {e}")
+            return Response({"detail": "No se pudo autenticar con la API SCADA. Revise las credenciales."}, status=status.HTTP_502_BAD_GATEWAY)
+
+    @extend_schema(
+        summary="Obtener indicadores de estaciones meteorológicas",
+        description="Obtiene los indicadores meteorológicos calculados para estaciones meteorológicas",
+        parameters=[
+            OpenApiParameter(name='time_range', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, 
+                           description='Rango de tiempo: daily o monthly', required=False),
+            OpenApiParameter(name='institution_id', type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, 
+                           description='ID de la institución', required=False),
+            OpenApiParameter(name='device_id', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, 
+                           description='ID específico de la estación meteorológica', required=False),
+            OpenApiParameter(name='start_date', type=OpenApiTypes.DATE, location=OpenApiParameter.QUERY, 
+                           description='Fecha de inicio (YYYY-MM-DD)', required=False),
+            OpenApiParameter(name='end_date', type=OpenApiTypes.DATE, location=OpenApiParameter.QUERY, 
+                           description='Fecha de fin (YYYY-MM-DD)', required=False),
+        ],
+        responses={
+            200: WeatherStationIndicatorsSerializer(many=True),
+            400: {"description": "Parámetros inválidos"},
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Estaciones Meteorológicas"]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/weather-station-indicators/
+        
+        Obtiene los indicadores meteorológicos calculados para estaciones meteorológicas.
+        """
+        token = self.get_scada_token()
+        if isinstance(token, Response):
+            return token
+
+        try:
+            # Obtener parámetros de consulta
+            time_range = request.query_params.get('time_range', 'daily')
+            institution_id = request.query_params.get('institution_id')
+            device_id = request.query_params.get('device_id')
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+
+            # Validar parámetros
+            if time_range not in ['daily', 'monthly']:
+                return Response(
+                    {"detail": "time_range debe ser 'daily' o 'monthly'"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Construir filtros
+            filters = Q(time_range=time_range)
+            
+            if institution_id:
+                filters &= Q(institution_id=institution_id)
+            
+            if device_id:
+                filters &= Q(device_id=device_id)
+            
+            if start_date:
+                try:
+                    start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                    filters &= Q(date__gte=start_date)
+                except ValueError:
+                    return Response(
+                        {"detail": "start_date debe estar en formato YYYY-MM-DD"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            if end_date:
+                try:
+                    end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+                    filters &= Q(date__lte=end_date)
+                except ValueError:
+                    return Response(
+                        {"detail": "end_date debe estar en formato YYYY-MM-DD"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # Obtener indicadores
+            indicators = WeatherStationIndicators.objects.filter(filters).order_by('-date')
+            
+            # Serializar y devolver resultados
+            serializer = WeatherStationIndicatorsSerializer(indicators, many=True)
+            
+            return Response({
+                'count': indicators.count(),
+                'results': serializer.data,
+                'time_range': time_range,
+                'filters_applied': {
+                    'institution_id': institution_id,
+                    'device_id': device_id,
+                    'start_date': start_date.isoformat() if start_date else None,
+                    'end_date': end_date.isoformat() if end_date else None
+                }
+            })
+
+        except Exception as e:
+            logger.error(f"Error obteniendo indicadores meteorológicos: {str(e)}")
+            return Response(
+                {"detail": "Error interno del servidor"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class WeatherStationChartDataView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_scada_token(self):
+        try:
+            return scada_client.get_token()
+        except EnvironmentError as e:
+            logger.error(f"SCADA configuration error: {e}")
+            return Response({"detail": "SCADA server configuration error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error getting SCADA token: {e}")
+            return Response({"detail": "No se pudo autenticar con la API SCADA. Revise las credenciales."}, status=status.HTTP_502_BAD_GATEWAY)
+
+    @extend_schema(
+        summary="Obtener datos de gráficos de estaciones meteorológicas",
+        description="Obtiene los datos de gráficos meteorológicos para visualización",
+        parameters=[
+            OpenApiParameter(name='time_range', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, 
+                           description='Rango de tiempo: daily o monthly', required=False),
+            OpenApiParameter(name='institution_id', type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, 
+                           description='ID de la institución', required=False),
+            OpenApiParameter(name='device_id', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, 
+                           description='ID específico de la estación meteorológica', required=False),
+            OpenApiParameter(name='start_date', type=OpenApiTypes.DATE, location=OpenApiParameter.QUERY, 
+                           description='Fecha de inicio (YYYY-MM-DD)', required=False),
+            OpenApiParameter(name='end_date', type=OpenApiTypes.DATE, location=OpenApiParameter.QUERY, 
+                           description='Fecha de fin (YYYY-MM-DD)', required=False),
+        ],
+        responses={
+            200: WeatherStationChartDataSerializer(many=True),
+            400: {"description": "Parámetros inválidos"},
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Estaciones Meteorológicas"]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/weather-station-chart-data/
+        
+        Obtiene los datos de gráficos meteorológicos para visualización.
+        """
+        token = self.get_scada_token()
+        if isinstance(token, Response):
+            return token
+
+        try:
+            # Obtener parámetros de consulta
+            time_range = request.query_params.get('time_range', 'daily')
+            institution_id = request.query_params.get('institution_id')
+            device_id = request.query_params.get('device_id')
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+
+            # Validar parámetros
+            if time_range not in ['daily', 'monthly']:
+                return Response(
+                    {"detail": "time_range debe ser 'daily' o 'monthly'"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Construir filtros
+            filters = Q()
+            
+            if institution_id:
+                filters &= Q(institution_id=institution_id)
+            
+            if device_id:
+                filters &= Q(device_id=device_id)
+            
+            if start_date:
+                try:
+                    start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                    filters &= Q(date__gte=start_date)
+                except ValueError:
+                    return Response(
+                        {"detail": "start_date debe estar en formato YYYY-MM-DD"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            if end_date:
+                try:
+                    end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+                    filters &= Q(date__lte=end_date)
+                except ValueError:
+                    return Response(
+                        {"detail": "end_date debe estar en formato YYYY-MM-DD"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # Obtener datos de gráficos
+            chart_data = WeatherStationChartData.objects.filter(filters).order_by('-date')
+            
+            # Serializar y devolver resultados
+            serializer = WeatherStationChartDataSerializer(chart_data, many=True)
+            
+            return Response({
+                'count': chart_data.count(),
+                'results': serializer.data,
+                'time_range': time_range,
+                'filters_applied': {
+                    'institution_id': institution_id,
+                    'device_id': device_id,
+                    'start_date': start_date.isoformat() if start_date else None,
+                    'end_date': end_date.isoformat() if end_date else None
+                }
+            })
+
+        except Exception as e:
+            logger.error(f"Error obteniendo datos de gráficos meteorológicos: {str(e)}")
+            return Response(
+                {"detail": "Error interno del servidor"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class CalculateWeatherStationDataView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_scada_token(self):
+        try:
+            return scada_client.get_token()
+        except EnvironmentError as e:
+            logger.error(f"SCADA configuration error: {e}")
+            return Response({"detail": "SCADA server configuration error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error getting SCADA token: {e}")
+            return Response({"detail": "No se pudo autenticar con la API SCADA. Revise las credenciales."}, status=status.HTTP_502_BAD_GATEWAY)
+
+    @extend_schema(
+        summary="Calcular indicadores meteorológicos",
+        description="Calcula los indicadores meteorológicos para estaciones meteorológicas",
+        request=WeatherStationCalculationRequestSerializer,
+        responses={
+            200: WeatherStationCalculationResponseSerializer,
+            400: {"description": "Parámetros inválidos"},
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Estaciones Meteorológicas"]
+    )
+    def post(self, request, *args, **kwargs):
+        """
+        POST /api/weather-stations/calculate/
+        
+        Calcula los indicadores meteorológicos para estaciones meteorológicas.
+        """
+        token = self.get_scada_token()
+        if isinstance(token, Response):
+            return token
+
+        try:
+            # Validar datos de entrada
+            serializer = WeatherStationCalculationRequestSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            data = serializer.validated_data
+            
+            # Ejecutar tarea asíncrona
+            from .tasks import calculate_weather_station_indicators
+            
+            task = calculate_weather_station_indicators.delay(
+                time_range=data['time_range'],
+                start_date=data['start_date'].isoformat(),
+                end_date=data['end_date'].isoformat(),
+                institution_id=data['institution_id'],
+                device_id=data.get('device_id', '')
+            )
+            
+            # Calcular tiempo estimado de finalización
+            estimated_time = "5-10 minutos" if data['time_range'] == 'daily' else "15-20 minutos"
+            
+            return Response({
+                'success': True,
+                'message': 'Cálculo de indicadores meteorológicos iniciado exitosamente',
+                'task_id': task.id,
+                'time_range': data['time_range'],
+                'start_date': data['start_date'],
+                'end_date': data['end_date'],
+                'institution_id': data['institution_id'],
+                'device_id': data.get('device_id'),
+                'processed_records': 0,  # Se actualizará cuando la tarea termine
+                'estimated_completion_time': estimated_time
+            })
+
+        except Exception as e:
+            logger.error(f"Error iniciando cálculo de indicadores meteorológicos: {str(e)}")
+            return Response(
+                {"detail": "Error interno del servidor"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class WeatherStationsListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_scada_token(self):
+        try:
+            return scada_client.get_token()
+        except EnvironmentError as e:
+            logger.error(f"SCADA configuration error: {e}")
+            return Response({"detail": "SCADA server configuration error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error getting SCADA token: {e}")
+            return Response({"detail": "No se pudo autenticar con la API SCADA. Revise las credenciales."}, status=status.HTTP_502_BAD_GATEWAY)
+
+    @extend_schema(
+        summary="Listar estaciones meteorológicas",
+        description="Obtiene la lista de estaciones meteorológicas disponibles",
+        parameters=[
+            OpenApiParameter(name='institution_id', type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, 
+                           description='ID de la institución para filtrar', required=False),
+        ],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "count": {"type": "integer"},
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "string"},
+                                "name": {"type": "string"},
+                                "institution": {"type": "object"},
+                                "is_active": {"type": "boolean"}
+                            }
+                        }
+                    }
+                }
+            },
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Estaciones Meteorológicas"]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/weather-stations/list/
+        
+        Obtiene la lista de estaciones meteorológicas disponibles.
+        """
+        token = self.get_scada_token()
+        if isinstance(token, Response):
+            return token
+
+        try:
+            # Obtener parámetros de consulta
+            institution_id = request.query_params.get('institution_id')
+
+            # Construir filtros
+            filters = Q(category__id=3, is_active=True)  # category_id=3 para estaciones meteorológicas
+            
+            if institution_id:
+                filters &= Q(institution_id=institution_id)
+
+            # Obtener estaciones meteorológicas
+            weather_stations = Device.objects.filter(filters).select_related('institution').order_by('institution__name', 'name')
+            
+            # Preparar respuesta
+            results = []
+            for station in weather_stations:
+                results.append({
+                    'id': station.id,
+                    'name': station.name,
+                    'institution': {
+                        'id': station.institution.id,
+                        'name': station.institution.name
+                    },
+                    'is_active': station.is_active,
+                    'last_measurement': station.last_measurement_date.isoformat() if station.last_measurement_date else None
+                })
+            
+            return Response({
+                'count': len(results),
+                'results': results
+            })
+
+        except Exception as e:
+            logger.error(f"Error obteniendo lista de estaciones meteorológicas: {str(e)}")
+            return Response(
+                {"detail": "Error interno del servidor"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

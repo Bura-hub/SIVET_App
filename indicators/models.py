@@ -320,3 +320,107 @@ class InverterChartData(models.Model):
     
     def __str__(self):
         return f"{self.device.name} - {self.date}"
+
+
+class WeatherStationIndicators(models.Model):
+    """
+    Modelo para almacenar todos los indicadores de estaciones meteorológicas calculados
+    en diferentes rangos de tiempo (diario/mensual).
+    """
+    device = models.ForeignKey('scada_proxy.Device', on_delete=models.CASCADE, related_name='weather_indicators')
+    institution = models.ForeignKey('scada_proxy.Institution', on_delete=models.CASCADE, related_name='weather_indicators')
+    
+    # Rangos de tiempo
+    date = models.DateField(help_text="Fecha del registro (para datos diarios) o primer día del mes (para datos mensuales).")
+    time_range = models.CharField(max_length=20, choices=[
+        ('daily', 'Diario'),
+        ('monthly', 'Mensual')
+    ], help_text="Tipo de rango de tiempo del registro.")
+    
+    # 5.1. Irradiancia Acumulada Diaria
+    daily_irradiance_kwh_m2 = models.FloatField(default=0.0, help_text="Irradiancia acumulada diaria en kWh/m².")
+    
+    # 5.2. Horas Solares Pico (HSP)
+    daily_hsp_hours = models.FloatField(default=0.0, help_text="Horas solares pico diarias.")
+    
+    # 5.3. Viento: Velocidad Media y Rosa de los Vientos
+    avg_wind_speed_kmh = models.FloatField(default=0.0, help_text="Velocidad media del viento en km/h.")
+    wind_direction_distribution = models.JSONField(default=dict, help_text="Distribución de direcciones del viento (rosa de los vientos).")
+    wind_speed_distribution = models.JSONField(default=dict, help_text="Distribución de velocidades del viento.")
+    
+    # 5.4. Precipitación Acumulada
+    daily_precipitation_cm = models.FloatField(default=0.0, help_text="Precipitación acumulada diaria en cm.")
+    
+    # 5.5. Generación Fotovoltaica Potencia (basada en irradiancia)
+    theoretical_pv_power_w = models.FloatField(default=0.0, help_text="Potencia fotovoltaica teórica basada en irradiancia en W.")
+    
+    # Datos adicionales para análisis
+    avg_temperature_c = models.FloatField(default=0.0, help_text="Temperatura promedio en °C.")
+    avg_humidity_pct = models.FloatField(default=0.0, help_text="Humedad relativa promedio en %.")
+    max_temperature_c = models.FloatField(default=0.0, help_text="Temperatura máxima en °C.")
+    min_temperature_c = models.FloatField(default=0.0, help_text="Temperatura mínima en °C.")
+    
+    # Metadatos
+    measurement_count = models.IntegerField(default=0, help_text="Número de mediciones procesadas.")
+    last_measurement_date = models.DateTimeField(null=True, blank=True, help_text="Fecha de la última medición procesada.")
+    calculated_at = models.DateTimeField(auto_now=True, help_text="Fecha y hora del cálculo.")
+    
+    class Meta:
+        verbose_name = "Indicadores de Estación Meteorológica"
+        verbose_name_plural = "Indicadores de Estaciones Meteorológicas"
+        unique_together = ['device', 'date', 'time_range']
+        indexes = [
+            models.Index(fields=['device', 'date', 'time_range']),
+            models.Index(fields=['institution', 'date', 'time_range']),
+            models.Index(fields=['date', 'time_range']),
+        ]
+    
+    def __str__(self):
+        return f"{self.device.name} - {self.date} ({self.get_time_range_display()})"
+
+
+class WeatherStationChartData(models.Model):
+    """
+    Modelo para almacenar datos de gráficos específicos por estación meteorológica,
+    optimizado para consultas de rangos de fechas.
+    """
+    device = models.ForeignKey('scada_proxy.Device', on_delete=models.CASCADE, related_name='weather_chart_data')
+    institution = models.ForeignKey('scada_proxy.Institution', on_delete=models.CASCADE, related_name='weather_chart_data')
+    date = models.DateField(help_text="Fecha del registro.")
+    
+    # Datos para gráficos de irradiancia
+    hourly_irradiance = models.JSONField(default=list, help_text="Irradiancia por hora del día en W/m².")
+    daily_irradiance_kwh_m2 = models.FloatField(default=0.0, help_text="Irradiancia acumulada diaria en kWh/m².")
+    
+    # Datos para gráficos de temperatura
+    hourly_temperature = models.JSONField(default=list, help_text="Temperatura por hora del día en °C.")
+    avg_daily_temperature_c = models.FloatField(default=0.0, help_text="Temperatura promedio diaria en °C.")
+    
+    # Datos para gráficos de humedad
+    hourly_humidity = models.JSONField(default=list, help_text="Humedad por hora del día en %.")
+    avg_daily_humidity_pct = models.FloatField(default=0.0, help_text="Humedad promedio diaria en %.")
+    
+    # Datos para gráficos de viento
+    hourly_wind_speed = models.JSONField(default=list, help_text="Velocidad del viento por hora del día en km/h.")
+    hourly_wind_direction = models.JSONField(default=list, help_text="Dirección del viento por hora del día en grados.")
+    avg_daily_wind_speed_kmh = models.FloatField(default=0.0, help_text="Velocidad promedio del viento diaria en km/h.")
+    
+    # Datos para gráficos de precipitación
+    hourly_precipitation = models.JSONField(default=list, help_text="Precipitación por hora del día en cm.")
+    daily_precipitation_cm = models.FloatField(default=0.0, help_text="Precipitación acumulada diaria en cm.")
+    
+    # Metadatos
+    calculated_at = models.DateTimeField(auto_now=True, help_text="Fecha y hora del cálculo.")
+    
+    class Meta:
+        verbose_name = "Datos de Gráfico de Estación Meteorológica"
+        verbose_name_plural = "Datos de Gráficos de Estaciones Meteorológicas"
+        unique_together = ['device', 'date']
+        indexes = [
+            models.Index(fields=['device', 'date']),
+            models.Index(fields=['institution', 'date']),
+            models.Index(fields=['date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.device.name} - {self.date}"

@@ -18,7 +18,12 @@ from .views import (
     CalculateInverterDataView,
     InvertersListView,
     # Nueva vista para cálculo eléctrico
-    CalculateElectricalDataView
+    CalculateElectricalDataView,
+    # Nuevas vistas para estaciones meteorológicas
+    WeatherStationIndicatorsView,
+    WeatherStationChartDataView,
+    CalculateWeatherStationDataView,
+    WeatherStationsListView
 )
 
 router = DefaultRouter()
@@ -45,6 +50,12 @@ urlpatterns = [
     path('inverter-chart-data/', InverterChartDataView.as_view(), name='inverter-chart-data'),
     path('inverters/calculate/', CalculateInverterDataView.as_view(), name='calculate-inverter-data'),
     path('inverters/list/', InvertersListView.as_view(), name='inverters-list'),
+    
+    # Nuevos endpoints para estaciones meteorológicas
+    path('weather-station-indicators/', WeatherStationIndicatorsView.as_view(), name='weather-station-indicators'),
+    path('weather-station-chart-data/', WeatherStationChartDataView.as_view(), name='weather-station-chart-data'),
+    path('weather-stations/calculate/', CalculateWeatherStationDataView.as_view(), name='calculate-weather-station-data'),
+    path('weather-stations/list/', WeatherStationsListView.as_view(), name='weather-stations-list'),
     
     path('', include(router.urls)),
 ]

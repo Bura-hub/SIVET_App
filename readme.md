@@ -216,7 +216,7 @@ MteLumen_App/
 │   │   │   ├── ExportReports.js   # Componente de generación de reportes
 │   │   │   ├── InverterDetails.js   # Componente de inversores
 │   │   │   ├── Dashboard.js   # Componente del dashboard
-│   │   │   ├── WeatherDetails # Componente de las estaciones meteorologicas
+│   │   │   ├── WeatherStationDetails # Componente de las estaciones meteorologicas
 │   │   │   ├── Sidebar.js     # Componente de la barra de herramientas
 │   │   │   ├── sivet-logo.svg # Logo de la app
 │   │   │   ├── KPI/           # Componentes para tarjetas KPI y gráficos

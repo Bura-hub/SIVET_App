@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterEnergyConsumption, ElectricMeterIndicators, InverterIndicators, InverterChartData
+from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterEnergyConsumption, ElectricMeterIndicators, InverterIndicators, InverterChartData, WeatherStationIndicators, WeatherStationChartData
 
 class MonthlyConsumptionKPISerializer(serializers.ModelSerializer):
     class Meta:
@@ -203,6 +203,83 @@ class InverterCalculationResponseSerializer(serializers.Serializer):
         required=False,
         allow_blank=True,
         help_text="ID del inversor específico (si se especificó)"
+    )
+    processed_records = serializers.IntegerField(
+        help_text="Número de registros procesados"
+    )
+    estimated_completion_time = serializers.CharField(
+        help_text="Tiempo estimado de finalización de la tarea"
+    )
+
+# Serializers para estaciones meteorológicas
+class WeatherStationIndicatorsSerializer(serializers.ModelSerializer):
+    device_name = serializers.CharField(source='device.name', read_only=True)
+    institution_name = serializers.CharField(source='institution.name', read_only=True)
+    
+    class Meta:
+        model = WeatherStationIndicators
+        fields = '__all__'
+
+
+class WeatherStationChartDataSerializer(serializers.ModelSerializer):
+    device_name = serializers.CharField(source='device.name', read_only=True)
+    institution_name = serializers.CharField(source='institution.name', read_only=True)
+    
+    class Meta:
+        model = WeatherStationChartData
+        fields = '__all__'
+
+
+# Serializer para la solicitud de cálculo de estaciones meteorológicas
+class WeatherStationCalculationRequestSerializer(serializers.Serializer):
+    time_range = serializers.ChoiceField(
+        choices=[('daily', 'Diario'), ('monthly', 'Mensual')],
+        default='daily',
+        help_text="Rango de tiempo para el cálculo: 'daily' o 'monthly'"
+    )
+    start_date = serializers.DateField(
+        help_text="Fecha de inicio en formato YYYY-MM-DD"
+    )
+    end_date = serializers.DateField(
+        help_text="Fecha de fin en formato YYYY-MM-DD"
+    )
+    institution_id = serializers.IntegerField(
+        help_text="ID de la institución"
+    )
+    device_id = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="ID específico de la estación meteorológica (opcional)"
+    )
+
+
+# Serializer para la respuesta del cálculo de estaciones meteorológicas
+class WeatherStationCalculationResponseSerializer(serializers.Serializer):
+    success = serializers.BooleanField(
+        help_text="Indica si el cálculo se ejecutó exitosamente"
+    )
+    message = serializers.CharField(
+        help_text="Mensaje descriptivo del resultado del cálculo"
+    )
+    task_id = serializers.CharField(
+        help_text="ID de la tarea asíncrona ejecutada"
+    )
+    time_range = serializers.CharField(
+        help_text="Rango de tiempo del cálculo (daily/monthly)"
+    )
+    start_date = serializers.DateField(
+        help_text="Fecha de inicio del período calculado"
+    )
+    end_date = serializers.DateField(
+        help_text="Fecha de fin del período calculado"
+    )
+    institution_id = serializers.IntegerField(
+        help_text="ID de la institución procesada"
+    )
+    device_id = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="ID de la estación meteorológica específica (si se especificó)"
     )
     processed_records = serializers.IntegerField(
         help_text="Número de registros procesados"

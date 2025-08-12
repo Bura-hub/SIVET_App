@@ -133,7 +133,7 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
         <select
           value={timeRange}
           onChange={(e) => setTimeRange(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
         >
           <option value="daily">Diario</option>
           <option value="monthly">Mensual</option>
@@ -149,7 +149,7 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
             setSelectedInstitution(e.target.value);
             setSelectedDevice(''); // Reset device when institution changes
           }}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
         >
           <option value="">Seleccionar institución</option>
           {institutions.map((institution) => (
@@ -167,7 +167,7 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
           value={selectedDevice}
           onChange={(e) => setSelectedDevice(e.target.value)}
           disabled={!selectedInstitution || loading}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
           <option value="">Todos los medidores</option>
           {devices.map((device) => (
@@ -185,7 +185,7 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
           type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
       </div>
 
@@ -196,7 +196,7 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
           type="date"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-2 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
       </div>
 
@@ -222,7 +222,7 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
       {/* Indicador de carga */}
       {loading && (
         <div className="flex items-center text-sm text-gray-500">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500 mr-2"></div>
           Cargando medidores...
         </div>
       )}

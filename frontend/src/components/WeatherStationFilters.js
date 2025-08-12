@@ -34,15 +34,24 @@ const WeatherStationFilters = ({ onFiltersChange, authToken }) => {
   // Cargar dispositivos cuando cambie la institución
   useEffect(() => {
     if (selectedInstitution) {
+      console.log('Institution changed, fetching devices for:', selectedInstitution);
       fetchDevices(selectedInstitution);
     } else {
+      console.log('No institution selected, clearing devices');
       setDevices([]);
-      setSelectedDevice('');
+      setSelectedDevice(''); // Reset device selection when institution changes
     }
   }, [selectedInstitution]);
 
+  // Monitorear cambios en el estado de dispositivos
+  useEffect(() => {
+    console.log('Devices state changed:', devices);
+    console.log('Devices count:', devices.length);
+  }, [devices]);
+
   // Notificar cambios en los filtros
   useEffect(() => {
+    console.log('Filters changed:', { timeRange, selectedInstitution, selectedDevice, startDate, endDate });
     onFiltersChange({
       timeRange,
       institutionId: selectedInstitution,
@@ -61,6 +70,7 @@ const WeatherStationFilters = ({ onFiltersChange, authToken }) => {
         throw new Error(`Error ${response.status}`);
       }
       const data = await response.json();
+      // Espera formato: [{id, name}]
       setInstitutions(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error('Error fetching institutions:', error);
@@ -71,86 +81,153 @@ const WeatherStationFilters = ({ onFiltersChange, authToken }) => {
   const fetchDevices = async (institutionId) => {
     setLoading(true);
     try {
+      console.log('Fetching devices for institution:', institutionId, 'Type:', typeof institutionId);
+      console.log('Institutions available:', institutions);
+      
+      // Usar el endpoint específico para estaciones meteorológicas
       const url = `${ENDPOINTS.weather.stations}?institution_id=${institutionId}`;
+      console.log('Request URL:', url);
+      console.log('Request headers:', getDefaultFetchOptions(authToken));
+      
       const response = await fetch(url, {
         ...getDefaultFetchOptions(authToken)
       });
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}`);
       }
       const data = await response.json();
-      setDevices(Array.isArray(data) ? data : (data.results || []));
+      console.log('Devices response:', data);
+      
+      // Backend devuelve { results: [ { id, name, institution, ... } ], count }
+      const parsed = Array.isArray(data) ? data : (data.results || []);
+      console.log('Parsed devices:', parsed);
+      console.log('Number of devices found:', parsed.length);
+      
+      // Verificar si los dispositivos tienen la estructura esperada
+      if (parsed.length > 0) {
+        console.log('First device structure:', parsed[0]);
+        console.log('Device keys:', Object.keys(parsed[0]));
+      }
+      
+      setDevices(parsed);
+      
+      // Si solo hay un dispositivo, seleccionarlo automáticamente
+      if (parsed.length === 1) {
+        setSelectedDevice(parsed[0].id);
+      }
     } catch (error) {
-      console.error('Error fetching weather stations:', error);
+      console.error('Error fetching devices:', error);
       setDevices([]);
+      setSelectedDevice('');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-      <div className="flex flex-wrap items-center gap-4">
-        {/* Botón de período de tiempo */}
-        <button 
-          className="flex items-center bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm hover:from-blue-100 hover:to-indigo-100 transition-all duration-200"
-          onClick={() => setTimeRange(timeRange === 'daily' ? 'monthly' : 'daily')}
+    <div className="flex flex-wrap gap-4 items-center bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+      {/* Filtro de rango de tiempo */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium text-gray-700 mb-1">Rango de Tiempo</label>
+        <select
+          value={timeRange}
+          onChange={(e) => setTimeRange(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
         >
-          <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" />
-            <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          {timeRange === 'daily' ? 'Diario' : 'Mensual'}
-        </button>
-        
-        {/* Selector de institución */}
-        <select 
-          className="flex items-center bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm hover:from-green-100 hover:to-emerald-100 transition-all duration-200"
+          <option value="daily">Diario</option>
+          <option value="monthly">Mensual</option>
+        </select>
+      </div>
+
+      {/* Filtro de institución */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium text-gray-700 mb-1">Institución</label>
+        <select
           value={selectedInstitution}
-          onChange={(e) => setSelectedInstitution(e.target.value)}
+          onChange={(e) => {
+            setSelectedInstitution(e.target.value);
+            setSelectedDevice(''); // Reset device selection when institution changes
+          }}
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
         >
-          <option value="">Seleccionar Institución</option>
-          {institutions.map(inst => (
-            <option key={inst.id} value={inst.id}>{inst.name}</option>
+          <option value="">Seleccionar institución</option>
+          {institutions.map((institution) => (
+            <option key={institution.id} value={institution.id}>
+              {institution.name}
+            </option>
           ))}
         </select>
+      </div>
 
-        {/* Selector de estación */}
-        <select 
-          className="flex items-center bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 text-orange-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm hover:from-orange-100 hover:to-amber-100 transition-all duration-200"
+      {/* Filtro de dispositivo */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium text-gray-700 mb-1">Estación Meteorológica</label>
+        <select
           value={selectedDevice}
           onChange={(e) => setSelectedDevice(e.target.value)}
           disabled={!selectedInstitution || loading}
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
-          <option value="">Todas las Estaciones</option>
-          {devices.map(device => (
-            <option key={device.id} value={device.id}>{device.name}</option>
+          <option value="">Todas las estaciones</option>
+          {devices.map((device) => (
+            <option key={device.id} value={device.id}>
+              {device.name}
+            </option>
           ))}
         </select>
-
-        {/* Fecha de inicio */}
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-600 mb-1">Fecha Inicio</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-
-        {/* Fecha de fin */}
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-600 mb-1">Fecha Fin</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
       </div>
+
+      {/* Filtro de fecha de inicio */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium text-gray-700 mb-1">Fecha de Inicio</label>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+        />
+      </div>
+
+      {/* Filtro de fecha de fin */}
+      <div className="flex flex-col">
+        <label className="text-sm font-medium text-gray-700 mb-1">Fecha de Fin</label>
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+        />
+      </div>
+
+      {devices.length === 0 && selectedInstitution && !loading && (
+        <p className="text-xs text-orange-600 mt-1">
+          No se encontraron estaciones meteorológicas para esta institución
+        </p>
+      )}
+        
+      {/* Información de depuración */}
+      <div className="text-xs text-gray-500 mt-1">
+        {devices.length > 0 && (
+          <p className="text-xs text-green-600 mt-1">
+            {devices.length} estación{devices.length !== 1 ? 'es' : ''} encontrada{devices.length !== 1 ? 's' : ''}
+          </p>
+        )}
+        <p>Institution ID: {selectedInstitution}</p>
+        <p>Devices count: {devices.length}</p>
+        <p>Loading: {loading ? 'Yes' : 'No'}</p>
+        <p>Selected device: {selectedDevice}</p>
+      </div>
+
+      {/* Indicador de carga */}
+      {loading && (
+        <div className="flex items-center text-sm text-gray-500">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500 mr-2"></div>
+          Cargando estaciones meteorológicas...
+        </div>
+      )}
     </div>
   );
 };

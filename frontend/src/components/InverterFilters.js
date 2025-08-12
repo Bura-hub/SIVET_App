@@ -133,7 +133,7 @@ const InverterFilters = ({ onFiltersChange, authToken }) => {
         <select
           value={timeRange}
           onChange={(e) => setTimeRange(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
         >
           <option value="daily">Diario</option>
           <option value="monthly">Mensual</option>
@@ -149,7 +149,7 @@ const InverterFilters = ({ onFiltersChange, authToken }) => {
             setSelectedInstitution(e.target.value);
             setSelectedDevice(''); // Reset device when institution changes
           }}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
         >
           <option value="">Seleccionar institución</option>
           {institutions.map((institution) => (
@@ -167,7 +167,7 @@ const InverterFilters = ({ onFiltersChange, authToken }) => {
           value={selectedDevice}
           onChange={(e) => setSelectedDevice(e.target.value)}
           disabled={!selectedInstitution || loading}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
           <option value="">Todos los inversores</option>
           {devices.map((device) => (
@@ -185,7 +185,7 @@ const InverterFilters = ({ onFiltersChange, authToken }) => {
           type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
         />
       </div>
 
@@ -196,14 +196,33 @@ const InverterFilters = ({ onFiltersChange, authToken }) => {
           type="date"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
         />
+      </div>
+
+      {devices.length === 0 && selectedInstitution && !loading && (
+        <p className="text-xs text-orange-600 mt-1">
+          No se encontraron inversores para esta institución
+        </p>
+      )}
+        
+      {/* Información de depuración */}
+      <div className="text-xs text-gray-500 mt-1">
+        {devices.length > 0 && (
+          <p className="text-xs text-red-600 mt-1">
+            {devices.length} inversor{devices.length !== 1 ? 'es' : ''} encontrado{devices.length !== 1 ? 's' : ''}
+          </p>
+        )}
+        <p>Institution ID: {selectedInstitution}</p>
+        <p>Devices count: {devices.length}</p>
+        <p>Loading: {loading ? 'Yes' : 'No'}</p>
+        <p>Selected device: {selectedDevice}</p>
       </div>
 
       {/* Indicador de carga */}
       {loading && (
         <div className="flex items-center text-sm text-gray-500">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500 mr-2"></div>
           Cargando inversores...
         </div>
       )}

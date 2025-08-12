@@ -1023,6 +1023,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                 type="line"
                 data={electricityConsumptionData}
                 options={chartOptions}
+                height="300px"
+                fullscreenHeight="700px"
               />
               <ChartCard
                 title="Generación de los Inversores"
@@ -1030,6 +1032,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                 type="bar"
                 data={inverterGenerationData}
                 options={chartOptions}
+                height="280px"
+                fullscreenHeight="650px"
               />
               <ChartCard
                 title="Balance de Energía"
@@ -1037,6 +1041,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                 type="line"
                 data={energyBalanceData}
                 options={chartOptions}
+                height="320px"
+                fullscreenHeight="750px"
               />
               <ChartCard
                 title="Temperatura Media Diaria"
@@ -1044,6 +1050,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                 type="line"
                 data={temperatureTrendsData}
                 options={chartOptions}
+                height="260px"
+                fullscreenHeight="600px"
               />
             </div>
           </div>

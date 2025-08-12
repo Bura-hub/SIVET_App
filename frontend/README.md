@@ -1,70 +1,125 @@
-# Getting Started with Create React App
+# Frontend - MteLumen App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Funcionalidades de Gráficos
 
-## Available Scripts
+### Maximización de Gráficos
+Los gráficos en la aplicación ahora incluyen funcionalidad completa de maximización:
 
-In the project directory, you can run:
+- **Botón de Maximizar**: Hover sobre cualquier gráfico para ver el botón de maximizar (icono de expansión)
+- **Vista Pantalla Completa**: Al hacer clic, el gráfico se expande a pantalla completa
+- **Sincronización de Zoom**: El estado del zoom se mantiene sincronizado entre la vista normal y maximizada
+- **Altura Configurable**: Cada gráfico puede tener su altura personalizada tanto en vista normal como maximizada
 
-### `npm start`
+### Controles de Zoom
+Cada gráfico incluye controles avanzados de zoom:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Zoom con Rueda del Mouse**: Hacer zoom en el eje X
+- **Arrastrar para Mover**: Mantener Ctrl + arrastrar para mover la vista
+- **Zoom con Arrastre**: Arrastrar para hacer zoom en una área específica
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Reset del Zoom
+- **Botón de Reset**: Aparece cuando hay zoom activo (indicador azul)
+- **Estado Visual**: El botón cambia de color y muestra un indicador cuando el zoom está activo
+- **Funcionalidad Dual**: Funciona tanto en vista normal como maximizada
 
-### `npm test`
+### Características Técnicas
+- **Plugin de Zoom**: Utiliza `chartjs-plugin-zoom` para funcionalidad avanzada
+- **Referencias Múltiples**: Mantiene referencias separadas para vista normal y maximizada
+- **Sincronización Automática**: El zoom se sincroniza automáticamente entre vistas
+- **Detección de Estado**: Detecta automáticamente cuando el zoom está activo
+- **Altura Dinámica**: Control total sobre la altura de los gráficos
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Uso de los Gráficos
 
-### `npm run build`
+### Interacción Básica
+1. **Hover** sobre un gráfico para ver los controles
+2. **Hacer zoom** con la rueda del mouse
+3. **Mover la vista** manteniendo Ctrl + arrastrar
+4. **Maximizar** para vista pantalla completa
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Reset del Zoom
+1. **Usar zoom** en cualquier gráfico
+2. **Ver indicador azul** en el botón de reset
+3. **Hacer clic** en reset para volver a la vista original
+4. **Funciona** en ambas vistas (normal y maximizada)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Componentes
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### ChartCard
+Componente principal para renderizar gráficos con funcionalidad completa:
 
-### `npm run eject`
+#### Props Disponibles:
+- `title`: Título del gráfico
+- `description`: Descripción del gráfico
+- `type`: Tipo de gráfico ("line" o "bar")
+- `data`: Datos del gráfico
+- `options`: Opciones de configuración de Chart.js
+- `height`: Altura del gráfico en vista normal (ej: "300px", "20rem")
+- `fullscreenHeight`: Altura del gráfico maximizado (ej: "700px", "80vh")
+- `maxFullscreenHeight`: Altura máxima en vista maximizada (ej: "90vh")
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+#### Ejemplo de Uso:
+```jsx
+<ChartCard
+  title="Consumo de Electricidad"
+  description="Análisis del consumo energético diario"
+  type="line"
+  data={chartData}
+  options={chartOptions}
+  height="300px"
+  fullscreenHeight="700px"
+  maxFullscreenHeight="80vh"
+/>
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+#### Características:
+- Soporte para gráficos de línea y barras
+- Maximización automática con altura configurable
+- Controles de zoom integrados
+- Reset del zoom inteligente
+- Sincronización entre vistas
+- Altura personalizable para cada gráfico
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Dependencias
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- `chart.js`: ^4.5.0
+- `chartjs-plugin-zoom`: ^2.2.0
+- `react-chartjs-2`: ^5.3.0
 
-## Learn More
+## Notas de Implementación
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- Los gráficos mantienen estado de zoom independiente
+- La sincronización se realiza automáticamente
+- El reset del zoom funciona con múltiples métodos de fallback
+- La detección de zoom se actualiza cada 500ms
+- Las animaciones incluyen transiciones suaves
+- La altura es completamente configurable via props
+- Soporte para unidades CSS estándar (px, rem, vh, vw, etc.)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Ejemplos de Configuración de Altura
 
-### Code Splitting
+### Alturas Fijas:
+```jsx
+height="300px"
+fullscreenHeight="700px"
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Alturas Responsivas:
+```jsx
+height="25vh"
+fullscreenHeight="80vh"
+maxFullscreenHeight="90vh"
+```
 
-### Analyzing the Bundle Size
+### Alturas en Rem:
+```jsx
+height="20rem"
+fullscreenHeight="50rem"
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Alturas Mixtas:
+```jsx
+height="300px"
+fullscreenHeight="80vh"
+maxFullscreenHeight="90vh"
+```

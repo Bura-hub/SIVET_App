@@ -84,8 +84,7 @@ code {
 .chart-container {
   position: relative;
   width: 100%;
-  max-width: 900px; /* Limita el ancho máximo del gráfico */
-  height: 400px; /* Altura fija para asegurar proporción */
+  /* La altura ahora se controla dinámicamente via props */
   margin-left: auto;
   margin-right: auto; /* Centrado horizontal */
 }
@@ -93,8 +92,39 @@ code {
 /* Ajuste responsivo para pantallas pequeñas */
 @media (max-width: 768px) {
   .chart-container {
-    height: 300px; /* Reduce la altura en dispositivos móviles */
+    /* En móviles, usar altura más pequeña por defecto */
+    min-height: 250px;
   }
+}
+
+/* Animaciones para el modal de gráficos maximizados */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Animación de shimmer para los loaders */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
 }
 
 /* Animación de partículas flotantes */

@@ -1,21 +1,181 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 
 // Componente reutilizable que renderiza una tarjeta con un gráfico (línea o barras),
 // permite resetear el zoom del gráfico y expandirlo a pantalla completa.
-export function ChartCard({ title, description, type = "line", data, options }) {
+export function ChartCard({ 
+  title, 
+  description, 
+  type = "line", 
+  data, 
+  options,
+  height = "256px",
+  fullscreenHeight = "600px",
+  maxFullscreenHeight = "80vh"
+}) {
   const chartRef = useRef(null);
+  const fullscreenChartRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   // Selección dinámica del tipo de gráfico: línea o barras
   const ChartComponent = type === "bar" ? Bar : Line;
 
-  // Función para resetear el zoom del gráfico utilizando la referencia
+  // Función para resetear el zoom del gráfico utilizando la referencia correcta
   const resetZoom = () => {
-    if (chartRef.current) {
-      chartRef.current.resetZoom();
+    const currentChartRef = isFullscreen ? fullscreenChartRef.current : chartRef.current;
+    if (currentChartRef && currentChartRef.resetZoom) {
+      currentChartRef.resetZoom();
     }
   };
+
+  // Función para obtener la instancia del gráfico desde la referencia
+  const getChartInstance = (ref) => {
+    if (ref && ref.current) {
+      // Para react-chartjs-2, necesitamos acceder a la instancia del gráfico
+      return ref.current.chartInstance || ref.current;
+    }
+    return null;
+  };
+
+  // Función para resetear el zoom usando la instancia del gráfico
+  const resetChartZoom = () => {
+    const normalChart = getChartInstance(chartRef);
+    const fullscreenChart = getChartInstance(fullscreenChartRef);
+    
+    // Intentar resetear el zoom usando diferentes métodos disponibles
+    const resetZoomForChart = (chart) => {
+      if (!chart) return;
+      
+      try {
+        // Método 1: Usar resetZoom del plugin de zoom
+        if (chart.resetZoom) {
+          chart.resetZoom();
+          return;
+        }
+        
+        // Método 2: Usar resetZoom de la instancia del plugin
+        if (chart.zoomScale) {
+          chart.zoomScale('x', { min: null, max: null });
+          chart.zoomScale('y', { min: null, max: null });
+          return;
+        }
+        
+        // Método 3: Usar update del gráfico para forzar el reset
+        if (chart.update) {
+          chart.update('none'); // Actualizar sin animación
+          return;
+        }
+        
+        // Método 4: Intentar acceder a través de la configuración del plugin
+        if (chart.options && chart.options.plugins && chart.options.plugins.zoom) {
+          const zoomPlugin = chart.options.plugins.zoom;
+          if (zoomPlugin.zoom && zoomPlugin.zoom.wheel && zoomPlugin.zoom.wheel.enabled) {
+            // Forzar el reset manualmente
+            chart.scales.x.min = null;
+            chart.scales.x.max = null;
+            chart.scales.y.min = null;
+            chart.scales.y.max = null;
+            chart.update('none');
+          }
+        }
+      } catch (error) {
+        console.log('Error al resetear zoom:', error);
+      }
+    };
+    
+    resetZoomForChart(normalChart);
+    resetZoomForChart(fullscreenChart);
+  };
+
+  // Efecto para sincronizar el zoom entre las dos vistas cuando se maximiza
+  useEffect(() => {
+    if (isFullscreen) {
+      // Pequeño delay para asegurar que el gráfico maximizado esté renderizado
+      const timer = setTimeout(() => {
+        const normalChart = getChartInstance(chartRef);
+        const fullscreenChart = getChartInstance(fullscreenChartRef);
+        
+        if (normalChart && fullscreenChart) {
+          // Sincronizar el estado del zoom
+          try {
+            // Intentar obtener el nivel de zoom actual
+            let currentZoom = null;
+            
+            // Método 1: Usar getZoomLevel si está disponible
+            if (normalChart.getZoomLevel) {
+              currentZoom = normalChart.getZoomLevel();
+            }
+            
+            // Método 2: Usar las escalas actuales
+            if (!currentZoom && normalChart.scales) {
+              currentZoom = {
+                x: { min: normalChart.scales.x.min, max: normalChart.scales.x.max },
+                y: { min: normalChart.scales.y.min, max: normalChart.scales.y.max }
+              };
+            }
+            
+            // Aplicar el zoom al gráfico maximizado si hay zoom activo
+            if (currentZoom && (currentZoom.x.min !== null || currentZoom.x.max !== null)) {
+              if (fullscreenChart.zoomScale) {
+                fullscreenChart.zoomScale('x', { 
+                  min: currentZoom.x.min, 
+                  max: currentZoom.x.max 
+                });
+                fullscreenChart.zoomScale('y', { 
+                  min: currentZoom.y.min, 
+                  max: currentZoom.y.max 
+                });
+              } else if (fullscreenChart.scales) {
+                // Aplicar directamente a las escalas
+                fullscreenChart.scales.x.min = currentZoom.x.min;
+                fullscreenChart.scales.x.max = currentZoom.x.max;
+                fullscreenChart.scales.y.min = currentZoom.y.min;
+                fullscreenChart.scales.y.max = currentZoom.y.max;
+                fullscreenChart.update('none');
+              }
+            }
+          } catch (error) {
+            // Si hay error al sincronizar, continuar sin problemas
+            console.log('Zoom sync not available for this chart type:', error);
+          }
+        }
+      }, 200); // Aumentar el delay para asegurar que el gráfico esté completamente renderizado
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isFullscreen]);
+
+  // Efecto para detectar cuando el zoom está activo
+  useEffect(() => {
+    const checkZoomStatus = () => {
+      const normalChart = getChartInstance(chartRef);
+      const fullscreenChart = getChartInstance(fullscreenChartRef);
+      
+      let hasZoom = false;
+      
+      if (normalChart && normalChart.scales) {
+        const xScale = normalChart.scales.x;
+        const yScale = normalChart.scales.y;
+        hasZoom = (xScale.min !== null || xScale.max !== null || 
+                   yScale.min !== null || yScale.max !== null);
+      }
+      
+      if (!hasZoom && fullscreenChart && fullscreenChart.scales) {
+        const xScale = fullscreenChart.scales.x;
+        const yScale = fullscreenChart.scales.y;
+        hasZoom = (xScale.min !== null || xScale.max !== null || 
+                   yScale.min !== null || yScale.max !== null);
+      }
+      
+      setIsZoomed(hasZoom);
+    };
+    
+    // Verificar el estado del zoom cada 500ms
+    const interval = setInterval(checkZoomStatus, 500);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Iconos SVG modernos
   const ResetIcon = () => (
@@ -121,7 +281,7 @@ export function ChartCard({ title, description, type = "line", data, options }) 
           drawBorder: false,
         },
         ticks: {
-          color: '#6B7280',
+          color: '#374151',
           font: {
             size: 11,
             weight: '500'
@@ -139,7 +299,7 @@ export function ChartCard({ title, description, type = "line", data, options }) 
           drawBorder: false,
         },
         ticks: {
-          color: '#6B7280',
+          color: '#374151',
           font: {
             size: 11,
             weight: '500'
@@ -210,22 +370,31 @@ export function ChartCard({ title, description, type = "line", data, options }) 
             {/* Botones de acciones con diseño mejorado */}
             <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300">
               <button
-                onClick={resetZoom}
-                className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 hover:scale-105 group/btn"
+                onClick={resetChartZoom}
+                className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 group/btn relative ${
+                  isZoomed 
+                    ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
+                    : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
+                }`}
                 title="Resetear Zoom"
+                disabled={!isZoomed}
               >
                 <ResetIcon />
-                <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                  Resetear
+                <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  {isZoomed ? 'Resetear Zoom' : 'Sin Zoom'}
                 </span>
+                {/* Indicador de zoom activo */}
+                {isZoomed && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white"></div>
+                )}
               </button>
               <button
                 onClick={() => setIsFullscreen(true)}
-                className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200 hover:scale-105 group/btn"
+                className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200 hover:scale-105 group/btn relative"
                 title="Maximizar"
               >
                 <MaximizeIcon />
-                <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
                   Maximizar
                 </span>
               </button>
@@ -235,8 +404,8 @@ export function ChartCard({ title, description, type = "line", data, options }) 
 
         {/* Contenedor del gráfico con padding y altura definida */}
         <div className="p-6">
-          <div className="chart-container h-64 relative">
-            <ChartComponent ref={chartRef} data={data} options={options} />
+          <div className="chart-container relative w-full" style={{ height: height }}>
+            <ChartComponent ref={chartRef} data={data} options={chartOptions} />
             
             {/* Overlay sutil para indicar interactividad */}
             <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-gray-50/20 pointer-events-none group-hover:to-gray-50/10 transition-all duration-300 rounded-lg"></div>
@@ -258,6 +427,14 @@ export function ChartCard({ title, description, type = "line", data, options }) 
               </svg>
               Arrastrar para mover
             </span>
+            {!isZoomed && (
+              <span className="flex items-center text-blue-500">
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Usa zoom para reset
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -284,11 +461,20 @@ export function ChartCard({ title, description, type = "line", data, options }) 
                 {/* Controles del modal */}
                 <div className="flex items-center space-x-3">
                   <button
-                    onClick={resetZoom}
-                    className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 hover:scale-105"
+                    onClick={resetChartZoom}
+                    className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 relative ${
+                      isZoomed 
+                        ? 'text-white bg-white/20 hover:bg-white/30' 
+                        : 'text-white/50 bg-transparent cursor-not-allowed'
+                    }`}
                     title="Resetear Zoom"
+                    disabled={!isZoomed}
                   >
                     <ResetIcon />
+                    {/* Indicador de zoom activo */}
+                    {isZoomed && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-white"></div>
+                    )}
                   </button>
                   <button
                     onClick={() => setIsFullscreen(false)}
@@ -302,9 +488,9 @@ export function ChartCard({ title, description, type = "line", data, options }) 
             </div>
 
             {/* Contenido del modal */}
-            <div className="p-6 h-full">
-              <div className="chart-container h-full">
-                <ChartComponent ref={chartRef} data={data} options={options} />
+            <div className="p-6">
+              <div className="chart-container" style={{ height: fullscreenHeight, maxHeight: maxFullscreenHeight }}>
+                <ChartComponent ref={fullscreenChartRef} data={data} options={chartOptions} />
               </div>
             </div>
 
@@ -323,6 +509,14 @@ export function ChartCard({ title, description, type = "line", data, options }) 
                   </svg>
                   Arrastrar para mover
                 </span>
+                {!isZoomed && (
+                  <span className="flex items-center text-yellow-300">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Usa zoom para activar reset
+                  </span>
+                )}
               </div>
             </div>
           </div>

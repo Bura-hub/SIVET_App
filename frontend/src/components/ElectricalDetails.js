@@ -346,7 +346,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       </header>
 
       {/* KPIs */}
-      <section className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 mx-8 -mt-8 mb-8">
+      <section className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 -mt-8 mb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {!filters.institutionId ? (
             // Estado de carga cuando no hay institución seleccionada
@@ -483,7 +483,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       </section>
 
       {/* Sección de Medidores Eléctricos */}
-      <section className="mx-8 mb-8">
+      <section className="mb-8">
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
           {/* Header de la sección */}
           <div className="bg-gradient-to-r from-indigo-600 to-purple-700 px-8 py-6">

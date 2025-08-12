@@ -934,7 +934,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
 
 
       {/* Sección KPI superpuesta con el banner */}
-      <section className="mx-8 -mt-8 mb-8">
+      <section className="-mt-8 mb-8">
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
           {/* Contenido de KPIs */}
           <div className="p-8">
@@ -988,7 +988,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       </section>
 
       {/* Charts Section con diseño mejorado */}
-      <section className="mx-8 mb-8">
+      <section className="mb-8">
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
           {/* Header de la sección */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">

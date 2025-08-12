@@ -217,3 +217,106 @@ class ElectricMeterIndicators(models.Model):
     
     def __str__(self):
         return f"{self.device.name} - {self.date} ({self.get_time_range_display()})"
+
+
+class InverterIndicators(models.Model):
+    """
+    Modelo para almacenar todos los indicadores de inversores calculados
+    en diferentes rangos de tiempo (diario/mensual).
+    """
+    device = models.ForeignKey('scada_proxy.Device', on_delete=models.CASCADE, related_name='inverter_indicators')
+    institution = models.ForeignKey('scada_proxy.Institution', on_delete=models.CASCADE, related_name='inverter_indicators')
+    
+    # Rangos de tiempo
+    date = models.DateField(help_text="Fecha del registro (para datos diarios) o primer día del mes (para datos mensuales).")
+    time_range = models.CharField(max_length=20, choices=[
+        ('daily', 'Diario'),
+        ('monthly', 'Mensual')
+    ], help_text="Tipo de rango de tiempo del registro.")
+    
+    # 4.1. Eficiencia de Conversión DC-AC
+    dc_ac_efficiency_pct = models.FloatField(default=0.0, help_text="Eficiencia de conversión DC-AC en porcentaje.")
+    energy_ac_daily_kwh = models.FloatField(default=0.0, help_text="Energía AC generada diaria en kWh.")
+    energy_dc_daily_kwh = models.FloatField(default=0.0, help_text="Energía DC recibida diaria en kWh.")
+    
+    # 4.2. Energía Total Generada
+    total_generated_energy_kwh = models.FloatField(default=0.0, help_text="Energía total generada en kWh.")
+    
+    # 4.3. Performance Ratio (PR)
+    performance_ratio_pct = models.FloatField(default=0.0, help_text="Performance Ratio en porcentaje.")
+    reference_energy_kwh = models.FloatField(default=0.0, help_text="Energía de referencia en kWh.")
+    
+    # 4.4. Curva de Generación vs. Irradiancia/Temperatura
+    avg_irradiance_wm2 = models.FloatField(default=0.0, help_text="Irradiancia promedio en W/m².")
+    avg_temperature_c = models.FloatField(default=0.0, help_text="Temperatura promedio en °C.")
+    max_power_w = models.FloatField(default=0.0, help_text="Potencia máxima generada en W.")
+    min_power_w = models.FloatField(default=0.0, help_text="Potencia mínima generada en W.")
+    
+    # 4.5. Factor de Potencia y Calidad de Inyección
+    avg_power_factor_pct = models.FloatField(default=0.0, help_text="Factor de potencia promedio en porcentaje.")
+    avg_reactive_power_var = models.FloatField(default=0.0, help_text="Potencia reactiva promedio en VAr.")
+    avg_apparent_power_va = models.FloatField(default=0.0, help_text="Potencia aparente promedio en VA.")
+    avg_frequency_hz = models.FloatField(default=0.0, help_text="Frecuencia promedio en Hz.")
+    frequency_stability_pct = models.FloatField(default=0.0, help_text="Estabilidad de frecuencia en porcentaje.")
+    
+    # 4.6. Desbalance de Fases en Inyección
+    max_voltage_unbalance_pct = models.FloatField(default=0.0, help_text="Desbalance máximo de tensión en porcentaje.")
+    max_current_unbalance_pct = models.FloatField(default=0.0, help_text="Desbalance máximo de corriente en porcentaje.")
+    
+    # 4.7. Análisis de Anomalías Operativas
+    anomaly_score = models.FloatField(default=0.0, help_text="Puntuación de anomalías (0-100, 0=sin anomalías).")
+    anomaly_details = models.JSONField(default=dict, help_text="Detalles de anomalías detectadas.")
+    
+    # Metadatos
+    measurement_count = models.IntegerField(default=0, help_text="Número de mediciones procesadas.")
+    last_measurement_date = models.DateTimeField(null=True, blank=True, help_text="Fecha de la última medición procesada.")
+    calculated_at = models.DateTimeField(auto_now=True, help_text="Fecha y hora del cálculo.")
+    
+    class Meta:
+        verbose_name = "Indicadores de Inversor"
+        verbose_name_plural = "Indicadores de Inversores"
+        unique_together = ['device', 'date', 'time_range']
+        indexes = [
+            models.Index(fields=['device', 'date', 'time_range']),
+            models.Index(fields=['institution', 'date', 'time_range']),
+            models.Index(fields=['date', 'time_range']),
+        ]
+    
+    def __str__(self):
+        return f"{self.device.name} - {self.date} ({self.get_time_range_display()})"
+
+
+class InverterChartData(models.Model):
+    """
+    Modelo para almacenar datos de gráficos específicos por inversor,
+    optimizado para consultas de rangos de fechas.
+    """
+    device = models.ForeignKey('scada_proxy.Device', on_delete=models.CASCADE, related_name='inverter_chart_data')
+    institution = models.ForeignKey('scada_proxy.Institution', on_delete=models.CASCADE, related_name='inverter_chart_data')
+    date = models.DateField(help_text="Fecha del registro.")
+    
+    # Datos para gráficos de eficiencia
+    hourly_efficiency = models.JSONField(default=list, help_text="Eficiencia por hora del día en porcentaje.")
+    hourly_generation = models.JSONField(default=list, help_text="Generación por hora del día en kWh.")
+    hourly_irradiance = models.JSONField(default=list, help_text="Irradiancia por hora del día en W/m².")
+    hourly_temperature = models.JSONField(default=list, help_text="Temperatura por hora del día en °C.")
+    
+    # Datos para gráficos de potencia
+    hourly_dc_power = models.JSONField(default=list, help_text="Potencia DC por hora del día en W.")
+    hourly_ac_power = models.JSONField(default=list, help_text="Potencia AC por hora del día en W.")
+    
+    # Metadatos
+    calculated_at = models.DateTimeField(auto_now=True, help_text="Fecha y hora del cálculo.")
+    
+    class Meta:
+        verbose_name = "Datos de Gráfico de Inversor"
+        verbose_name_plural = "Datos de Gráficos de Inversores"
+        unique_together = ['device', 'date']
+        indexes = [
+            models.Index(fields=['device', 'date']),
+            models.Index(fields=['institution', 'date']),
+            models.Index(fields=['date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.device.name} - {self.date}"

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterEnergyConsumption, ElectricMeterIndicators
+from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterEnergyConsumption, ElectricMeterIndicators, InverterIndicators, InverterChartData
 
 class MonthlyConsumptionKPISerializer(serializers.ModelSerializer):
     class Meta:
@@ -116,3 +116,97 @@ class ElectricMeterIndicatorsSerializer(serializers.ModelSerializer):
             'measurement_count', 'last_measurement_date', 'calculated_at'
         ]
         read_only_fields = ['calculated_at']
+
+
+class InverterIndicatorsSerializer(serializers.ModelSerializer):
+    device_name = serializers.CharField(source='device.name', read_only=True)
+    institution_name = serializers.CharField(source='institution.name', read_only=True)
+    time_range_display = serializers.CharField(source='get_time_range_display', read_only=True)
+    
+    class Meta:
+        model = InverterIndicators
+        fields = [
+            'id', 'device', 'device_name', 'institution', 'institution_name',
+            'date', 'time_range', 'time_range_display',
+            'dc_ac_efficiency_pct', 'energy_ac_daily_kwh', 'energy_dc_daily_kwh',
+            'total_generated_energy_kwh', 'performance_ratio_pct', 'reference_energy_kwh',
+            'avg_irradiance_wm2', 'avg_temperature_c', 'max_power_w', 'min_power_w',
+            'avg_power_factor_pct', 'avg_reactive_power_var', 'avg_apparent_power_va',
+            'avg_frequency_hz', 'frequency_stability_pct',
+            'max_voltage_unbalance_pct', 'max_current_unbalance_pct',
+            'anomaly_score', 'anomaly_details',
+            'measurement_count', 'last_measurement_date', 'calculated_at'
+        ]
+        read_only_fields = ['calculated_at']
+
+
+class InverterChartDataSerializer(serializers.ModelSerializer):
+    device_name = serializers.CharField(source='device.name', read_only=True)
+    institution_name = serializers.CharField(source='institution.name', read_only=True)
+    
+    class Meta:
+        model = InverterChartData
+        fields = [
+            'id', 'device', 'device_name', 'institution', 'institution_name',
+            'date', 'hourly_efficiency', 'hourly_generation', 'hourly_irradiance',
+            'hourly_temperature', 'hourly_dc_power', 'hourly_ac_power',
+            'calculated_at'
+        ]
+        read_only_fields = ['calculated_at']
+
+
+class InverterCalculationRequestSerializer(serializers.Serializer):
+    time_range = serializers.ChoiceField(
+        choices=[('daily', 'Diario'), ('monthly', 'Mensual')],
+        default='daily',
+        help_text="Rango de tiempo para el cálculo: 'daily' o 'monthly'"
+    )
+    start_date = serializers.DateField(
+        help_text="Fecha de inicio en formato YYYY-MM-DD"
+    )
+    end_date = serializers.DateField(
+        help_text="Fecha de fin en formato YYYY-MM-DD"
+    )
+    institution_id = serializers.IntegerField(
+        help_text="ID de la institución"
+    )
+    device_id = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="ID específico del inversor (opcional)"
+    )
+
+
+class InverterCalculationResponseSerializer(serializers.Serializer):
+    success = serializers.BooleanField(
+        help_text="Indica si el cálculo se ejecutó exitosamente"
+    )
+    message = serializers.CharField(
+        help_text="Mensaje descriptivo del resultado del cálculo"
+    )
+    task_id = serializers.CharField(
+        help_text="ID de la tarea asíncrona ejecutada"
+    )
+    time_range = serializers.CharField(
+        help_text="Rango de tiempo del cálculo (daily/monthly)"
+    )
+    start_date = serializers.DateField(
+        help_text="Fecha de inicio del período calculado"
+    )
+    end_date = serializers.DateField(
+        help_text="Fecha de fin del período calculado"
+    )
+    institution_id = serializers.IntegerField(
+        help_text="ID de la institución procesada"
+    )
+    device_id = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="ID del inversor específico (si se especificó)"
+    )
+    processed_records = serializers.IntegerField(
+        help_text="Número de registros procesados"
+    )
+    estimated_completion_time = serializers.CharField(
+        help_text="Tiempo estimado de finalización de la tarea"
+    )

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData
+from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, InverterIndicators, InverterChartData
 
 @admin.register(MonthlyConsumptionKPI)
 class MonthlyConsumptionKPIAdmin(admin.ModelAdmin):
@@ -28,6 +28,22 @@ class ElectricMeterConsumptionAdmin(admin.ModelAdmin):
 @admin.register(ElectricMeterChartData)
 class ElectricMeterChartDataAdmin(admin.ModelAdmin):
     list_display = ['device', 'institution', 'date', 'daily_consumption', 'peak_hour', 'calculated_at']
+    list_filter = ['institution', 'date', 'calculated_at']
+    search_fields = ['device__name', 'institution__name']
+    ordering = ['-date', '-calculated_at']
+    readonly_fields = ['calculated_at']
+
+@admin.register(InverterIndicators)
+class InverterIndicatorsAdmin(admin.ModelAdmin):
+    list_display = ['device', 'institution', 'date', 'time_range', 'dc_ac_efficiency_pct', 'total_generated_energy_kwh', 'performance_ratio_pct', 'calculated_at']
+    list_filter = ['time_range', 'institution', 'date', 'calculated_at']
+    search_fields = ['device__name', 'institution__name']
+    ordering = ['-date', '-calculated_at']
+    readonly_fields = ['calculated_at']
+
+@admin.register(InverterChartData)
+class InverterChartDataAdmin(admin.ModelAdmin):
+    list_display = ['device', 'institution', 'date', 'calculated_at']
     list_filter = ['institution', 'date', 'calculated_at']
     search_fields = ['device__name', 'institution__name']
     ordering = ['-date', '-calculated_at']

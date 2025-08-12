@@ -935,7 +935,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
 
       {/* Sección KPI superpuesta con el banner */}
       <section className="-mt-8 mb-8">
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
           {/* Contenido de KPIs */}
           <div className="p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

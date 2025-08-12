@@ -254,6 +254,58 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     }
   }, [authToken]);
 
+  const calculateElectricalData = useCallback(async () => {
+    try {
+      if (!filters.institutionId) {
+        showTransitionAnimation('error', 'Debe seleccionar una institución primero', 3000);
+        return;
+      }
+
+      if (!filters.startDate || !filters.endDate) {
+        showTransitionAnimation('error', 'Debe seleccionar fechas de inicio y fin', 3000);
+        return;
+      }
+
+      setMeterLoading(true);
+      setMeterError(null);
+
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || ''}/api/electric-meters/calculate-new/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          time_range: filters.timeRange,
+          start_date: filters.startDate,
+          end_date: filters.endDate,
+          institution_id: filters.institutionId,
+          device_id: filters.deviceId
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Error al calcular datos eléctricos');
+      }
+
+      const result = await response.json();
+      showTransitionAnimation('success', 'Cálculo de datos eléctricos iniciado correctamente', 3000);
+      
+      // Recargar datos después de un breve delay
+      setTimeout(() => {
+        fetchMeterData(filters);
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error calculando datos eléctricos:', error);
+      setMeterError(error.message || 'Error desconocido al calcular datos');
+      showTransitionAnimation('error', `Error: ${error.message}`, 4000);
+    } finally {
+      setMeterLoading(false);
+    }
+  }, [filters, authToken, fetchMeterData, showTransitionAnimation]);
+
   const handleFiltersChange = useCallback((newFilters) => {
     console.log('Filters changed in ElectricalDetails:', newFilters);
     console.log('Previous filters:', filters);
@@ -540,6 +592,29 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <span className="text-yellow-700 font-medium">No hay datos disponibles para esta institución en el período seleccionado</span>
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={calculateElectricalData}
+                disabled={meterLoading}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {meterLoading ? (
+                  <>
+                    <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Calculando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Calcular Datos Eléctricos
+                  </>
+                )}
+              </button>
             </div>
           </div>
         )}
@@ -976,7 +1051,28 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 <p className="text-base lg:text-lg font-medium text-gray-900 mb-1 lg:mb-2">No hay datos disponibles</p>
-                                <p className="text-gray-500 text-sm lg:text-base">Selecciona una institución y medidor para ver los indicadores eléctricos</p>
+                                <p className="text-gray-500 text-sm lg:text-base mb-4">Selecciona una institución y medidor para ver los indicadores eléctricos</p>
+                                <button
+                                  onClick={calculateElectricalData}
+                                  disabled={meterLoading}
+                                  className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {meterLoading ? (
+                                    <>
+                                      <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                      </svg>
+                                      Calculando...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                      </svg>
+                                      Calcular Datos
+                                    </>
+                                  )}
+                                </button>
                               </div>
                             </td>
                           </tr>

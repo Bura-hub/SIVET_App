@@ -3568,3 +3568,729 @@ INFO 2025-08-11 23:00:06,329 tasks 17888 4156 Dispositivo 19934344-9c79-482f-b74
 INFO 2025-08-11 23:00:06,332 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[fc79a44f-4a2d-4fa7-ae47-d1b20c4c9bf2] received
 INFO 2025-08-11 23:00:06,355 tasks 17888 4156 Obteniendo mediciones para dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b desde 2025-08-11 21:00:00.437416-05:00 hasta 2025-08-11 23:00:00.437416-05:00 (hora Colombia)
 INFO 2025-08-11 23:00:06,583 tasks 17888 4156 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 00:00:00,095 strategy 17888 4156 Task scada_proxy.tasks.sync_scada_metadata[8db23190-72f5-4745-a973-e62a805ae9fa] received
+INFO 2025-08-12 00:00:00,783 tasks 17888 4156 Sincronizadas 5 instituciones.
+INFO 2025-08-12 00:00:01,077 tasks 17888 4156 Sincronizadas 3 categorías de dispositivos.
+INFO 2025-08-12 00:00:01,432 tasks 17888 4156 Desactivados 2 dispositivos que ya no se encuentran en la API SCADA.
+INFO 2025-08-12 00:00:01,436 strategy 17888 4156 Task scada_proxy.tasks.fetch_historical_measurements_for_all_devices[82acbefe-d3f6-4efb-8e39-e6a2ecbc1ede] received
+INFO 2025-08-12 00:00:01,438 tasks 17888 4156 Iniciando la obtención de mediciones históricas para los últimos 2:00:00. Rango: 2025-08-11 22:00:01.438008-05:00 -> 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:01,474 tasks 17888 4156 Tarea creada para dispositivo Fronius - UCC (29630827-0242-492f-9ed0-a48d120da2ac) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,476 tasks 17888 4156 Tarea creada para dispositivo Estación - UCC (74154481-3f6c-4827-a8d7-ea6fbae62fd9) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,477 tasks 17888 4156 Tarea creada para dispositivo Medidor 4 - Udenar (0f7648d7-7575-4419-8192-a4f80b55309b) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,478 tasks 17888 4156 Tarea creada para dispositivo Bloque Nuevo - Medidor 3 (19934344-9c79-482f-b74f-50dde3a6079c) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,480 tasks 17888 4156 Tarea creada para dispositivo Bloque Nuevo - Medidor 1 (7ba9fa00-7ef9-4246-8c30-85ea56088e0d) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,481 tasks 17888 4156 Tarea creada para dispositivo inverter2 (37f796af-7caa-459f-bc86-3e2f7936a879) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,482 tasks 17888 4156 Tarea creada para dispositivo inverter1 (ada64a56-331c-4489-a02c-7aac55d54111) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,484 tasks 17888 4156 Tarea creada para dispositivo Medidor 1 - Cesmag (4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,485 tasks 17888 4156 Tarea creada para dispositivo Medidor 2 - Cesmag (3ccb420f-e6a0-4461-8dc6-e8568bd699f0) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,486 tasks 17888 4156 Tarea creada para dispositivo Medidor 3 - Cesmag (348b47aa-b285-4948-a9fb-a57bc38cedf1) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,487 tasks 17888 4156 Tarea creada para dispositivo Medidor 4 - Cesmag (6ebd34d4-4883-4682-aab3-f3243544a67a) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,489 tasks 17888 4156 Tarea creada para dispositivo Inverter 1 - Cesmag (e96986a9-a127-4139-975d-1a711ae25327) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,490 tasks 17888 4156 Tarea creada para dispositivo Estación San Damian - CESMAG (819dfc27-fe61-42e6-9413-0f8820bea03e) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,491 tasks 17888 4156 Tarea creada para dispositivo Medidor 1 - HUDN (628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,492 tasks 17888 4156 Tarea creada para dispositivo Medidor 2 - HUDN (6ecb37db-ab95-4640-b8ce-c7f8bb91f611) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,493 tasks 17888 4156 Tarea creada para dispositivo Medidor 3 - HUDN (673f11ce-77da-4839-8498-a5948d984d8c) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,494 tasks 17888 4156 Tarea creada para dispositivo Medidor 4 - HUDN (ad749299-a3a4-4270-b80d-6251389eabcb) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,496 tasks 17888 4156 Tarea creada para dispositivo Inversor 1 - HUDN (f6893ba9-7175-44ea-8624-a47bf55158c9) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,497 tasks 17888 4156 Tarea creada para dispositivo Estación - HUDN (49435c0b-ada3-4ced-ad15-9418013a30d1) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,498 tasks 17888 4156 Tarea creada para dispositivo Medidor 1 - Alvernia (b06d770e-ec25-49a0-949d-60c9e169f2bb) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,499 tasks 17888 4156 Tarea creada para dispositivo Medidor 4 - Alvernia (0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,500 tasks 17888 4156 Tarea creada para dispositivo estación (46094855-4fe6-4c10-afe3-444a101719e2) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,501 tasks 17888 4156 Tarea creada para dispositivo Prueba (3a5eca15-cd03-4a83-8981-b432d2217344) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,502 tasks 17888 4156 Tarea creada para dispositivo Medidor 3 - Alvernia (4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,503 tasks 17888 4156 Tarea creada para dispositivo Medidor 2 - Alvernia (5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,504 tasks 17888 4156 Tarea creada para dispositivo Fronius - Alvernia (0f962572-fab3-4c09-bffc-465b56a22d8d) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,505 tasks 17888 4156 Tarea creada para dispositivo Estación Alvernia (1fb6c4ae-2e7c-4758-80bf-156c7826fead) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,506 tasks 17888 4156 Tarea creada para dispositivo Medidor 3 - UCC (d6915dc0-4391-4514-b4c6-58a30f1988f3) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,507 tasks 17888 4156 Tarea creada para dispositivo Medidor 4 - UCC (7130f831-d8ca-4fd8-adb5-f02dbc7543b3) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,508 tasks 17888 4156 Tarea creada para dispositivo Medidor 2 - UCC (bc80e209-e290-4aaa-a6e8-931e9fb7b803) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,509 tasks 17888 4156 Tarea creada para dispositivo Medidor 1 - UCC (86b9c020-4645-4c39-891a-d1e8a7048c12) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,510 tasks 17888 4156 Tarea creada para dispositivo Bloque Nuevo - Medidor 2 (1da46bc5-1655-4ba1-82c2-0b283370a97b) desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia).
+INFO 2025-08-12 00:00:01,510 tasks 17888 4156 Todas las subtareas para obtener mediciones han sido encoladas.
+INFO 2025-08-12 00:00:01,514 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3c30ffbf-046c-4d27-b432-6f5e30834cd4] received
+INFO 2025-08-12 00:00:01,546 tasks 17888 4156 Obteniendo mediciones para dispositivo 29630827-0242-492f-9ed0-a48d120da2ac desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:01,610 tasks 17888 4156 Dispositivo 29630827-0242-492f-9ed0-a48d120da2ac: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 00:00:01,615 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2e7351ce-b7ba-43ac-8a96-1e2ab4c33aa9] received
+INFO 2025-08-12 00:00:01,647 tasks 17888 4156 Obteniendo mediciones para dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:01,729 tasks 17888 4156 Dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 00:00:01,734 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[358e8c0f-9fb5-472b-bcbb-8f7a0396babb] received
+INFO 2025-08-12 00:00:01,767 tasks 17888 4156 Obteniendo mediciones para dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:02,006 tasks 17888 4156 Dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:02,011 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[9f2000b6-b51a-4542-973a-d842943d355e] received
+INFO 2025-08-12 00:00:02,155 tasks 17888 4156 Obteniendo mediciones para dispositivo 19934344-9c79-482f-b74f-50dde3a6079c desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:02,428 tasks 17888 4156 Dispositivo 19934344-9c79-482f-b74f-50dde3a6079c: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:02,432 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[9d441376-c2bd-42ec-83ba-350b9af3981d] received
+INFO 2025-08-12 00:00:02,462 tasks 17888 4156 Obteniendo mediciones para dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:02,693 tasks 17888 4156 Dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:02,696 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[28d9c1c0-5da3-4a66-b8c9-b680d6de3635] received
+INFO 2025-08-12 00:00:02,729 tasks 17888 4156 Obteniendo mediciones para dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:02,903 tasks 17888 4156 Dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879: 31 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:02,907 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3fca60a8-f1ce-4667-966a-8e6304054ab5] received
+INFO 2025-08-12 00:00:02,940 tasks 17888 4156 Obteniendo mediciones para dispositivo ada64a56-331c-4489-a02c-7aac55d54111 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:03,117 tasks 17888 4156 Dispositivo ada64a56-331c-4489-a02c-7aac55d54111: 31 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:03,119 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a24ecf34-91ee-4552-870d-cc288abc48b0] received
+INFO 2025-08-12 00:00:03,151 tasks 17888 4156 Obteniendo mediciones para dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:03,369 tasks 17888 4156 Dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02: 30 nuevas, 29 actualizadas
+INFO 2025-08-12 00:00:03,373 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[e9abf985-3acb-47e6-9708-f2617b6605e7] received
+INFO 2025-08-12 00:00:03,407 tasks 17888 4156 Obteniendo mediciones para dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:03,624 tasks 17888 4156 Dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:03,627 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5b9bfb4b-fc14-4913-a103-c42440197a4e] received
+INFO 2025-08-12 00:00:03,664 tasks 17888 4156 Obteniendo mediciones para dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:03,881 tasks 17888 4156 Dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:03,884 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[0e85fa2d-d16c-4668-bb3e-1e29982fcda2] received
+INFO 2025-08-12 00:00:03,917 tasks 17888 4156 Obteniendo mediciones para dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:04,130 tasks 17888 4156 Dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:04,133 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[291912d3-298e-410c-9328-81b3eb5fca47] received
+INFO 2025-08-12 00:00:04,273 tasks 17888 4156 Obteniendo mediciones para dispositivo e96986a9-a127-4139-975d-1a711ae25327 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:04,386 tasks 17888 4156 Dispositivo e96986a9-a127-4139-975d-1a711ae25327: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 00:00:04,389 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[797ab370-f1d0-4e45-b9fb-8a0df51c3526] received
+INFO 2025-08-12 00:00:04,422 tasks 17888 4156 Obteniendo mediciones para dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:04,571 tasks 17888 4156 Dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e: 27 nuevas, 27 actualizadas
+INFO 2025-08-12 00:00:04,574 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7838137e-dab1-4eb7-8496-a6dfa4b27309] received
+INFO 2025-08-12 00:00:04,605 tasks 17888 4156 Obteniendo mediciones para dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:04,816 tasks 17888 4156 Dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:04,819 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3f3bd1db-8fa3-4fd7-aa16-bae3d69b0836] received
+INFO 2025-08-12 00:00:04,952 tasks 17888 4156 Obteniendo mediciones para dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:05,164 tasks 17888 4156 Dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:05,167 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[255d9952-82be-40da-8500-3ea3296c8a09] received
+INFO 2025-08-12 00:00:05,197 tasks 17888 4156 Obteniendo mediciones para dispositivo 673f11ce-77da-4839-8498-a5948d984d8c desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:05,419 tasks 17888 4156 Dispositivo 673f11ce-77da-4839-8498-a5948d984d8c: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:05,422 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[17046843-97a1-4432-ac8f-9a816c2f78e7] received
+INFO 2025-08-12 00:00:05,454 tasks 17888 4156 Obteniendo mediciones para dispositivo ad749299-a3a4-4270-b80d-6251389eabcb desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:05,707 tasks 17888 4156 Dispositivo ad749299-a3a4-4270-b80d-6251389eabcb: 29 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:05,710 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a63749c0-91c5-40b2-896a-c3c8c9dc66b0] received
+INFO 2025-08-12 00:00:05,740 tasks 17888 4156 Obteniendo mediciones para dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:05,839 tasks 17888 4156 Dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 00:00:05,843 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[4e2daf5f-4fe9-4922-b87a-2eca0fdc7188] received
+INFO 2025-08-12 00:00:05,876 tasks 17888 4156 Obteniendo mediciones para dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:05,939 tasks 17888 4156 Dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 00:00:05,943 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[d2e9f0e1-d7bc-4076-b7da-1a2e771ff412] received
+INFO 2025-08-12 00:00:05,977 tasks 17888 4156 Obteniendo mediciones para dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:06,191 tasks 17888 4156 Dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:06,196 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1852ad1f-6fcd-4a9e-90c2-4facae5bf538] received
+INFO 2025-08-12 00:00:06,229 tasks 17888 4156 Obteniendo mediciones para dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:06,443 tasks 17888 4156 Dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:06,446 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3b20d140-6ed1-4def-bf55-ab516e532b73] received
+INFO 2025-08-12 00:00:06,475 tasks 17888 4156 Obteniendo mediciones para dispositivo 46094855-4fe6-4c10-afe3-444a101719e2 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:06,739 tasks 17888 4156 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 55 nuevas, 55 actualizadas
+INFO 2025-08-12 00:00:06,742 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[75ee31ef-f14f-44ad-b9bc-f869624481ea] received
+INFO 2025-08-12 00:00:06,773 tasks 17888 4156 Obteniendo mediciones para dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:06,831 tasks 17888 4156 Dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 00:00:06,835 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8294fa40-1cec-41a4-880b-c2db5d10092c] received
+INFO 2025-08-12 00:00:06,861 tasks 17888 4156 Obteniendo mediciones para dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:07,083 tasks 17888 4156 Dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:07,087 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5c7a2ce1-1d9d-41fa-be5a-9cca717be480] received
+INFO 2025-08-12 00:00:07,114 tasks 17888 4156 Obteniendo mediciones para dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:07,352 tasks 17888 4156 Dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:07,357 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[e13e6319-7935-4137-a1d1-96a0a5d52745] received
+INFO 2025-08-12 00:00:07,387 tasks 17888 4156 Obteniendo mediciones para dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:07,448 tasks 17888 4156 Dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 00:00:07,453 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[153a2604-fe6d-466b-935c-659ebd738eaa] received
+INFO 2025-08-12 00:00:07,480 tasks 17888 4156 Obteniendo mediciones para dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:07,631 tasks 17888 4156 Dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:07,634 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c25a3541-3284-45d4-a750-cc1c327e1836] received
+INFO 2025-08-12 00:00:07,672 tasks 17888 4156 Obteniendo mediciones para dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:07,907 tasks 17888 4156 Dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:07,914 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3710244d-ad6e-40a8-9332-3f9e4c2f50a9] received
+INFO 2025-08-12 00:00:07,946 tasks 17888 4156 Obteniendo mediciones para dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:08,166 tasks 17888 4156 Dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:08,170 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[06fcff3e-797a-4278-b90a-83bf8557cb84] received
+INFO 2025-08-12 00:00:08,203 tasks 17888 4156 Obteniendo mediciones para dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:08,415 tasks 17888 4156 Dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:08,418 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8ae16d8d-8116-4ac3-b29c-ae32842d4375] received
+INFO 2025-08-12 00:00:08,449 tasks 17888 4156 Obteniendo mediciones para dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12 desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:08,719 tasks 17888 4156 Dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:00:08,722 strategy 17888 4156 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8394ffc0-733c-4cef-99a9-954ddef51b05] received
+INFO 2025-08-12 00:00:08,755 tasks 17888 4156 Obteniendo mediciones para dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b desde 2025-08-11 22:00:01.438008-05:00 hasta 2025-08-12 00:00:01.438008-05:00 (hora Colombia)
+INFO 2025-08-12 00:00:09,019 tasks 17888 4156 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 00:32:01,320 connection 36088 4636 Connected to redis://localhost:6379/0
+INFO 2025-08-12 00:32:01,324 mingle 36088 4636 mingle: searching for neighbors
+INFO 2025-08-12 00:32:02,342 mingle 36088 4636 mingle: all alone
+INFO 2025-08-12 00:48:40,891 strategy 36088 4636 Task indicators.tasks.calculate_inverter_data[e77293ca-866f-47d3-b5ee-b022379fc10c] received
+INFO 2025-08-12 00:48:40,896 tasks 36088 4636 === INICIANDO TAREA: calculate_inverter_data ===
+INFO 2025-08-12 00:48:40,896 tasks 36088 4636 Calculando datos para rango: daily, desde 2025-08-02 hasta 2025-08-12
+INFO 2025-08-12 00:48:40,896 tasks 36088 4636 Filtrado por institución ID: 5
+INFO 2025-08-12 00:48:40,896 tasks 36088 4636 Filtrado por dispositivo ID: f6893ba9-7175-44ea-8624-a47bf55158c9
+INFO 2025-08-12 00:48:40,923 tasks 36088 4636 Procesando 1 inversores
+INFO 2025-08-12 00:48:40,923 tasks 36088 4636 Procesando inversor: Inversor 1 - HUDN (ID: 11, SCADA ID: f6893ba9-7175-44ea-8624-a47bf55158c9)
+INFO 2025-08-12 00:48:40,924 tasks 36088 4636   Procesando fecha: 2025-08-02
+INFO 2025-08-12 00:48:40,952 tasks 36088 4636   Procesando fecha: 2025-08-03
+INFO 2025-08-12 00:48:40,965 tasks 36088 4636   Procesando fecha: 2025-08-04
+INFO 2025-08-12 00:48:40,978 tasks 36088 4636   Procesando fecha: 2025-08-05
+INFO 2025-08-12 00:48:40,992 tasks 36088 4636   Procesando fecha: 2025-08-06
+INFO 2025-08-12 00:48:41,008 tasks 36088 4636   Procesando fecha: 2025-08-07
+INFO 2025-08-12 00:48:41,020 tasks 36088 4636   Procesando fecha: 2025-08-08
+INFO 2025-08-12 00:48:41,032 tasks 36088 4636   Procesando fecha: 2025-08-09
+INFO 2025-08-12 00:48:41,043 tasks 36088 4636   Procesando fecha: 2025-08-10
+INFO 2025-08-12 00:48:41,053 tasks 36088 4636   Procesando fecha: 2025-08-11
+INFO 2025-08-12 00:48:41,064 tasks 36088 4636   Procesando fecha: 2025-08-12
+INFO 2025-08-12 00:48:41,065 tasks 36088 4636 === RESUMEN DE PROCESAMIENTO ===
+INFO 2025-08-12 00:48:41,065 tasks 36088 4636 Registros creados: 10
+INFO 2025-08-12 00:48:41,065 tasks 36088 4636 Registros actualizados: 0
+INFO 2025-08-12 00:48:41,065 tasks 36088 4636 === TAREA COMPLETADA: calculate_inverter_data ===
+INFO 2025-08-12 00:49:45,579 strategy 36088 4636 Task indicators.tasks.calculate_inverter_data[2a10cb07-4e35-48ed-b066-e4a4046b076d] received
+INFO 2025-08-12 00:49:45,580 tasks 36088 4636 === INICIANDO TAREA: calculate_inverter_data ===
+INFO 2025-08-12 00:49:45,580 tasks 36088 4636 Calculando datos para rango: daily, desde 2024-08-01 hasta 2025-08-12
+INFO 2025-08-12 00:49:45,581 tasks 36088 4636 Filtrado por institución ID: 1
+INFO 2025-08-12 00:49:45,581 tasks 36088 4636 Filtrado por dispositivo ID: ada64a56-331c-4489-a02c-7aac55d54111
+INFO 2025-08-12 00:49:45,603 tasks 36088 4636 Procesando 1 inversores
+INFO 2025-08-12 00:49:45,604 tasks 36088 4636 Procesando inversor: inverter1 (ID: 29, SCADA ID: ada64a56-331c-4489-a02c-7aac55d54111)
+INFO 2025-08-12 00:49:45,604 tasks 36088 4636   Procesando fecha: 2024-08-01
+INFO 2025-08-12 00:49:45,608 tasks 36088 4636   Procesando fecha: 2024-08-02
+INFO 2025-08-12 00:49:45,609 tasks 36088 4636   Procesando fecha: 2024-08-03
+INFO 2025-08-12 00:49:45,610 tasks 36088 4636   Procesando fecha: 2024-08-04
+INFO 2025-08-12 00:49:45,612 tasks 36088 4636   Procesando fecha: 2024-08-05
+INFO 2025-08-12 00:49:45,614 tasks 36088 4636   Procesando fecha: 2024-08-06
+INFO 2025-08-12 00:49:45,615 tasks 36088 4636   Procesando fecha: 2024-08-07
+INFO 2025-08-12 00:49:45,616 tasks 36088 4636   Procesando fecha: 2024-08-08
+INFO 2025-08-12 00:49:45,618 tasks 36088 4636   Procesando fecha: 2024-08-09
+INFO 2025-08-12 00:49:45,619 tasks 36088 4636   Procesando fecha: 2024-08-10
+INFO 2025-08-12 00:49:45,620 tasks 36088 4636   Procesando fecha: 2024-08-11
+INFO 2025-08-12 00:49:45,622 tasks 36088 4636   Procesando fecha: 2024-08-12
+INFO 2025-08-12 00:49:45,623 tasks 36088 4636   Procesando fecha: 2024-08-13
+INFO 2025-08-12 00:49:45,624 tasks 36088 4636   Procesando fecha: 2024-08-14
+INFO 2025-08-12 00:49:45,625 tasks 36088 4636   Procesando fecha: 2024-08-15
+INFO 2025-08-12 00:49:45,627 tasks 36088 4636   Procesando fecha: 2024-08-16
+INFO 2025-08-12 00:49:45,628 tasks 36088 4636   Procesando fecha: 2024-08-17
+INFO 2025-08-12 00:49:45,630 tasks 36088 4636   Procesando fecha: 2024-08-18
+INFO 2025-08-12 00:49:45,631 tasks 36088 4636   Procesando fecha: 2024-08-19
+INFO 2025-08-12 00:49:45,633 tasks 36088 4636   Procesando fecha: 2024-08-20
+INFO 2025-08-12 00:49:45,634 tasks 36088 4636   Procesando fecha: 2024-08-21
+INFO 2025-08-12 00:49:45,635 tasks 36088 4636   Procesando fecha: 2024-08-22
+INFO 2025-08-12 00:49:45,637 tasks 36088 4636   Procesando fecha: 2024-08-23
+INFO 2025-08-12 00:49:45,638 tasks 36088 4636   Procesando fecha: 2024-08-24
+INFO 2025-08-12 00:49:45,640 tasks 36088 4636   Procesando fecha: 2024-08-25
+INFO 2025-08-12 00:49:45,641 tasks 36088 4636   Procesando fecha: 2024-08-26
+INFO 2025-08-12 00:49:45,643 tasks 36088 4636   Procesando fecha: 2024-08-27
+INFO 2025-08-12 00:49:45,645 tasks 36088 4636   Procesando fecha: 2024-08-28
+INFO 2025-08-12 00:49:45,646 tasks 36088 4636   Procesando fecha: 2024-08-29
+INFO 2025-08-12 00:49:45,647 tasks 36088 4636   Procesando fecha: 2024-08-30
+INFO 2025-08-12 00:49:45,648 tasks 36088 4636   Procesando fecha: 2024-08-31
+INFO 2025-08-12 00:49:45,650 tasks 36088 4636   Procesando fecha: 2024-09-01
+INFO 2025-08-12 00:49:45,651 tasks 36088 4636   Procesando fecha: 2024-09-02
+INFO 2025-08-12 00:49:45,652 tasks 36088 4636   Procesando fecha: 2024-09-03
+INFO 2025-08-12 00:49:45,653 tasks 36088 4636   Procesando fecha: 2024-09-04
+INFO 2025-08-12 00:49:45,655 tasks 36088 4636   Procesando fecha: 2024-09-05
+INFO 2025-08-12 00:49:45,656 tasks 36088 4636   Procesando fecha: 2024-09-06
+INFO 2025-08-12 00:49:45,657 tasks 36088 4636   Procesando fecha: 2024-09-07
+INFO 2025-08-12 00:49:45,658 tasks 36088 4636   Procesando fecha: 2024-09-08
+INFO 2025-08-12 00:49:45,659 tasks 36088 4636   Procesando fecha: 2024-09-09
+INFO 2025-08-12 00:49:45,661 tasks 36088 4636   Procesando fecha: 2024-09-10
+INFO 2025-08-12 00:49:45,662 tasks 36088 4636   Procesando fecha: 2024-09-11
+INFO 2025-08-12 00:49:45,663 tasks 36088 4636   Procesando fecha: 2024-09-12
+INFO 2025-08-12 00:49:45,664 tasks 36088 4636   Procesando fecha: 2024-09-13
+INFO 2025-08-12 00:49:45,666 tasks 36088 4636   Procesando fecha: 2024-09-14
+INFO 2025-08-12 00:49:45,667 tasks 36088 4636   Procesando fecha: 2024-09-15
+INFO 2025-08-12 00:49:45,668 tasks 36088 4636   Procesando fecha: 2024-09-16
+INFO 2025-08-12 00:49:45,669 tasks 36088 4636   Procesando fecha: 2024-09-17
+INFO 2025-08-12 00:49:45,670 tasks 36088 4636   Procesando fecha: 2024-09-18
+INFO 2025-08-12 00:49:45,671 tasks 36088 4636   Procesando fecha: 2024-09-19
+INFO 2025-08-12 00:49:45,672 tasks 36088 4636   Procesando fecha: 2024-09-20
+INFO 2025-08-12 00:49:45,674 tasks 36088 4636   Procesando fecha: 2024-09-21
+INFO 2025-08-12 00:49:45,675 tasks 36088 4636   Procesando fecha: 2024-09-22
+INFO 2025-08-12 00:49:45,676 tasks 36088 4636   Procesando fecha: 2024-09-23
+INFO 2025-08-12 00:49:45,677 tasks 36088 4636   Procesando fecha: 2024-09-24
+INFO 2025-08-12 00:49:45,678 tasks 36088 4636   Procesando fecha: 2024-09-25
+INFO 2025-08-12 00:49:45,679 tasks 36088 4636   Procesando fecha: 2024-09-26
+INFO 2025-08-12 00:49:45,681 tasks 36088 4636   Procesando fecha: 2024-09-27
+INFO 2025-08-12 00:49:45,682 tasks 36088 4636   Procesando fecha: 2024-09-28
+INFO 2025-08-12 00:49:45,684 tasks 36088 4636   Procesando fecha: 2024-09-29
+INFO 2025-08-12 00:49:45,685 tasks 36088 4636   Procesando fecha: 2024-09-30
+INFO 2025-08-12 00:49:45,686 tasks 36088 4636   Procesando fecha: 2024-10-01
+INFO 2025-08-12 00:49:45,687 tasks 36088 4636   Procesando fecha: 2024-10-02
+INFO 2025-08-12 00:49:45,689 tasks 36088 4636   Procesando fecha: 2024-10-03
+INFO 2025-08-12 00:49:45,690 tasks 36088 4636   Procesando fecha: 2024-10-04
+INFO 2025-08-12 00:49:45,691 tasks 36088 4636   Procesando fecha: 2024-10-05
+INFO 2025-08-12 00:49:45,692 tasks 36088 4636   Procesando fecha: 2024-10-06
+INFO 2025-08-12 00:49:45,694 tasks 36088 4636   Procesando fecha: 2024-10-07
+INFO 2025-08-12 00:49:45,696 tasks 36088 4636   Procesando fecha: 2024-10-08
+INFO 2025-08-12 00:49:45,697 tasks 36088 4636   Procesando fecha: 2024-10-09
+INFO 2025-08-12 00:49:45,698 tasks 36088 4636   Procesando fecha: 2024-10-10
+INFO 2025-08-12 00:49:45,700 tasks 36088 4636   Procesando fecha: 2024-10-11
+INFO 2025-08-12 00:49:45,702 tasks 36088 4636   Procesando fecha: 2024-10-12
+INFO 2025-08-12 00:49:45,703 tasks 36088 4636   Procesando fecha: 2024-10-13
+INFO 2025-08-12 00:49:45,704 tasks 36088 4636   Procesando fecha: 2024-10-14
+INFO 2025-08-12 00:49:45,705 tasks 36088 4636   Procesando fecha: 2024-10-15
+INFO 2025-08-12 00:49:45,707 tasks 36088 4636   Procesando fecha: 2024-10-16
+INFO 2025-08-12 00:49:45,708 tasks 36088 4636   Procesando fecha: 2024-10-17
+INFO 2025-08-12 00:49:45,711 tasks 36088 4636   Procesando fecha: 2024-10-18
+INFO 2025-08-12 00:49:45,712 tasks 36088 4636   Procesando fecha: 2024-10-19
+INFO 2025-08-12 00:49:45,713 tasks 36088 4636   Procesando fecha: 2024-10-20
+INFO 2025-08-12 00:49:45,715 tasks 36088 4636   Procesando fecha: 2024-10-21
+INFO 2025-08-12 00:49:45,716 tasks 36088 4636   Procesando fecha: 2024-10-22
+INFO 2025-08-12 00:49:45,717 tasks 36088 4636   Procesando fecha: 2024-10-23
+INFO 2025-08-12 00:49:45,718 tasks 36088 4636   Procesando fecha: 2024-10-24
+INFO 2025-08-12 00:49:45,719 tasks 36088 4636   Procesando fecha: 2024-10-25
+INFO 2025-08-12 00:49:45,721 tasks 36088 4636   Procesando fecha: 2024-10-26
+INFO 2025-08-12 00:49:45,722 tasks 36088 4636   Procesando fecha: 2024-10-27
+INFO 2025-08-12 00:49:45,723 tasks 36088 4636   Procesando fecha: 2024-10-28
+INFO 2025-08-12 00:49:45,724 tasks 36088 4636   Procesando fecha: 2024-10-29
+INFO 2025-08-12 00:49:45,725 tasks 36088 4636   Procesando fecha: 2024-10-30
+INFO 2025-08-12 00:49:45,727 tasks 36088 4636   Procesando fecha: 2024-10-31
+INFO 2025-08-12 00:49:45,728 tasks 36088 4636   Procesando fecha: 2024-11-01
+INFO 2025-08-12 00:49:45,729 tasks 36088 4636   Procesando fecha: 2024-11-02
+INFO 2025-08-12 00:49:45,731 tasks 36088 4636   Procesando fecha: 2024-11-03
+INFO 2025-08-12 00:49:45,732 tasks 36088 4636   Procesando fecha: 2024-11-04
+INFO 2025-08-12 00:49:45,733 tasks 36088 4636   Procesando fecha: 2024-11-05
+INFO 2025-08-12 00:49:45,734 tasks 36088 4636   Procesando fecha: 2024-11-06
+INFO 2025-08-12 00:49:45,735 tasks 36088 4636   Procesando fecha: 2024-11-07
+INFO 2025-08-12 00:49:45,736 tasks 36088 4636   Procesando fecha: 2024-11-08
+INFO 2025-08-12 00:49:45,738 tasks 36088 4636   Procesando fecha: 2024-11-09
+INFO 2025-08-12 00:49:45,739 tasks 36088 4636   Procesando fecha: 2024-11-10
+INFO 2025-08-12 00:49:45,740 tasks 36088 4636   Procesando fecha: 2024-11-11
+INFO 2025-08-12 00:49:45,741 tasks 36088 4636   Procesando fecha: 2024-11-12
+INFO 2025-08-12 00:49:45,742 tasks 36088 4636   Procesando fecha: 2024-11-13
+INFO 2025-08-12 00:49:45,744 tasks 36088 4636   Procesando fecha: 2024-11-14
+INFO 2025-08-12 00:49:45,745 tasks 36088 4636   Procesando fecha: 2024-11-15
+INFO 2025-08-12 00:49:45,746 tasks 36088 4636   Procesando fecha: 2024-11-16
+INFO 2025-08-12 00:49:45,748 tasks 36088 4636   Procesando fecha: 2024-11-17
+INFO 2025-08-12 00:49:45,749 tasks 36088 4636   Procesando fecha: 2024-11-18
+INFO 2025-08-12 00:49:45,750 tasks 36088 4636   Procesando fecha: 2024-11-19
+INFO 2025-08-12 00:49:45,751 tasks 36088 4636   Procesando fecha: 2024-11-20
+INFO 2025-08-12 00:49:45,752 tasks 36088 4636   Procesando fecha: 2024-11-21
+INFO 2025-08-12 00:49:45,753 tasks 36088 4636   Procesando fecha: 2024-11-22
+INFO 2025-08-12 00:49:45,755 tasks 36088 4636   Procesando fecha: 2024-11-23
+INFO 2025-08-12 00:49:45,756 tasks 36088 4636   Procesando fecha: 2024-11-24
+INFO 2025-08-12 00:49:45,757 tasks 36088 4636   Procesando fecha: 2024-11-25
+INFO 2025-08-12 00:49:45,758 tasks 36088 4636   Procesando fecha: 2024-11-26
+INFO 2025-08-12 00:49:45,760 tasks 36088 4636   Procesando fecha: 2024-11-27
+INFO 2025-08-12 00:49:45,761 tasks 36088 4636   Procesando fecha: 2024-11-28
+INFO 2025-08-12 00:49:45,770 tasks 36088 4636   Procesando fecha: 2024-11-29
+INFO 2025-08-12 00:49:45,785 tasks 36088 4636   Procesando fecha: 2024-11-30
+INFO 2025-08-12 00:49:45,799 tasks 36088 4636   Procesando fecha: 2024-12-01
+INFO 2025-08-12 00:49:45,813 tasks 36088 4636   Procesando fecha: 2024-12-02
+INFO 2025-08-12 00:49:45,827 tasks 36088 4636   Procesando fecha: 2024-12-03
+INFO 2025-08-12 00:49:45,840 tasks 36088 4636   Procesando fecha: 2024-12-04
+INFO 2025-08-12 00:49:45,852 tasks 36088 4636   Procesando fecha: 2024-12-05
+INFO 2025-08-12 00:49:45,873 tasks 36088 4636   Procesando fecha: 2024-12-06
+INFO 2025-08-12 00:49:45,887 tasks 36088 4636   Procesando fecha: 2024-12-07
+INFO 2025-08-12 00:49:45,901 tasks 36088 4636   Procesando fecha: 2024-12-08
+INFO 2025-08-12 00:49:45,942 tasks 36088 4636   Procesando fecha: 2024-12-09
+INFO 2025-08-12 00:49:45,957 tasks 36088 4636   Procesando fecha: 2024-12-10
+INFO 2025-08-12 00:49:45,969 tasks 36088 4636   Procesando fecha: 2024-12-11
+INFO 2025-08-12 00:49:45,979 tasks 36088 4636   Procesando fecha: 2024-12-12
+INFO 2025-08-12 00:49:45,994 tasks 36088 4636   Procesando fecha: 2024-12-13
+INFO 2025-08-12 00:49:46,008 tasks 36088 4636   Procesando fecha: 2024-12-14
+INFO 2025-08-12 00:49:46,022 tasks 36088 4636   Procesando fecha: 2024-12-15
+INFO 2025-08-12 00:49:46,037 tasks 36088 4636   Procesando fecha: 2024-12-16
+INFO 2025-08-12 00:49:46,052 tasks 36088 4636   Procesando fecha: 2024-12-17
+INFO 2025-08-12 00:49:46,067 tasks 36088 4636   Procesando fecha: 2024-12-18
+INFO 2025-08-12 00:49:46,080 tasks 36088 4636   Procesando fecha: 2024-12-19
+INFO 2025-08-12 00:49:46,094 tasks 36088 4636   Procesando fecha: 2024-12-20
+INFO 2025-08-12 00:49:46,106 tasks 36088 4636   Procesando fecha: 2024-12-21
+INFO 2025-08-12 00:49:46,120 tasks 36088 4636   Procesando fecha: 2024-12-22
+INFO 2025-08-12 00:49:46,133 tasks 36088 4636   Procesando fecha: 2024-12-23
+INFO 2025-08-12 00:49:46,146 tasks 36088 4636   Procesando fecha: 2024-12-24
+INFO 2025-08-12 00:49:46,158 tasks 36088 4636   Procesando fecha: 2024-12-25
+INFO 2025-08-12 00:49:46,172 tasks 36088 4636   Procesando fecha: 2024-12-26
+INFO 2025-08-12 00:49:46,186 tasks 36088 4636   Procesando fecha: 2024-12-27
+INFO 2025-08-12 00:49:46,198 tasks 36088 4636   Procesando fecha: 2024-12-28
+INFO 2025-08-12 00:49:46,212 tasks 36088 4636   Procesando fecha: 2024-12-29
+INFO 2025-08-12 00:49:46,225 tasks 36088 4636   Procesando fecha: 2024-12-30
+INFO 2025-08-12 00:49:46,239 tasks 36088 4636   Procesando fecha: 2024-12-31
+INFO 2025-08-12 00:49:46,253 tasks 36088 4636   Procesando fecha: 2025-01-01
+INFO 2025-08-12 00:49:46,267 tasks 36088 4636   Procesando fecha: 2025-01-02
+INFO 2025-08-12 00:49:46,279 tasks 36088 4636   Procesando fecha: 2025-01-03
+INFO 2025-08-12 00:49:46,293 tasks 36088 4636   Procesando fecha: 2025-01-04
+INFO 2025-08-12 00:49:46,307 tasks 36088 4636   Procesando fecha: 2025-01-05
+INFO 2025-08-12 00:49:46,320 tasks 36088 4636   Procesando fecha: 2025-01-06
+INFO 2025-08-12 00:49:46,334 tasks 36088 4636   Procesando fecha: 2025-01-07
+INFO 2025-08-12 00:49:46,348 tasks 36088 4636   Procesando fecha: 2025-01-08
+INFO 2025-08-12 00:49:46,362 tasks 36088 4636   Procesando fecha: 2025-01-09
+INFO 2025-08-12 00:49:46,377 tasks 36088 4636   Procesando fecha: 2025-01-10
+INFO 2025-08-12 00:49:46,391 tasks 36088 4636   Procesando fecha: 2025-01-11
+INFO 2025-08-12 00:49:46,407 tasks 36088 4636   Procesando fecha: 2025-01-12
+INFO 2025-08-12 00:49:46,421 tasks 36088 4636   Procesando fecha: 2025-01-13
+INFO 2025-08-12 00:49:46,435 tasks 36088 4636   Procesando fecha: 2025-01-14
+INFO 2025-08-12 00:49:46,450 tasks 36088 4636   Procesando fecha: 2025-01-15
+INFO 2025-08-12 00:49:46,463 tasks 36088 4636   Procesando fecha: 2025-01-16
+INFO 2025-08-12 00:49:46,477 tasks 36088 4636   Procesando fecha: 2025-01-17
+INFO 2025-08-12 00:49:46,490 tasks 36088 4636   Procesando fecha: 2025-01-18
+INFO 2025-08-12 00:49:46,504 tasks 36088 4636   Procesando fecha: 2025-01-19
+INFO 2025-08-12 00:49:46,518 tasks 36088 4636   Procesando fecha: 2025-01-20
+INFO 2025-08-12 00:49:46,532 tasks 36088 4636   Procesando fecha: 2025-01-21
+INFO 2025-08-12 00:49:46,546 tasks 36088 4636   Procesando fecha: 2025-01-22
+INFO 2025-08-12 00:49:46,560 tasks 36088 4636   Procesando fecha: 2025-01-23
+INFO 2025-08-12 00:49:46,573 tasks 36088 4636   Procesando fecha: 2025-01-24
+INFO 2025-08-12 00:49:46,588 tasks 36088 4636   Procesando fecha: 2025-01-25
+INFO 2025-08-12 00:49:46,602 tasks 36088 4636   Procesando fecha: 2025-01-26
+INFO 2025-08-12 00:49:46,616 tasks 36088 4636   Procesando fecha: 2025-01-27
+INFO 2025-08-12 00:49:46,628 tasks 36088 4636   Procesando fecha: 2025-01-28
+INFO 2025-08-12 00:49:46,641 tasks 36088 4636   Procesando fecha: 2025-01-29
+INFO 2025-08-12 00:49:46,654 tasks 36088 4636   Procesando fecha: 2025-01-30
+INFO 2025-08-12 00:49:46,661 tasks 36088 4636   Procesando fecha: 2025-01-31
+INFO 2025-08-12 00:49:46,675 tasks 36088 4636   Procesando fecha: 2025-02-01
+INFO 2025-08-12 00:49:46,689 tasks 36088 4636   Procesando fecha: 2025-02-02
+INFO 2025-08-12 00:49:46,703 tasks 36088 4636   Procesando fecha: 2025-02-03
+INFO 2025-08-12 00:49:46,717 tasks 36088 4636   Procesando fecha: 2025-02-04
+INFO 2025-08-12 00:49:46,731 tasks 36088 4636   Procesando fecha: 2025-02-05
+INFO 2025-08-12 00:49:46,744 tasks 36088 4636   Procesando fecha: 2025-02-06
+INFO 2025-08-12 00:49:46,758 tasks 36088 4636   Procesando fecha: 2025-02-07
+INFO 2025-08-12 00:49:46,771 tasks 36088 4636   Procesando fecha: 2025-02-08
+INFO 2025-08-12 00:49:46,785 tasks 36088 4636   Procesando fecha: 2025-02-09
+INFO 2025-08-12 00:49:46,799 tasks 36088 4636   Procesando fecha: 2025-02-10
+INFO 2025-08-12 00:49:46,813 tasks 36088 4636   Procesando fecha: 2025-02-11
+INFO 2025-08-12 00:49:46,826 tasks 36088 4636   Procesando fecha: 2025-02-12
+INFO 2025-08-12 00:49:46,839 tasks 36088 4636   Procesando fecha: 2025-02-13
+INFO 2025-08-12 00:49:46,852 tasks 36088 4636   Procesando fecha: 2025-02-14
+INFO 2025-08-12 00:49:46,865 tasks 36088 4636   Procesando fecha: 2025-02-15
+INFO 2025-08-12 00:49:46,898 tasks 36088 4636   Procesando fecha: 2025-02-16
+INFO 2025-08-12 00:49:46,910 tasks 36088 4636   Procesando fecha: 2025-02-17
+INFO 2025-08-12 00:49:46,922 tasks 36088 4636   Procesando fecha: 2025-02-18
+INFO 2025-08-12 00:49:46,935 tasks 36088 4636   Procesando fecha: 2025-02-19
+INFO 2025-08-12 00:49:46,949 tasks 36088 4636   Procesando fecha: 2025-02-20
+INFO 2025-08-12 00:49:46,962 tasks 36088 4636   Procesando fecha: 2025-02-21
+INFO 2025-08-12 00:49:46,974 tasks 36088 4636   Procesando fecha: 2025-02-22
+INFO 2025-08-12 00:49:46,987 tasks 36088 4636   Procesando fecha: 2025-02-23
+INFO 2025-08-12 00:49:47,001 tasks 36088 4636   Procesando fecha: 2025-02-24
+INFO 2025-08-12 00:49:47,013 tasks 36088 4636   Procesando fecha: 2025-02-25
+INFO 2025-08-12 00:49:47,025 tasks 36088 4636   Procesando fecha: 2025-02-26
+INFO 2025-08-12 00:49:47,038 tasks 36088 4636   Procesando fecha: 2025-02-27
+INFO 2025-08-12 00:49:47,051 tasks 36088 4636   Procesando fecha: 2025-02-28
+INFO 2025-08-12 00:49:47,063 tasks 36088 4636   Procesando fecha: 2025-03-01
+INFO 2025-08-12 00:49:47,075 tasks 36088 4636   Procesando fecha: 2025-03-02
+INFO 2025-08-12 00:49:47,088 tasks 36088 4636   Procesando fecha: 2025-03-03
+INFO 2025-08-12 00:49:47,101 tasks 36088 4636   Procesando fecha: 2025-03-04
+INFO 2025-08-12 00:49:47,115 tasks 36088 4636   Procesando fecha: 2025-03-05
+INFO 2025-08-12 00:49:47,129 tasks 36088 4636   Procesando fecha: 2025-03-06
+INFO 2025-08-12 00:49:47,145 tasks 36088 4636   Procesando fecha: 2025-03-07
+INFO 2025-08-12 00:49:47,158 tasks 36088 4636   Procesando fecha: 2025-03-08
+INFO 2025-08-12 00:49:47,180 tasks 36088 4636   Procesando fecha: 2025-03-09
+INFO 2025-08-12 00:49:47,194 tasks 36088 4636   Procesando fecha: 2025-03-10
+INFO 2025-08-12 00:49:47,208 tasks 36088 4636   Procesando fecha: 2025-03-11
+INFO 2025-08-12 00:49:47,229 tasks 36088 4636   Procesando fecha: 2025-03-12
+INFO 2025-08-12 00:49:47,241 tasks 36088 4636   Procesando fecha: 2025-03-13
+INFO 2025-08-12 00:49:47,254 tasks 36088 4636   Procesando fecha: 2025-03-14
+INFO 2025-08-12 00:49:47,267 tasks 36088 4636   Procesando fecha: 2025-03-15
+INFO 2025-08-12 00:49:47,281 tasks 36088 4636   Procesando fecha: 2025-03-16
+INFO 2025-08-12 00:49:47,295 tasks 36088 4636   Procesando fecha: 2025-03-17
+INFO 2025-08-12 00:49:47,310 tasks 36088 4636   Procesando fecha: 2025-03-18
+INFO 2025-08-12 00:49:47,324 tasks 36088 4636   Procesando fecha: 2025-03-19
+INFO 2025-08-12 00:49:47,337 tasks 36088 4636   Procesando fecha: 2025-03-20
+INFO 2025-08-12 00:49:47,351 tasks 36088 4636   Procesando fecha: 2025-03-21
+INFO 2025-08-12 00:49:47,364 tasks 36088 4636   Procesando fecha: 2025-03-22
+INFO 2025-08-12 00:49:47,378 tasks 36088 4636   Procesando fecha: 2025-03-23
+INFO 2025-08-12 00:49:47,395 tasks 36088 4636   Procesando fecha: 2025-03-24
+INFO 2025-08-12 00:49:47,407 tasks 36088 4636   Procesando fecha: 2025-03-25
+INFO 2025-08-12 00:49:47,420 tasks 36088 4636   Procesando fecha: 2025-03-26
+INFO 2025-08-12 00:49:47,434 tasks 36088 4636   Procesando fecha: 2025-03-27
+INFO 2025-08-12 00:49:47,447 tasks 36088 4636   Procesando fecha: 2025-03-28
+INFO 2025-08-12 00:49:47,459 tasks 36088 4636   Procesando fecha: 2025-03-29
+INFO 2025-08-12 00:49:47,472 tasks 36088 4636   Procesando fecha: 2025-03-30
+INFO 2025-08-12 00:49:47,485 tasks 36088 4636   Procesando fecha: 2025-03-31
+INFO 2025-08-12 00:49:47,498 tasks 36088 4636   Procesando fecha: 2025-04-01
+INFO 2025-08-12 00:49:47,510 tasks 36088 4636   Procesando fecha: 2025-04-02
+INFO 2025-08-12 00:49:47,523 tasks 36088 4636   Procesando fecha: 2025-04-03
+INFO 2025-08-12 00:49:47,537 tasks 36088 4636   Procesando fecha: 2025-04-04
+INFO 2025-08-12 00:49:47,551 tasks 36088 4636   Procesando fecha: 2025-04-05
+INFO 2025-08-12 00:49:47,565 tasks 36088 4636   Procesando fecha: 2025-04-06
+INFO 2025-08-12 00:49:47,579 tasks 36088 4636   Procesando fecha: 2025-04-07
+INFO 2025-08-12 00:49:47,592 tasks 36088 4636   Procesando fecha: 2025-04-08
+INFO 2025-08-12 00:49:47,607 tasks 36088 4636   Procesando fecha: 2025-04-09
+INFO 2025-08-12 00:49:47,621 tasks 36088 4636   Procesando fecha: 2025-04-10
+INFO 2025-08-12 00:49:47,636 tasks 36088 4636   Procesando fecha: 2025-04-11
+INFO 2025-08-12 00:49:47,649 tasks 36088 4636   Procesando fecha: 2025-04-12
+INFO 2025-08-12 00:49:47,663 tasks 36088 4636   Procesando fecha: 2025-04-13
+INFO 2025-08-12 00:49:47,676 tasks 36088 4636   Procesando fecha: 2025-04-14
+INFO 2025-08-12 00:49:47,689 tasks 36088 4636   Procesando fecha: 2025-04-15
+INFO 2025-08-12 00:49:47,703 tasks 36088 4636   Procesando fecha: 2025-04-16
+INFO 2025-08-12 00:49:47,716 tasks 36088 4636   Procesando fecha: 2025-04-17
+INFO 2025-08-12 00:49:47,730 tasks 36088 4636   Procesando fecha: 2025-04-18
+INFO 2025-08-12 00:49:47,744 tasks 36088 4636   Procesando fecha: 2025-04-19
+INFO 2025-08-12 00:49:47,758 tasks 36088 4636   Procesando fecha: 2025-04-20
+INFO 2025-08-12 00:49:47,771 tasks 36088 4636   Procesando fecha: 2025-04-21
+INFO 2025-08-12 00:49:47,784 tasks 36088 4636   Procesando fecha: 2025-04-22
+INFO 2025-08-12 00:49:47,794 tasks 36088 4636   Procesando fecha: 2025-04-23
+INFO 2025-08-12 00:49:47,809 tasks 36088 4636   Procesando fecha: 2025-04-24
+INFO 2025-08-12 00:49:47,822 tasks 36088 4636   Procesando fecha: 2025-04-25
+INFO 2025-08-12 00:49:47,834 tasks 36088 4636   Procesando fecha: 2025-04-26
+INFO 2025-08-12 00:49:47,849 tasks 36088 4636   Procesando fecha: 2025-04-27
+INFO 2025-08-12 00:49:47,863 tasks 36088 4636   Procesando fecha: 2025-04-28
+INFO 2025-08-12 00:49:47,876 tasks 36088 4636   Procesando fecha: 2025-04-29
+INFO 2025-08-12 00:49:47,889 tasks 36088 4636   Procesando fecha: 2025-04-30
+INFO 2025-08-12 00:49:47,903 tasks 36088 4636   Procesando fecha: 2025-05-01
+INFO 2025-08-12 00:49:47,916 tasks 36088 4636   Procesando fecha: 2025-05-02
+INFO 2025-08-12 00:49:47,929 tasks 36088 4636   Procesando fecha: 2025-05-03
+INFO 2025-08-12 00:49:47,941 tasks 36088 4636   Procesando fecha: 2025-05-04
+INFO 2025-08-12 00:49:47,954 tasks 36088 4636   Procesando fecha: 2025-05-05
+INFO 2025-08-12 00:49:47,967 tasks 36088 4636   Procesando fecha: 2025-05-06
+INFO 2025-08-12 00:49:47,980 tasks 36088 4636   Procesando fecha: 2025-05-07
+INFO 2025-08-12 00:49:47,992 tasks 36088 4636   Procesando fecha: 2025-05-08
+INFO 2025-08-12 00:49:48,005 tasks 36088 4636   Procesando fecha: 2025-05-09
+INFO 2025-08-12 00:49:48,018 tasks 36088 4636   Procesando fecha: 2025-05-10
+INFO 2025-08-12 00:49:48,031 tasks 36088 4636   Procesando fecha: 2025-05-11
+INFO 2025-08-12 00:49:48,044 tasks 36088 4636   Procesando fecha: 2025-05-12
+INFO 2025-08-12 00:49:48,056 tasks 36088 4636   Procesando fecha: 2025-05-13
+INFO 2025-08-12 00:49:48,069 tasks 36088 4636   Procesando fecha: 2025-05-14
+INFO 2025-08-12 00:49:48,082 tasks 36088 4636   Procesando fecha: 2025-05-15
+INFO 2025-08-12 00:49:48,095 tasks 36088 4636   Procesando fecha: 2025-05-16
+INFO 2025-08-12 00:49:48,107 tasks 36088 4636   Procesando fecha: 2025-05-17
+INFO 2025-08-12 00:49:48,120 tasks 36088 4636   Procesando fecha: 2025-05-18
+INFO 2025-08-12 00:49:48,134 tasks 36088 4636   Procesando fecha: 2025-05-19
+INFO 2025-08-12 00:49:48,147 tasks 36088 4636   Procesando fecha: 2025-05-20
+INFO 2025-08-12 00:49:48,159 tasks 36088 4636   Procesando fecha: 2025-05-21
+INFO 2025-08-12 00:49:48,171 tasks 36088 4636   Procesando fecha: 2025-05-22
+INFO 2025-08-12 00:49:48,184 tasks 36088 4636   Procesando fecha: 2025-05-23
+INFO 2025-08-12 00:49:48,197 tasks 36088 4636   Procesando fecha: 2025-05-24
+INFO 2025-08-12 00:49:48,210 tasks 36088 4636   Procesando fecha: 2025-05-25
+INFO 2025-08-12 00:49:48,223 tasks 36088 4636   Procesando fecha: 2025-05-26
+INFO 2025-08-12 00:49:48,236 tasks 36088 4636   Procesando fecha: 2025-05-27
+INFO 2025-08-12 00:49:48,249 tasks 36088 4636   Procesando fecha: 2025-05-28
+INFO 2025-08-12 00:49:48,262 tasks 36088 4636   Procesando fecha: 2025-05-29
+INFO 2025-08-12 00:49:48,296 tasks 36088 4636   Procesando fecha: 2025-05-30
+INFO 2025-08-12 00:49:48,309 tasks 36088 4636   Procesando fecha: 2025-05-31
+INFO 2025-08-12 00:49:48,321 tasks 36088 4636   Procesando fecha: 2025-06-01
+INFO 2025-08-12 00:49:48,335 tasks 36088 4636   Procesando fecha: 2025-06-02
+INFO 2025-08-12 00:49:48,348 tasks 36088 4636   Procesando fecha: 2025-06-03
+INFO 2025-08-12 00:49:48,358 tasks 36088 4636   Procesando fecha: 2025-06-04
+INFO 2025-08-12 00:49:48,369 tasks 36088 4636   Procesando fecha: 2025-06-05
+INFO 2025-08-12 00:49:48,382 tasks 36088 4636   Procesando fecha: 2025-06-06
+INFO 2025-08-12 00:49:48,396 tasks 36088 4636   Procesando fecha: 2025-06-07
+INFO 2025-08-12 00:49:48,414 tasks 36088 4636   Procesando fecha: 2025-06-08
+INFO 2025-08-12 00:49:48,428 tasks 36088 4636   Procesando fecha: 2025-06-09
+INFO 2025-08-12 00:49:48,441 tasks 36088 4636   Procesando fecha: 2025-06-10
+INFO 2025-08-12 00:49:48,454 tasks 36088 4636   Procesando fecha: 2025-06-11
+INFO 2025-08-12 00:49:48,468 tasks 36088 4636   Procesando fecha: 2025-06-12
+INFO 2025-08-12 00:49:48,481 tasks 36088 4636   Procesando fecha: 2025-06-13
+INFO 2025-08-12 00:49:48,494 tasks 36088 4636   Procesando fecha: 2025-06-14
+INFO 2025-08-12 00:49:48,507 tasks 36088 4636   Procesando fecha: 2025-06-15
+INFO 2025-08-12 00:49:48,520 tasks 36088 4636   Procesando fecha: 2025-06-16
+INFO 2025-08-12 00:49:48,534 tasks 36088 4636   Procesando fecha: 2025-06-17
+INFO 2025-08-12 00:49:48,547 tasks 36088 4636   Procesando fecha: 2025-06-18
+INFO 2025-08-12 00:49:48,561 tasks 36088 4636   Procesando fecha: 2025-06-19
+INFO 2025-08-12 00:49:48,578 tasks 36088 4636   Procesando fecha: 2025-06-20
+INFO 2025-08-12 00:49:48,591 tasks 36088 4636   Procesando fecha: 2025-06-21
+INFO 2025-08-12 00:49:48,604 tasks 36088 4636   Procesando fecha: 2025-06-22
+INFO 2025-08-12 00:49:48,618 tasks 36088 4636   Procesando fecha: 2025-06-23
+INFO 2025-08-12 00:49:48,632 tasks 36088 4636   Procesando fecha: 2025-06-24
+INFO 2025-08-12 00:49:48,645 tasks 36088 4636   Procesando fecha: 2025-06-25
+INFO 2025-08-12 00:49:48,658 tasks 36088 4636   Procesando fecha: 2025-06-26
+INFO 2025-08-12 00:49:48,673 tasks 36088 4636   Procesando fecha: 2025-06-27
+INFO 2025-08-12 00:49:48,686 tasks 36088 4636   Procesando fecha: 2025-06-28
+INFO 2025-08-12 00:49:48,700 tasks 36088 4636   Procesando fecha: 2025-06-29
+INFO 2025-08-12 00:49:48,713 tasks 36088 4636   Procesando fecha: 2025-06-30
+INFO 2025-08-12 00:49:48,726 tasks 36088 4636   Procesando fecha: 2025-07-01
+INFO 2025-08-12 00:49:48,739 tasks 36088 4636   Procesando fecha: 2025-07-02
+INFO 2025-08-12 00:49:48,753 tasks 36088 4636   Procesando fecha: 2025-07-03
+INFO 2025-08-12 00:49:48,766 tasks 36088 4636   Procesando fecha: 2025-07-04
+INFO 2025-08-12 00:49:48,780 tasks 36088 4636   Procesando fecha: 2025-07-05
+INFO 2025-08-12 00:49:48,796 tasks 36088 4636   Procesando fecha: 2025-07-06
+INFO 2025-08-12 00:49:48,811 tasks 36088 4636   Procesando fecha: 2025-07-07
+INFO 2025-08-12 00:49:48,824 tasks 36088 4636   Procesando fecha: 2025-07-08
+INFO 2025-08-12 00:49:48,840 tasks 36088 4636   Procesando fecha: 2025-07-09
+INFO 2025-08-12 00:49:48,855 tasks 36088 4636   Procesando fecha: 2025-07-10
+INFO 2025-08-12 00:49:48,869 tasks 36088 4636   Procesando fecha: 2025-07-11
+INFO 2025-08-12 00:49:48,883 tasks 36088 4636   Procesando fecha: 2025-07-12
+INFO 2025-08-12 00:49:48,898 tasks 36088 4636   Procesando fecha: 2025-07-13
+INFO 2025-08-12 00:49:48,915 tasks 36088 4636   Procesando fecha: 2025-07-14
+INFO 2025-08-12 00:49:48,929 tasks 36088 4636   Procesando fecha: 2025-07-15
+INFO 2025-08-12 00:49:48,944 tasks 36088 4636   Procesando fecha: 2025-07-16
+INFO 2025-08-12 00:49:48,958 tasks 36088 4636   Procesando fecha: 2025-07-17
+INFO 2025-08-12 00:49:48,972 tasks 36088 4636   Procesando fecha: 2025-07-18
+INFO 2025-08-12 00:49:48,987 tasks 36088 4636   Procesando fecha: 2025-07-19
+INFO 2025-08-12 00:49:49,003 tasks 36088 4636   Procesando fecha: 2025-07-20
+INFO 2025-08-12 00:49:49,017 tasks 36088 4636   Procesando fecha: 2025-07-21
+INFO 2025-08-12 00:49:49,032 tasks 36088 4636   Procesando fecha: 2025-07-22
+INFO 2025-08-12 00:49:49,049 tasks 36088 4636   Procesando fecha: 2025-07-23
+INFO 2025-08-12 00:49:49,065 tasks 36088 4636   Procesando fecha: 2025-07-24
+INFO 2025-08-12 00:49:49,080 tasks 36088 4636   Procesando fecha: 2025-07-25
+INFO 2025-08-12 00:49:49,096 tasks 36088 4636   Procesando fecha: 2025-07-26
+INFO 2025-08-12 00:49:49,110 tasks 36088 4636   Procesando fecha: 2025-07-27
+INFO 2025-08-12 00:49:49,125 tasks 36088 4636   Procesando fecha: 2025-07-28
+INFO 2025-08-12 00:49:49,139 tasks 36088 4636   Procesando fecha: 2025-07-29
+INFO 2025-08-12 00:49:49,153 tasks 36088 4636   Procesando fecha: 2025-07-30
+INFO 2025-08-12 00:49:49,168 tasks 36088 4636   Procesando fecha: 2025-07-31
+INFO 2025-08-12 00:49:49,183 tasks 36088 4636   Procesando fecha: 2025-08-01
+INFO 2025-08-12 00:49:49,196 tasks 36088 4636   Procesando fecha: 2025-08-02
+INFO 2025-08-12 00:49:49,212 tasks 36088 4636   Procesando fecha: 2025-08-03
+INFO 2025-08-12 00:49:49,226 tasks 36088 4636   Procesando fecha: 2025-08-04
+INFO 2025-08-12 00:49:49,240 tasks 36088 4636   Procesando fecha: 2025-08-05
+INFO 2025-08-12 00:49:49,255 tasks 36088 4636   Procesando fecha: 2025-08-06
+INFO 2025-08-12 00:49:49,270 tasks 36088 4636   Procesando fecha: 2025-08-07
+INFO 2025-08-12 00:49:49,284 tasks 36088 4636   Procesando fecha: 2025-08-08
+INFO 2025-08-12 00:49:49,298 tasks 36088 4636   Procesando fecha: 2025-08-09
+INFO 2025-08-12 00:49:49,312 tasks 36088 4636   Procesando fecha: 2025-08-10
+INFO 2025-08-12 00:49:49,327 tasks 36088 4636   Procesando fecha: 2025-08-11
+INFO 2025-08-12 00:49:49,340 tasks 36088 4636   Procesando fecha: 2025-08-12
+INFO 2025-08-12 00:49:49,341 tasks 36088 4636 === RESUMEN DE PROCESAMIENTO ===
+INFO 2025-08-12 00:49:49,342 tasks 36088 4636 Registros creados: 257
+INFO 2025-08-12 00:49:49,342 tasks 36088 4636 Registros actualizados: 0
+INFO 2025-08-12 00:49:49,342 tasks 36088 4636 === TAREA COMPLETADA: calculate_inverter_data ===
+INFO 2025-08-12 01:00:00,082 strategy 36088 4636 Task scada_proxy.tasks.fetch_historical_measurements_for_all_devices[09c621f6-7e9f-436e-a1d6-d33376b88b29] received
+INFO 2025-08-12 01:00:00,083 tasks 36088 4636 Iniciando la obtención de mediciones históricas para los últimos 2:00:00. Rango: 2025-08-11 23:00:00.083900-05:00 -> 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:00,112 tasks 36088 4636 Tarea creada para dispositivo Fronius - UCC (29630827-0242-492f-9ed0-a48d120da2ac) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,113 tasks 36088 4636 Tarea creada para dispositivo Estación - UCC (74154481-3f6c-4827-a8d7-ea6fbae62fd9) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,113 tasks 36088 4636 Tarea creada para dispositivo Medidor 4 - Udenar (0f7648d7-7575-4419-8192-a4f80b55309b) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,114 tasks 36088 4636 Tarea creada para dispositivo Bloque Nuevo - Medidor 3 (19934344-9c79-482f-b74f-50dde3a6079c) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,115 tasks 36088 4636 Tarea creada para dispositivo Bloque Nuevo - Medidor 1 (7ba9fa00-7ef9-4246-8c30-85ea56088e0d) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,116 tasks 36088 4636 Tarea creada para dispositivo inverter2 (37f796af-7caa-459f-bc86-3e2f7936a879) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,116 tasks 36088 4636 Tarea creada para dispositivo inverter1 (ada64a56-331c-4489-a02c-7aac55d54111) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,117 tasks 36088 4636 Tarea creada para dispositivo Medidor 1 - Cesmag (4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,118 tasks 36088 4636 Tarea creada para dispositivo Medidor 2 - Cesmag (3ccb420f-e6a0-4461-8dc6-e8568bd699f0) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,118 tasks 36088 4636 Tarea creada para dispositivo Medidor 3 - Cesmag (348b47aa-b285-4948-a9fb-a57bc38cedf1) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,119 tasks 36088 4636 Tarea creada para dispositivo Medidor 4 - Cesmag (6ebd34d4-4883-4682-aab3-f3243544a67a) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,120 tasks 36088 4636 Tarea creada para dispositivo Inverter 1 - Cesmag (e96986a9-a127-4139-975d-1a711ae25327) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,121 tasks 36088 4636 Tarea creada para dispositivo Estación San Damian - CESMAG (819dfc27-fe61-42e6-9413-0f8820bea03e) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,121 tasks 36088 4636 Tarea creada para dispositivo Medidor 1 - HUDN (628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,122 tasks 36088 4636 Tarea creada para dispositivo Medidor 2 - HUDN (6ecb37db-ab95-4640-b8ce-c7f8bb91f611) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,123 tasks 36088 4636 Tarea creada para dispositivo Medidor 3 - HUDN (673f11ce-77da-4839-8498-a5948d984d8c) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,123 tasks 36088 4636 Tarea creada para dispositivo Medidor 4 - HUDN (ad749299-a3a4-4270-b80d-6251389eabcb) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,124 tasks 36088 4636 Tarea creada para dispositivo Inversor 1 - HUDN (f6893ba9-7175-44ea-8624-a47bf55158c9) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,125 tasks 36088 4636 Tarea creada para dispositivo Estación - HUDN (49435c0b-ada3-4ced-ad15-9418013a30d1) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,125 tasks 36088 4636 Tarea creada para dispositivo Medidor 1 - Alvernia (b06d770e-ec25-49a0-949d-60c9e169f2bb) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,126 tasks 36088 4636 Tarea creada para dispositivo Medidor 4 - Alvernia (0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,127 tasks 36088 4636 Tarea creada para dispositivo estación (46094855-4fe6-4c10-afe3-444a101719e2) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,127 tasks 36088 4636 Tarea creada para dispositivo Prueba (3a5eca15-cd03-4a83-8981-b432d2217344) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,128 tasks 36088 4636 Tarea creada para dispositivo Medidor 3 - Alvernia (4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,129 tasks 36088 4636 Tarea creada para dispositivo Medidor 2 - Alvernia (5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,129 tasks 36088 4636 Tarea creada para dispositivo Fronius - Alvernia (0f962572-fab3-4c09-bffc-465b56a22d8d) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,130 tasks 36088 4636 Tarea creada para dispositivo Estación Alvernia (1fb6c4ae-2e7c-4758-80bf-156c7826fead) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,131 tasks 36088 4636 Tarea creada para dispositivo Medidor 3 - UCC (d6915dc0-4391-4514-b4c6-58a30f1988f3) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,131 tasks 36088 4636 Tarea creada para dispositivo Medidor 4 - UCC (7130f831-d8ca-4fd8-adb5-f02dbc7543b3) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,132 tasks 36088 4636 Tarea creada para dispositivo Medidor 2 - UCC (bc80e209-e290-4aaa-a6e8-931e9fb7b803) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,132 tasks 36088 4636 Tarea creada para dispositivo Medidor 1 - UCC (86b9c020-4645-4c39-891a-d1e8a7048c12) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,133 tasks 36088 4636 Tarea creada para dispositivo Bloque Nuevo - Medidor 2 (1da46bc5-1655-4ba1-82c2-0b283370a97b) desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia).
+INFO 2025-08-12 01:00:00,133 tasks 36088 4636 Todas las subtareas para obtener mediciones han sido encoladas.
+INFO 2025-08-12 01:00:00,135 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[9fafa37e-2ffb-4b42-8978-b08529ca4400] received
+INFO 2025-08-12 01:00:00,230 tasks 36088 4636 Obteniendo mediciones para dispositivo 29630827-0242-492f-9ed0-a48d120da2ac desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:00,295 tasks 36088 4636 Dispositivo 29630827-0242-492f-9ed0-a48d120da2ac: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 01:00:00,297 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[bf62cf7d-c714-420c-889b-0859234bd7d5] received
+INFO 2025-08-12 01:00:00,331 tasks 36088 4636 Obteniendo mediciones para dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:00,397 tasks 36088 4636 Dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 01:00:00,401 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[05d246d2-d3cb-417b-a7e7-bc6696921cec] received
+INFO 2025-08-12 01:00:00,431 tasks 36088 4636 Obteniendo mediciones para dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:00,607 tasks 36088 4636 Dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:00,610 strategy 36088 4636 Task scada_proxy.tasks.sync_scada_metadata[91d4d80d-047b-4c6b-8361-e159f51e024e] received
+INFO 2025-08-12 01:00:00,701 tasks 36088 4636 Sincronizadas 5 instituciones.
+INFO 2025-08-12 01:00:00,781 tasks 36088 4636 Sincronizadas 3 categorías de dispositivos.
+INFO 2025-08-12 01:00:00,897 tasks 36088 4636 Desactivados 2 dispositivos que ya no se encuentran en la API SCADA.
+INFO 2025-08-12 01:00:00,899 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3737bff6-d4e4-475e-ae5e-810f3acf3246] received
+INFO 2025-08-12 01:00:00,922 tasks 36088 4636 Obteniendo mediciones para dispositivo 19934344-9c79-482f-b74f-50dde3a6079c desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:01,115 tasks 36088 4636 Dispositivo 19934344-9c79-482f-b74f-50dde3a6079c: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:01,118 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[4516d79f-58ed-4ce8-8e78-7a24c7b5dce4] received
+INFO 2025-08-12 01:00:01,141 tasks 36088 4636 Obteniendo mediciones para dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:01,322 tasks 36088 4636 Dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:01,325 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[d45b9c02-96c8-4c73-ae0f-38aa4ecd22d8] received
+INFO 2025-08-12 01:00:01,457 tasks 36088 4636 Obteniendo mediciones para dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:01,601 tasks 36088 4636 Dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879: 29 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:01,604 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b84f3d36-5986-4dc5-bab5-a94d4518f4bb] received
+INFO 2025-08-12 01:00:01,744 tasks 36088 4636 Obteniendo mediciones para dispositivo ada64a56-331c-4489-a02c-7aac55d54111 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:01,895 tasks 36088 4636 Dispositivo ada64a56-331c-4489-a02c-7aac55d54111: 29 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:01,898 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c133da5f-8269-4f09-a91c-8c446dd0d0ef] received
+INFO 2025-08-12 01:00:01,921 tasks 36088 4636 Obteniendo mediciones para dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:02,146 tasks 36088 4636 Dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:02,149 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b64628a4-3c1d-4bca-91f2-7c4b3bd1b510] received
+INFO 2025-08-12 01:00:02,171 tasks 36088 4636 Obteniendo mediciones para dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:02,345 tasks 36088 4636 Dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:02,348 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b8f912d6-c131-47ca-8007-93d94bd3515c] received
+INFO 2025-08-12 01:00:02,380 tasks 36088 4636 Obteniendo mediciones para dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:02,569 tasks 36088 4636 Dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:02,571 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[eceb0e1c-1717-43c1-be9b-2a4be7f93632] received
+INFO 2025-08-12 01:00:02,597 tasks 36088 4636 Obteniendo mediciones para dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:02,796 tasks 36088 4636 Dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:02,798 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[59d421d8-11e3-42c4-9150-df6ab6855b1e] received
+INFO 2025-08-12 01:00:02,820 tasks 36088 4636 Obteniendo mediciones para dispositivo e96986a9-a127-4139-975d-1a711ae25327 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:02,877 tasks 36088 4636 Dispositivo e96986a9-a127-4139-975d-1a711ae25327: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 01:00:02,879 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[942a8217-9118-456f-8561-9476271a8c2a] received
+INFO 2025-08-12 01:00:02,901 tasks 36088 4636 Obteniendo mediciones para dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:03,009 tasks 36088 4636 Dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e: 28 nuevas, 26 actualizadas
+INFO 2025-08-12 01:00:03,012 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[466eb20f-0f17-4e6e-ab1a-3485dcb0e163] received
+INFO 2025-08-12 01:00:03,034 tasks 36088 4636 Obteniendo mediciones para dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:03,206 tasks 36088 4636 Dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:03,209 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3af34cf7-a9bc-43df-8ef0-b7bfc71407e5] received
+INFO 2025-08-12 01:00:03,231 tasks 36088 4636 Obteniendo mediciones para dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:03,405 tasks 36088 4636 Dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:03,408 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7772f05c-8c90-4d7d-8253-c44693178fbc] received
+INFO 2025-08-12 01:00:03,445 tasks 36088 4636 Obteniendo mediciones para dispositivo 673f11ce-77da-4839-8498-a5948d984d8c desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:03,633 tasks 36088 4636 Dispositivo 673f11ce-77da-4839-8498-a5948d984d8c: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:03,636 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7f251356-2ccb-4382-a8af-9d15622f3702] received
+INFO 2025-08-12 01:00:03,664 tasks 36088 4636 Obteniendo mediciones para dispositivo ad749299-a3a4-4270-b80d-6251389eabcb desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:03,849 tasks 36088 4636 Dispositivo ad749299-a3a4-4270-b80d-6251389eabcb: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 01:00:03,852 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[f6cf4239-aae4-4576-b06a-a9e21368e355] received
+INFO 2025-08-12 01:00:03,876 tasks 36088 4636 Obteniendo mediciones para dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:03,934 tasks 36088 4636 Dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 01:00:03,936 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[ea0a88eb-5622-496a-99c8-61db47970ac8] received
+INFO 2025-08-12 01:00:03,963 tasks 36088 4636 Obteniendo mediciones para dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:04,042 tasks 36088 4636 Dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 01:00:04,044 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[74ae5792-b9c3-41da-843e-78a2f0f4a0ec] received
+INFO 2025-08-12 01:00:04,067 tasks 36088 4636 Obteniendo mediciones para dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:04,244 tasks 36088 4636 Dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:04,247 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[4f07dc90-c488-4ec6-9005-9aa33152a6dc] received
+INFO 2025-08-12 01:00:04,375 tasks 36088 4636 Obteniendo mediciones para dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:04,561 tasks 36088 4636 Dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:04,564 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[d9a7ae5f-7e8c-4b30-8d2a-c535b010d71a] received
+INFO 2025-08-12 01:00:04,587 tasks 36088 4636 Obteniendo mediciones para dispositivo 46094855-4fe6-4c10-afe3-444a101719e2 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:04,799 tasks 36088 4636 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 55 nuevas, 55 actualizadas
+INFO 2025-08-12 01:00:04,802 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8b2e556c-aa77-4582-86c0-8d68e6e9c27a] received
+INFO 2025-08-12 01:00:04,831 tasks 36088 4636 Obteniendo mediciones para dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:04,928 tasks 36088 4636 Dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 01:00:04,931 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[498f9b80-2af1-44e4-aa17-018e0c441dee] received
+INFO 2025-08-12 01:00:04,964 tasks 36088 4636 Obteniendo mediciones para dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:05,140 tasks 36088 4636 Dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:05,143 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[253d2c4d-6806-4872-bc2f-7cc23946f4a9] received
+INFO 2025-08-12 01:00:05,165 tasks 36088 4636 Obteniendo mediciones para dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:05,340 tasks 36088 4636 Dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:05,343 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[67588742-da97-4997-b773-84d063d972d1] received
+INFO 2025-08-12 01:00:05,366 tasks 36088 4636 Obteniendo mediciones para dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:05,426 tasks 36088 4636 Dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d: 0 nuevas, 0 actualizadas
+INFO 2025-08-12 01:00:05,429 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[15167880-7dc4-40d0-8cd8-8c4b507d7577] received
+INFO 2025-08-12 01:00:05,465 tasks 36088 4636 Obteniendo mediciones para dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:05,577 tasks 36088 4636 Dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead: 30 nuevas, 30 actualizadas
+INFO 2025-08-12 01:00:05,579 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8044cd4b-9333-443c-a775-233468a2079d] received
+INFO 2025-08-12 01:00:05,601 tasks 36088 4636 Obteniendo mediciones para dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:05,782 tasks 36088 4636 Dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:05,785 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2d6d51a6-3956-4f0c-b925-e48ec25e598d] received
+INFO 2025-08-12 01:00:05,809 tasks 36088 4636 Obteniendo mediciones para dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:05,984 tasks 36088 4636 Dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:05,987 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[564954ef-4c3e-4fa1-8a7e-16ffefbea018] received
+INFO 2025-08-12 01:00:06,014 tasks 36088 4636 Obteniendo mediciones para dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:06,197 tasks 36088 4636 Dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:06,201 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7c97480e-8dc1-45a0-a216-8c8625fb288d] received
+INFO 2025-08-12 01:00:06,223 tasks 36088 4636 Obteniendo mediciones para dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12 desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:06,388 tasks 36088 4636 Dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12: 30 nuevas, 31 actualizadas
+INFO 2025-08-12 01:00:06,391 strategy 36088 4636 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[6b5c8db7-70ac-4daa-a689-a99bd7a053df] received
+INFO 2025-08-12 01:00:06,415 tasks 36088 4636 Obteniendo mediciones para dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b desde 2025-08-11 23:00:00.083900-05:00 hasta 2025-08-12 01:00:00.083900-05:00 (hora Colombia)
+INFO 2025-08-12 01:00:06,613 tasks 36088 4636 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 30 nuevas, 31 actualizadas
+ERROR 2025-08-12 01:27:29,607 consumer 36088 4636 Received unregistered task of type 'indicators.tasks.calculate_electrical_data'.
+The message has been ignored and discarded.
+
+Did you remember to import the module containing this task?
+Or maybe you're using relative imports?
+
+Please see
+https://docs.celeryq.dev/en/latest/internals/protocol.html
+for more information.
+
+The full contents of the message body was:
+b'[[], {"time_range": "daily", "start_date_str": "2025-08-12", "end_date_str": "2025-08-12", "institution_id": 1, "device_id": ""}, {"callbacks": null, "errbacks": null, "chain": null, "chord": null}]' (198b)
+
+The full contents of the message headers:
+{'lang': 'py', 'task': 'indicators.tasks.calculate_electrical_data', 'id': '8764dfec-05f4-4747-b720-89f9357ccc33', 'shadow': None, 'eta': None, 'expires': None, 'group': None, 'group_index': None, 'retries': 0, 'timelimit': [None, None], 'root_id': '8764dfec-05f4-4747-b720-89f9357ccc33', 'parent_id': None, 'argsrepr': '()', 'kwargsrepr': "{'time_range': 'daily', 'start_date_str': '2025-08-12', 'end_date_str': '2025-08-12', 'institution_id': 1, 'device_id': ''}", 'origin': 'gen8156@DESKTOP-CGEBDOL', 'ignore_result': False, 'replaced_task_nesting': 0, 'stamped_headers': None, 'stamps': {}}
+
+The delivery info for this task is:
+{'exchange': '', 'routing_key': 'celery'}
+Traceback (most recent call last):
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\celery\worker\consumer\consumer.py", line 662, in on_task_received
+    strategy = strategies[type_]
+               ~~~~~~~~~~^^^^^^^
+KeyError: 'indicators.tasks.calculate_electrical_data'
+INFO 2025-08-12 01:30:20,047 connection 5380 31280 Connected to redis://localhost:6379/0
+INFO 2025-08-12 01:30:20,052 mingle 5380 31280 mingle: searching for neighbors
+INFO 2025-08-12 01:30:21,069 mingle 5380 31280 mingle: all alone
+INFO 2025-08-12 01:31:03,485 strategy 5380 31280 Task indicators.tasks.calculate_electrical_data[7b2e3a66-4f86-469b-bf16-4341347e0301] received
+INFO 2025-08-12 01:31:03,506 tasks 5380 31280 === INICIANDO TAREA: calculate_electrical_data ===
+INFO 2025-08-12 01:31:03,506 tasks 5380 31280 Calculando datos eléctricos para rango: daily, desde 2025-08-12 hasta 2025-08-12
+INFO 2025-08-12 01:31:03,507 tasks 5380 31280 Filtrado por institución ID: 1
+INFO 2025-08-12 01:31:03,532 tasks 5380 31280 Procesando 4 medidores eléctricos
+INFO 2025-08-12 01:31:03,533 tasks 5380 31280 Procesando medidor: Bloque Nuevo - Medidor 3 (ID: 27, SCADA ID: 19934344-9c79-482f-b74f-50dde3a6079c)
+INFO 2025-08-12 01:31:03,533 tasks 5380 31280   Procesando fecha: 2025-08-12
+INFO 2025-08-12 01:31:03,533 tasks 5380 31280 Procesando medidor: Bloque Nuevo - Medidor 1 (ID: 28, SCADA ID: 7ba9fa00-7ef9-4246-8c30-85ea56088e0d)
+INFO 2025-08-12 01:31:03,533 tasks 5380 31280   Procesando fecha: 2025-08-12
+INFO 2025-08-12 01:31:03,534 tasks 5380 31280 Procesando medidor: Medidor 4 - Udenar (ID: 25, SCADA ID: 0f7648d7-7575-4419-8192-a4f80b55309b)
+INFO 2025-08-12 01:31:03,534 tasks 5380 31280   Procesando fecha: 2025-08-12
+INFO 2025-08-12 01:31:03,534 tasks 5380 31280 Procesando medidor: Bloque Nuevo - Medidor 2 (ID: 26, SCADA ID: 1da46bc5-1655-4ba1-82c2-0b283370a97b)
+INFO 2025-08-12 01:31:03,534 tasks 5380 31280   Procesando fecha: 2025-08-12
+INFO 2025-08-12 01:31:03,534 tasks 5380 31280 === RESUMEN DE PROCESAMIENTO ELÉCTRICO ===
+INFO 2025-08-12 01:31:03,534 tasks 5380 31280 Registros creados: 0
+INFO 2025-08-12 01:31:03,534 tasks 5380 31280 Registros actualizados: 0
+INFO 2025-08-12 01:31:03,534 tasks 5380 31280 === TAREA COMPLETADA: calculate_electrical_data ===

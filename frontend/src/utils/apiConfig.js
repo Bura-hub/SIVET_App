@@ -16,11 +16,16 @@ export const ENDPOINTS = {
     indicators: '/api/electric-meter-indicators/',
     institutions: '/api/institutions/',
     devices: '/api/electric-meters/list/',
+    calculate: '/api/electric-meters/calculate-new/',
   },
   inverters: {
     status: '/api/inverters/status/',
     generation: '/api/inverters/generation/',
-    details: '/api/inverters/details/'
+    details: '/api/inverters/details/',
+    indicators: '/api/inverter-indicators/',
+    chartData: '/api/inverter-chart-data/',
+    calculate: '/api/inverters/calculate/',
+    list: '/api/inverters/list/'
   },
   weather: {
     current: '/api/weather/current/',

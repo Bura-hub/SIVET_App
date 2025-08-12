@@ -16,7 +16,7 @@ import calendar
 import pytz
 
 # Importa los modelos de indicadores
-from .models import ElectricMeterEnergyConsumption, MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterIndicators
+from .models import ElectricMeterEnergyConsumption, MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumption, ElectricMeterChartData, ElectricMeterIndicators, InverterIndicators, InverterChartData
 # Importa el cliente SCADA y los modelos DeviceCategory, Measurement, Device de scada_proxy
 from scada_proxy.scada_client import ScadaConnectorClient 
 from scada_proxy.models import DeviceCategory, Measurement, Device, Institution
@@ -26,7 +26,7 @@ from .tasks import calculate_monthly_consumption_kpi, calculate_and_save_daily_d
 # Importaciones adicionales para los nuevos modelos - CORREGIDAS
 from django.db.models import Q, Sum, Avg, Max, F, FloatField, Count, Min
 from django.db.models.functions import Cast
-from .serializers import ElectricMeterEnergySerializer, MonthlyConsumptionKPISerializer, DailyChartDataSerializer, ElectricMeterConsumptionSerializer, ElectricMeterChartDataSerializer, ElectricMeterCalculationRequestSerializer, ElectricMeterCalculationResponseSerializer, ElectricMeterIndicatorsSerializer
+from .serializers import ElectricMeterEnergySerializer, MonthlyConsumptionKPISerializer, DailyChartDataSerializer, ElectricMeterConsumptionSerializer, ElectricMeterChartDataSerializer, ElectricMeterCalculationRequestSerializer, ElectricMeterCalculationResponseSerializer, ElectricMeterIndicatorsSerializer, InverterIndicatorsSerializer, InverterChartDataSerializer, InverterCalculationRequestSerializer, InverterCalculationResponseSerializer
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
@@ -1435,3 +1435,381 @@ class ElectricMeterIndicatorsViewSet(viewsets.ReadOnlyModelViewSet):
             'results': serializer.data
         }
         return Response(response_data)
+
+# ========================= Vistas para Indicadores de Inversores =========================
+
+@extend_schema(
+    tags=["Inversores"],
+    description="Lista todos los indicadores de inversores con opciones de filtrado.",
+    parameters=[
+        OpenApiParameter("institution_id", int, OpenApiParameter.QUERY, description="ID de la institución"),
+        OpenApiParameter("device_id", str, OpenApiParameter.QUERY, description="ID del inversor específico"),
+        OpenApiParameter("time_range", str, OpenApiParameter.QUERY, description="Rango de tiempo: 'daily' o 'monthly'"),
+        OpenApiParameter("start_date", str, OpenApiParameter.QUERY, description="Fecha de inicio (YYYY-MM-DD)"),
+        OpenApiParameter("end_date", str, OpenApiParameter.QUERY, description="Fecha de fin (YYYY-MM-DD)"),
+    ],
+    responses={200: InverterIndicatorsSerializer(many=True)}
+)
+class InverterIndicatorsView(APIView):
+    """
+    Vista para obtener indicadores de inversores.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/inverter-indicators/
+        
+        Lista los indicadores de inversores con opciones de filtrado.
+        """
+        try:
+            # Obtener parámetros de filtrado
+            institution_id = request.query_params.get('institution_id')
+            device_id = request.query_params.get('device_id')
+            time_range = request.query_params.get('time_range', 'daily')
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+            
+            # Validar parámetros requeridos
+            if not institution_id:
+                return Response({
+                    "detail": "El parámetro 'institution_id' es requerido"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Construir queryset base
+            from .models import InverterIndicators
+            queryset = InverterIndicators.objects.all()
+            
+            # Aplicar filtros
+            if institution_id:
+                queryset = queryset.filter(institution_id=institution_id)
+            
+            if device_id:
+                # Aceptar tanto el id entero local como el scada_id (UUID/string)
+                if str(device_id).isdigit():
+                    queryset = queryset.filter(device_id=int(device_id))
+                else:
+                    queryset = queryset.filter(device__scada_id=device_id)
+            
+            if time_range:
+                queryset = queryset.filter(time_range=time_range)
+            
+            if start_date:
+                queryset = queryset.filter(date__gte=start_date)
+            
+            if end_date:
+                queryset = queryset.filter(date__lte=end_date)
+            
+            # Ordenar por fecha descendente y nombre del dispositivo
+            queryset = queryset.order_by('-date', 'device__name')
+            
+            # Agregar información de resumen
+            summary = {
+                'total_records': queryset.count(),
+                'institutions': list(queryset.values('institution__name').distinct()),
+                'devices': list(queryset.values('device__name').distinct()),
+                'date_range': {
+                    'min_date': queryset.aggregate(Min('date'))['date__min'],
+                    'max_date': queryset.aggregate(Max('date'))['date__max']
+                }
+            }
+            
+            # Serializar datos
+            from .serializers import InverterIndicatorsSerializer
+            serializer = InverterIndicatorsSerializer(queryset, many=True)
+            
+            response_data = {
+                'summary': summary,
+                'results': serializer.data
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error obteniendo indicadores de inversores: {str(e)}")
+            return Response({
+                "detail": "Error al obtener indicadores de inversores",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@extend_schema(
+    tags=["Inversores"],
+    description="Lista todos los datos de gráficos de inversores con opciones de filtrado.",
+    parameters=[
+        OpenApiParameter("institution_id", int, OpenApiParameter.QUERY, description="ID de la institución"),
+        OpenApiParameter("device_id", str, OpenApiParameter.QUERY, description="ID del inversor específico"),
+        OpenApiParameter("start_date", str, OpenApiParameter.QUERY, description="Fecha de inicio (YYYY-MM-DD)"),
+        OpenApiParameter("end_date", str, OpenApiParameter.QUERY, description="Fecha de fin (YYYY-MM-DD)"),
+    ],
+    responses={200: InverterChartDataSerializer(many=True)}
+)
+class InverterChartDataView(APIView):
+    """
+    Vista para obtener datos de gráficos de inversores.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/inverter-chart-data/
+        
+        Lista los datos de gráficos de inversores con opciones de filtrado.
+        """
+        try:
+            # Obtener parámetros de filtrado
+            institution_id = request.query_params.get('institution_id')
+            device_id = request.query_params.get('device_id')
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+            
+            # Validar parámetros requeridos
+            if not institution_id:
+                return Response({
+                    "detail": "El parámetro 'institution_id' es requerido"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Construir queryset base
+            from .models import InverterChartData
+            queryset = InverterChartData.objects.all()
+            
+            # Aplicar filtros
+            if institution_id:
+                queryset = queryset.filter(institution_id=institution_id)
+            
+            if device_id:
+                # Aceptar tanto el id entero local como el scada_id (UUID/string)
+                if str(device_id).isdigit():
+                    queryset = queryset.filter(device_id=int(device_id))
+                else:
+                    queryset = queryset.filter(device__scada_id=device_id)
+            
+            if start_date:
+                queryset = queryset.filter(date__gte=start_date)
+            
+            if end_date:
+                queryset = queryset.filter(date__lte=end_date)
+            
+            # Ordenar por fecha descendente y nombre del dispositivo
+            queryset = queryset.order_by('-date', 'device__name')
+            
+            # Serializar datos
+            from .serializers import InverterChartDataSerializer
+            serializer = InverterChartDataSerializer(queryset, many=True)
+            
+            response_data = {
+                'total_records': queryset.count(),
+                'results': serializer.data
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error obteniendo datos de gráficos de inversores: {str(e)}")
+            return Response({
+                "detail": "Error al obtener datos de gráficos de inversores",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@extend_schema(
+    tags=["Inversores"],
+    description="Ejecuta el cálculo de indicadores de inversores.",
+    request=InverterCalculationRequestSerializer,
+    responses={
+        200: InverterCalculationResponseSerializer,
+        400: {"description": "Datos de entrada inválidos"},
+        500: {"description": "Error interno del servidor"},
+    }
+)
+class CalculateInverterDataView(APIView):
+    """
+    Vista para ejecutar el cálculo de indicadores de inversores.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        """
+        POST /api/inverters/calculate/
+        
+        Ejecuta el cálculo de indicadores de inversores.
+        
+        Headers requeridos:
+        - Authorization: Token <token>
+        - Content-Type: application/json
+        
+        Body requerido:
+        - time_range: 'daily' o 'monthly'
+        - start_date: YYYY-MM-DD
+        - end_date: YYYY-MM-DD
+        - institution_id: integer
+        - device_id: string (opcional)
+        """
+        try:
+            # Validar datos de entrada
+            from .serializers import InverterCalculationRequestSerializer
+            serializer = InverterCalculationRequestSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response({
+                    "detail": "Los datos proporcionados no son válidos",
+                    "errors": serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            validated_data = serializer.validated_data
+            
+            # Ejecutar tarea de cálculo
+            from .tasks import calculate_inverter_data
+            task = calculate_inverter_data.delay(
+                time_range=validated_data['time_range'],
+                start_date_str=validated_data['start_date'].isoformat(),
+                end_date_str=validated_data['end_date'].isoformat(),
+                institution_id=validated_data['institution_id'],
+                device_id=validated_data.get('device_id')
+            )
+            
+            logger.info(f"Tarea de cálculo de inversores iniciada: {task.id} para institución {validated_data['institution_id']}")
+            
+            return Response({
+                "success": True,
+                "message": "Cálculo de indicadores de inversores iniciado correctamente",
+                "task_id": task.id,
+                "processed_records": 0,  # Se actualizará cuando termine la tarea
+                "estimated_completion_time": "Variable según la cantidad de datos"
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error en cálculo de indicadores de inversores: {str(e)}")
+            return Response({
+                "success": False,
+                "detail": "Error al procesar los indicadores de inversores",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@extend_schema(
+    tags=["Medidores Eléctricos"],
+    description="Ejecuta el cálculo de indicadores eléctricos.",
+    request=InverterCalculationRequestSerializer,  # Reutilizamos el mismo serializer
+    responses={
+        200: InverterCalculationResponseSerializer,
+        400: {"description": "Datos de entrada inválidos"},
+        500: {"description": "Error interno del servidor"},
+    }
+)
+class CalculateElectricalDataView(APIView):
+    """
+    Vista para ejecutar el cálculo de indicadores eléctricos.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        """
+        POST /api/electric-meters/calculate/
+        
+        Ejecuta el cálculo de indicadores eléctricos.
+        
+        Headers requeridos:
+        - Authorization: Token <token>
+        - Content-Type: application/json
+        
+        Body requerido:
+        - time_range: 'daily' o 'monthly'
+        - start_date: YYYY-MM-DD
+        - end_date: YYYY-MM-DD
+        - institution_id: integer
+        - device_id: string (opcional)
+        """
+        try:
+            # Validar datos de entrada
+            from .serializers import InverterCalculationRequestSerializer
+            serializer = InverterCalculationRequestSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response({
+                    "detail": "Los datos proporcionados no son válidos",
+                    "errors": serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            validated_data = serializer.validated_data
+            
+            # Ejecutar tarea de cálculo
+            from .tasks import calculate_electrical_data
+            task = calculate_electrical_data.delay(
+                time_range=validated_data['time_range'],
+                start_date_str=validated_data['start_date'].isoformat(),
+                end_date_str=validated_data['end_date'].isoformat(),
+                institution_id=validated_data['institution_id'],
+                device_id=validated_data.get('device_id')
+            )
+            
+            logger.info(f"Tarea de cálculo eléctrico iniciada: {task.id} para institución {validated_data['institution_id']}")
+            
+            return Response({
+                "success": True,
+                "message": "Cálculo de indicadores eléctricos iniciado correctamente",
+                "task_id": task.id,
+                "processed_records": 0,  # Se actualizará cuando termine la tarea
+                "estimated_completion_time": "Variable según la cantidad de datos"
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error en cálculo de indicadores eléctricos: {str(e)}")
+            return Response({
+                "success": False,
+                "detail": "Error al procesar los indicadores eléctricos",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@extend_schema(
+    tags=["Inversores"],
+    description="Lista inversores filtrados por institución.",
+    parameters=[
+        OpenApiParameter("institution_id", int, OpenApiParameter.QUERY, description="ID de la institución"),
+    ],
+    responses={200: {"type": "object", "properties": {"devices": {"type": "array"}, "total_count": {"type": "integer"}}}}
+)
+class InvertersListView(APIView):
+    """
+    Vista para listar inversores filtrados por institución.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/inverters/list/
+        
+        Lista inversores filtrados por institución.
+        """
+        try:
+            institution_id = request.query_params.get('institution_id')
+            
+            if not institution_id:
+                return Response({
+                    "detail": "El parámetro 'institution_id' es requerido"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Obtener inversores de la institución
+            from scada_proxy.models import Device
+            inverters = Device.objects.filter(
+                category__id=1,  # category_id=1 para inversores
+                institution_id=institution_id,
+                is_active=True
+            ).select_related('institution')
+            
+            # Serializar datos
+            from scada_proxy.serializers import DeviceSerializer
+            serializer = DeviceSerializer(inverters, many=True)
+            
+            response_data = {
+                "devices": serializer.data,
+                "total_count": inverters.count()
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error obteniendo lista de inversores: {str(e)}")
+            return Response({
+                "detail": "Error al obtener lista de inversores",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

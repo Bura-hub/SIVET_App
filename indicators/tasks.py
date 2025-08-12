@@ -7,6 +7,7 @@ import calendar
 from django.utils import timezone as django_timezone
 import pytz
 from collections import defaultdict
+import statistics
 
 from scada_proxy.models import Measurement, Device, Institution, DeviceCategory, TaskProgress
 from .models import (
@@ -14,7 +15,9 @@ from .models import (
     MonthlyConsumptionKPI, 
     DailyChartData,
     ElectricMeterConsumption, 
-    ElectricMeterChartData
+    ElectricMeterChartData,
+    InverterIndicators,
+    InverterChartData
 )
 
 logger = logging.getLogger(__name__)
@@ -1129,3 +1132,554 @@ def calculate_all_electric_meter_indicators(time_range='daily', start_date=None,
         
     except Exception as e:
         return f"Error en el proceso masivo: {str(e)}"
+
+@shared_task
+def calculate_inverter_indicators(device_id, date_str, time_range='daily'):
+    """
+    Calcula todos los indicadores de inversores para un dispositivo específico en una fecha dada.
+    """
+    try:
+        from datetime import datetime, timedelta
+        from django.db.models import Max, Min, Avg, StdDev
+        from scada_proxy.models import Device, Institution, Measurement
+        from .models import InverterIndicators, InverterChartData
+        
+        # Parsear la fecha
+        if isinstance(date_str, str):
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        else:
+            date = date_str
+        
+        # Obtener el dispositivo y la institución
+        device = Device.objects.get(id=device_id)
+        institution = device.institution
+        
+        # Determinar el rango de fechas
+        if time_range == 'daily':
+            start_date = date
+            end_date = date + timedelta(days=1)
+        else:  # monthly
+            start_date = date.replace(day=1)
+            if date.month == 12:
+                end_date = date.replace(year=date.year + 1, month=1, day=1)
+            else:
+                end_date = date.replace(month=date.month + 1, day=1)
+        
+        # Obtener todas las mediciones del período
+        measurements = Measurement.objects.filter(
+            device=device,
+            date__gte=start_date,
+            date__lt=end_date
+        ).order_by('date')
+        
+        if not measurements.exists():
+            return f"No hay mediciones para {device.name} en {date}"
+        
+        # Inicializar variables para cálculos
+        ac_power_values = []
+        dc_power_values = []
+        reactive_power_values = []
+        apparent_power_values = []
+        power_factor_values = []
+        frequency_values = []
+        voltage_phases = []
+        current_phases = []
+        irradiance_values = []
+        temperature_values = []
+        
+        # Procesar cada medición
+        for measurement in measurements:
+            data = measurement.data
+            
+            # Potencia AC y DC
+            ac_power = data.get('acPower', 0)
+            dc_power = data.get('dcPower', 0)
+            if ac_power is not None:
+                ac_power_values.append(ac_power)
+            if dc_power is not None:
+                dc_power_values.append(dc_power)
+            
+            # Potencia reactiva y aparente
+            reactive_power = data.get('reactivePower', 0)
+            apparent_power = data.get('apparentPower', 0)
+            if reactive_power is not None:
+                reactive_power_values.append(reactive_power)
+            if apparent_power is not None:
+                apparent_power_values.append(apparent_power)
+            
+            # Factor de potencia
+            power_factor = data.get('powerFactor', 0)
+            if power_factor is not None:
+                power_factor_values.append(power_factor)
+            
+            # Frecuencia
+            frequency = data.get('acFrequency', 0)
+            if frequency is not None:
+                frequency_values.append(frequency)
+            
+            # Voltajes por fase
+            voltage_a = data.get('acVoltagePhaseA', 0)
+            voltage_b = data.get('acVoltagePhaseB', 0)
+            voltage_c = data.get('acVoltagePhaseC', 0)
+            if all(v is not None for v in [voltage_a, voltage_b, voltage_c]):
+                voltage_phases.append([voltage_a, voltage_b, voltage_c])
+            
+            # Corrientes por fase
+            current_a = data.get('acCurrentPhaseA', 0)
+            current_b = data.get('acCurrentPhaseB', 0)
+            current_c = data.get('acCurrentPhaseC', 0)
+            if all(c is not None for c in [current_a, current_b, current_c]):
+                current_phases.append([current_a, current_b, current_c])
+            
+            # Datos meteorológicos (si están disponibles)
+            irradiance = data.get('irradiance', 0)
+            temperature = data.get('temperature', 0)
+            if irradiance is not None:
+                irradiance_values.append(irradiance)
+            if temperature is not None:
+                temperature_values.append(temperature)
+        
+        # Calcular indicadores
+        
+        # 4.1. Eficiencia de Conversión DC-AC
+        if ac_power_values and dc_power_values:
+            # Calcular energía total (integral de potencia * tiempo)
+            # Como tenemos datos cada 2 minutos, Δt = 2/60 horas
+            delta_t = 2/60  # horas
+            
+            energy_ac_daily_kwh = sum(ac_power_values) * delta_t / 1000  # Convertir W*h a kWh
+            energy_dc_daily_kwh = sum(dc_power_values) * delta_t / 1000  # Convertir W*h a kWh
+            
+            if energy_dc_daily_kwh > 0:
+                dc_ac_efficiency_pct = (energy_ac_daily_kwh / energy_dc_daily_kwh) * 100
+            else:
+                dc_ac_efficiency_pct = 0
+        else:
+            energy_ac_daily_kwh = 0
+            energy_dc_daily_kwh = 0
+            dc_ac_efficiency_pct = 0
+        
+        # 4.2. Energía Total Generada
+        total_generated_energy_kwh = energy_ac_daily_kwh
+        
+        # 4.3. Performance Ratio (PR)
+        # Nota: Se requiere la potencia nominal del sistema (PnomPV) que no está en los datos
+        # Por ahora se calcula con un valor estimado o se deja en 0
+        pnom_pv_kw = 50.0  # Valor estimado, debería venir de configuración del sistema
+        if irradiance_values:
+            # Calcular irradiancia acumulada diaria
+            irradiance_accumulated = sum(irradiance_values) * delta_t / 1000  # kWh/m²
+            reference_energy_kwh = irradiance_accumulated * pnom_pv_kw
+            
+            if reference_energy_kwh > 0:
+                performance_ratio_pct = (total_generated_energy_kwh / reference_energy_kwh) * 100
+            else:
+                performance_ratio_pct = 0
+        else:
+            reference_energy_kwh = 0
+            performance_ratio_pct = 0
+        
+        # 4.4. Curva de Generación vs. Irradiancia/Temperatura
+        avg_irradiance_wm2 = sum(irradiance_values) / len(irradiance_values) if irradiance_values else 0
+        avg_temperature_c = sum(temperature_values) / len(temperature_values) if temperature_values else 0
+        max_power_w = max(ac_power_values) if ac_power_values else 0
+        min_power_w = min(ac_power_values) if ac_power_values else 0
+        
+        # 4.5. Factor de Potencia y Calidad de Inyección
+        avg_power_factor_pct = sum(power_factor_values) / len(power_factor_values) if power_factor_values else 0
+        avg_reactive_power_var = sum(reactive_power_values) / len(reactive_power_values) if reactive_power_values else 0
+        avg_apparent_power_va = sum(apparent_power_values) / len(apparent_power_values) if apparent_power_values else 0
+        avg_frequency_hz = sum(frequency_values) / len(frequency_values) if frequency_values else 0
+        
+        # Calcular estabilidad de frecuencia
+        if len(frequency_values) > 1:
+            frequency_std = statistics.stdev(frequency_values)
+            frequency_stability_pct = max(0, 100 - (frequency_std / avg_frequency_hz * 100)) if avg_frequency_hz > 0 else 0
+        else:
+            frequency_stability_pct = 0
+        
+        # 4.6. Desbalance de Fases en Inyección
+        max_voltage_unbalance_pct = 0
+        max_current_unbalance_pct = 0
+        
+        if voltage_phases:
+            voltage_unbalances = []
+            for v_phases in voltage_phases:
+                v_avg = sum(v_phases) / 3
+                max_deviation = max(abs(v - v_avg) for v in v_phases)
+                unbalance_pct = (max_deviation / v_avg) * 100 if v_avg > 0 else 0
+                voltage_unbalances.append(unbalance_pct)
+            max_voltage_unbalance_pct = max(voltage_unbalances) if voltage_unbalances else 0
+        
+        if current_phases:
+            current_unbalances = []
+            for c_phases in current_phases:
+                c_avg = sum(c_phases) / 3
+                max_deviation = max(abs(c - c_avg) for c in c_phases)
+                unbalance_pct = (max_deviation / c_avg) * 100 if c_avg > 0 else 0
+                current_unbalances.append(unbalance_pct)
+            max_current_unbalance_pct = max(current_unbalances) if current_unbalances else 0
+        
+        # 4.7. Análisis de Anomalías Operativas
+        anomaly_score = 0
+        anomaly_details = {}
+        
+        # Detectar anomalías basadas en umbrales
+        if dc_ac_efficiency_pct < 80:  # Eficiencia muy baja
+            anomaly_score += 20
+            anomaly_details['low_efficiency'] = f"Eficiencia DC-AC muy baja: {dc_ac_efficiency_pct:.1f}%"
+        
+        if max_voltage_unbalance_pct > 5:  # Desbalance de tensión alto
+            anomaly_score += 15
+            anomaly_details['voltage_unbalance'] = f"Desbalance de tensión alto: {max_voltage_unbalance_pct:.1f}%"
+        
+        if max_current_unbalance_pct > 10:  # Desbalance de corriente alto
+            anomaly_score += 15
+            anomaly_details['current_unbalance'] = f"Desbalance de corriente alto: {max_current_unbalance_pct:.1f}%"
+        
+        if frequency_stability_pct < 90:  # Inestabilidad de frecuencia
+            anomaly_score += 10
+            anomaly_details['frequency_instability'] = f"Baja estabilidad de frecuencia: {frequency_stability_pct:.1f}%"
+        
+        # Normalizar puntuación de anomalías a 0-100
+        anomaly_score = min(100, anomaly_score)
+        
+        # Guardar o actualizar los indicadores
+        indicators, created = InverterIndicators.objects.update_or_create(
+            device=device,
+            institution=institution,
+            date=date,
+            time_range=time_range,
+            defaults={
+                'dc_ac_efficiency_pct': dc_ac_efficiency_pct,
+                'energy_ac_daily_kwh': energy_ac_daily_kwh,
+                'energy_dc_daily_kwh': energy_dc_daily_kwh,
+                'total_generated_energy_kwh': total_generated_energy_kwh,
+                'performance_ratio_pct': performance_ratio_pct,
+                'reference_energy_kwh': reference_energy_kwh,
+                'avg_irradiance_wm2': avg_irradiance_wm2,
+                'avg_temperature_c': avg_temperature_c,
+                'max_power_w': max_power_w,
+                'min_power_w': min_power_w,
+                'avg_power_factor_pct': avg_power_factor_pct,
+                'avg_reactive_power_var': avg_reactive_power_var,
+                'avg_apparent_power_va': avg_apparent_power_va,
+                'avg_frequency_hz': avg_frequency_hz,
+                'frequency_stability_pct': frequency_stability_pct,
+                'max_voltage_unbalance_pct': max_voltage_unbalance_pct,
+                'max_current_unbalance_pct': max_current_unbalance_pct,
+                'anomaly_score': anomaly_score,
+                'anomaly_details': anomaly_details,
+                'measurement_count': measurements.count(),
+                'last_measurement_date': measurements.last().date if measurements.exists() else None,
+            }
+        )
+        
+        # Crear datos para gráficos
+        hourly_data = _calculate_hourly_inverter_data(measurements)
+        
+        chart_data, chart_created = InverterChartData.objects.update_or_create(
+            device=device,
+            institution=institution,
+            date=date,
+            defaults=hourly_data
+        )
+        
+        action = "creado" if created else "actualizado"
+        return f"Indicadores de inversor {action} para {device.name} en {date} ({time_range})"
+        
+    except Exception as e:
+        return f"Error calculando indicadores de inversor: {str(e)}"
+
+
+def _calculate_hourly_inverter_data(measurements):
+    """
+    Calcula datos por hora para gráficos de inversores
+    """
+    hourly_efficiency = [0] * 24
+    hourly_generation = [0] * 24
+    hourly_irradiance = [0] * 24
+    hourly_temperature = [0] * 24
+    hourly_dc_power = [0] * 24
+    hourly_ac_power = [0] * 24
+    
+    hourly_counts = [0] * 24
+    
+    for measurement in measurements:
+        hour = measurement.date.hour
+        data = measurement.data
+        
+        # Acumular valores por hora
+        if data.get('acPower') is not None:
+            hourly_ac_power[hour] += data['acPower']
+            hourly_counts[hour] += 1
+        
+        if data.get('dcPower') is not None:
+            hourly_dc_power[hour] += data['dcPower']
+        
+        if data.get('irradiance') is not None:
+            hourly_irradiance[hour] += data['irradiance']
+        
+        if data.get('temperature') is not None:
+            hourly_temperature[hour] += data['temperature']
+    
+    # Calcular promedios por hora
+    for hour in range(24):
+        if hourly_counts[hour] > 0:
+            hourly_ac_power[hour] /= hourly_counts[hour]
+            hourly_dc_power[hour] /= hourly_counts[hour]
+            hourly_irradiance[hour] /= hourly_counts[hour]
+            hourly_temperature[hour] /= hourly_counts[hour]
+            
+            # Calcular eficiencia por hora
+            if hourly_dc_power[hour] > 0:
+                hourly_efficiency[hour] = (hourly_ac_power[hour] / hourly_dc_power[hour]) * 100
+            
+            # Convertir potencia a energía (kWh) - asumiendo mediciones cada 2 minutos
+            hourly_generation[hour] = hourly_ac_power[hour] * (2/60) / 1000
+    
+    return {
+        'hourly_efficiency': hourly_efficiency,
+        'hourly_generation': hourly_generation,
+        'hourly_irradiance': hourly_irradiance,
+        'hourly_temperature': hourly_temperature,
+        'hourly_dc_power': hourly_dc_power,
+        'hourly_ac_power': hourly_ac_power,
+    }
+
+
+@shared_task
+def calculate_inverter_data(time_range='daily', start_date_str=None, end_date_str=None, institution_id=None, device_id=None):
+    """
+    Calcula datos de inversores para un rango de fechas y filtros específicos.
+    
+    Parámetros:
+        time_range: 'daily' o 'monthly'
+        start_date_str: fecha de inicio en formato ISO
+        end_date_str: fecha de fin en formato ISO
+        institution_id: ID de la institución (opcional)
+        device_id: ID del dispositivo específico (opcional)
+    """
+    logger.info("=== INICIANDO TAREA: calculate_inverter_data ===")
+    try:
+        # Procesar fechas
+        if not start_date_str or not end_date_str:
+            # Por defecto, último mes
+            end_date = get_colombia_date()
+            start_date = end_date - timedelta(days=30)
+        else:
+            start_date = datetime.fromisoformat(start_date_str).date()
+            end_date = datetime.fromisoformat(end_date_str).date()
+
+        logger.info(f"Calculando datos para rango: {time_range}, desde {start_date} hasta {end_date}")
+
+        # Obtener inversores filtrados
+        inverters = Device.objects.filter(category__id=1, is_active=True)  # category_id=1 para inversores
+        
+        if institution_id:
+            inverters = inverters.filter(institution_id=institution_id)
+            logger.info(f"Filtrado por institución ID: {institution_id}")
+        
+        if device_id:
+            inverters = inverters.filter(scada_id=device_id)
+            logger.info(f"Filtrado por dispositivo ID: {device_id}")
+
+        logger.info(f"Procesando {inverters.count()} inversores")
+
+        total_records_created = 0
+        total_records_updated = 0
+
+        for inverter in inverters:
+            logger.info(f"Procesando inversor: {inverter.name} (ID: {inverter.id}, SCADA ID: {inverter.scada_id})")
+            
+            if time_range == 'daily':
+                records_created, records_updated = _calculate_daily_inverter_data(inverter, start_date, end_date)
+            else:  # monthly
+                records_created, records_updated = _calculate_monthly_inverter_data(inverter, start_date, end_date)
+            
+            total_records_created += records_created
+            total_records_updated += records_updated
+
+        logger.info(f"=== RESUMEN DE PROCESAMIENTO ===")
+        logger.info(f"Registros creados: {total_records_created}")
+        logger.info(f"Registros actualizados: {total_records_updated}")
+        logger.info("=== TAREA COMPLETADA: calculate_inverter_data ===")
+
+        return f"Procesados {inverters.count()} inversores. Creados: {total_records_created}, Actualizados: {total_records_updated}"
+
+    except Exception as e:
+        logger.error(f"=== ERROR EN TAREA: calculate_inverter_data ===")
+        logger.error(f"Error calculando datos de inversores: {e}", exc_info=True)
+        raise
+
+
+def _calculate_daily_inverter_data(inverter, start_date, end_date):
+    """
+    Calcula datos diarios para un inversor específico
+    """
+    records_created = 0
+    records_updated = 0
+    
+    current_date = start_date
+    while current_date <= end_date:
+        logger.info(f"  Procesando fecha: {current_date}")
+        
+        # Calcular indicadores para el día
+        result = calculate_inverter_indicators(inverter.id, current_date.strftime('%Y-%m-%d'), 'daily')
+        
+        if "creado" in result:
+            records_created += 1
+        elif "actualizado" in result:
+            records_updated += 1
+        
+        current_date += timedelta(days=1)
+
+    return records_created, records_updated
+
+
+def _calculate_monthly_inverter_data(inverter, start_date, end_date):
+    """
+    Calcula datos mensuales para un inversor específico
+    """
+    records_created = 0
+    records_updated = 0
+    
+    # Agrupar por mes
+    current_date = start_date.replace(day=1)  # Primer día del mes
+    while current_date <= end_date:
+        month_end = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        month_end = min(month_end, end_date)
+        
+        logger.info(f"  Procesando mes: {current_date.month}/{current_date.year}")
+        
+        # Calcular indicadores para el mes
+        result = calculate_inverter_indicators(inverter.id, current_date.strftime('%Y-%m-%d'), 'monthly')
+        
+        if "creado" in result:
+            records_created += 1
+        elif "actualizado" in result:
+            records_updated += 1
+        
+        # Avanzar al siguiente mes
+        current_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
+
+    return records_created, records_updated
+
+
+@shared_task(bind=True, retry_backoff=60, max_retries=3)
+def calculate_electrical_data(self, time_range='daily', start_date_str=None, end_date_str=None, institution_id=None, device_id=None):
+    """
+    Calcula y actualiza indicadores eléctricos para un rango de fechas específico.
+    Similar a calculate_inverter_data pero para medidores eléctricos.
+    
+    Args:
+        time_range (str): 'daily' o 'monthly'
+        start_date_str (str): Fecha de inicio en formato 'YYYY-MM-DD'
+        end_date_str (str): Fecha de fin en formato 'YYYY-MM-DD'
+        institution_id (int): ID de la institución (opcional)
+        device_id (str): SCADA ID del dispositivo (opcional)
+    """
+    logger.info("=== INICIANDO TAREA: calculate_electrical_data ===")
+    try:
+        # Configurar fechas por defecto si no se especifican
+        if not start_date_str or not end_date_str:
+            # Por defecto, último mes
+            end_date = get_colombia_date()
+            start_date = end_date - timedelta(days=30)
+        else:
+            start_date = datetime.fromisoformat(start_date_str).date()
+            end_date = datetime.fromisoformat(end_date_str).date()
+
+        logger.info(f"Calculando datos eléctricos para rango: {time_range}, desde {start_date} hasta {end_date}")
+
+        # Obtener medidores eléctricos filtrados
+        electric_meters = Device.objects.filter(category__id=2, is_active=True)  # category_id=2 para medidores eléctricos
+        
+        if institution_id:
+            electric_meters = electric_meters.filter(institution_id=institution_id)
+            logger.info(f"Filtrado por institución ID: {institution_id}")
+        
+        if device_id:
+            electric_meters = electric_meters.filter(scada_id=device_id)
+            logger.info(f"Filtrado por dispositivo ID: {device_id}")
+
+        logger.info(f"Procesando {electric_meters.count()} medidores eléctricos")
+
+        total_records_created = 0
+        total_records_updated = 0
+
+        for meter in electric_meters:
+            logger.info(f"Procesando medidor: {meter.name} (ID: {meter.id}, SCADA ID: {meter.scada_id})")
+            
+            if time_range == 'daily':
+                records_created, records_updated = _calculate_daily_electrical_data(meter, start_date, end_date)
+            else:  # monthly
+                records_created, records_updated = _calculate_monthly_electrical_data(meter, start_date, end_date)
+            
+            total_records_created += records_created
+            total_records_updated += records_updated
+
+        logger.info(f"=== RESUMEN DE PROCESAMIENTO ELÉCTRICO ===")
+        logger.info(f"Registros creados: {total_records_created}")
+        logger.info(f"Registros actualizados: {total_records_updated}")
+        logger.info("=== TAREA COMPLETADA: calculate_electrical_data ===")
+
+        return f"Procesados {electric_meters.count()} medidores eléctricos. Creados: {total_records_created}, Actualizados: {total_records_updated}"
+
+    except Exception as e:
+        logger.error(f"=== ERROR EN TAREA: calculate_electrical_data ===")
+        logger.error(f"Error calculando datos eléctricos: {e}", exc_info=True)
+        raise
+
+
+def _calculate_daily_electrical_data(meter, start_date, end_date):
+    """
+    Calcula datos diarios para un medidor eléctrico específico
+    """
+    records_created = 0
+    records_updated = 0
+    
+    current_date = start_date
+    while current_date <= end_date:
+        logger.info(f"  Procesando fecha: {current_date}")
+        
+        # Calcular indicadores para el día
+        result = calculate_electric_meter_indicators(meter.id, current_date.strftime('%Y-%m-%d'), 'daily')
+        
+        if "creado" in result:
+            records_created += 1
+        elif "actualizado" in result:
+            records_updated += 1
+        
+        current_date += timedelta(days=1)
+
+    return records_created, records_updated
+
+
+def _calculate_monthly_electrical_data(meter, start_date, end_date):
+    """
+    Calcula datos mensuales para un medidor eléctrico específico
+    """
+    records_created = 0
+    records_updated = 0
+    
+    # Agrupar por mes
+    current_date = start_date.replace(day=1)  # Primer día del mes
+    while current_date <= end_date:
+        month_end = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        month_end = min(month_end, end_date)
+        
+        logger.info(f"  Procesando mes: {current_date.month}/{current_date.year}")
+        
+        # Calcular indicadores para el mes
+        result = calculate_electric_meter_indicators(meter.id, current_date.strftime('%Y-%m-%d'), 'monthly')
+        
+        if "creado" in result:
+            records_created += 1
+        elif "actualizado" in result:
+            records_updated += 1
+        
+        # Avanzar al siguiente mes
+        current_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
+
+    return records_created, records_updated

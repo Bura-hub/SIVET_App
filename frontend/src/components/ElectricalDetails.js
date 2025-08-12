@@ -144,6 +144,10 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
   const debounceRef = useRef(null);
   const lastFiltersRef = useRef(null);
 
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(30);
+
   // KPIs dinámicos basados en datos reales
   const [kpiData, setKpiData] = useState({
     totalEnergyConsumed: { 
@@ -279,6 +283,33 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     }, 450);
   }, [fetchMeterData]);
 
+  // Funciones de paginación
+  const resetPagination = () => {
+    setCurrentPage(1);
+  };
+
+  const goToPage = (page) => {
+    setCurrentPage(page);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Calcular datos de paginación
+  const totalItems = meterData?.results?.length || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = meterData?.results?.slice(startIndex, endIndex) || [];
 
 
   // Cargar datos al montar: solo una vez
@@ -294,6 +325,18 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       fetchMeterData(filters);
     }
   }, [filters, fetchMeterData]);
+
+  // Resetear paginación cuando cambien los filtros
+  useEffect(() => {
+    resetPagination();
+  }, [filters.institutionId, filters.deviceId, filters.startDate, filters.endDate]);
+
+  // Resetear paginación cuando se carguen nuevos datos
+  useEffect(() => {
+    if (meterData && meterData.results) {
+      resetPagination();
+    }
+  }, [meterData]);
 
   // Actualizar KPIs cuando cambien los datos del medidor
   useEffect(() => {
@@ -821,11 +864,25 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                         <div>
                           <h3 className="text-base lg:text-lg xl:text-xl font-bold text-gray-800">Indicadores Eléctricos Detallados</h3>
                           <p className="text-gray-600 mt-1 text-sm">Datos históricos y análisis de tendencias</p>
+                          {/* Indicador de fechas por defecto */}
+                          {filters.institutionId && !filters.startDate && !filters.endDate && (
+                            <div className="mt-2 inline-flex items-center px-2 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs text-blue-700">
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Últimos 10 días
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className="px-3 lg:px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold rounded-lg shadow-sm">
-                          {meterData.results?.length || 0} registros
+                          {totalItems} registros
+                          {totalItems > 30 && (
+                            <span className="ml-2 text-xs opacity-90">
+                              (página {currentPage} de {totalPages})
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -853,9 +910,9 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-50">
-                        {meterData.results && meterData.results.length > 0 ? (
-                          meterData.results.map((item, index) => (
-                            <tr key={index} className="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 border-b border-gray-50">
+                        {currentItems && currentItems.length > 0 ? (
+                          currentItems.map((item, index) => (
+                            <tr key={startIndex + index} className="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 border-b border-gray-50">
                               <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
                                 <div className="text-xs lg:text-sm font-medium text-gray-900">
                                   {new Date(item.date).toLocaleDateString('es-ES')}
@@ -927,6 +984,83 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                       </tbody>
                     </table>
                   </div>
+                  
+                  {/* Paginación - Solo mostrar si hay más de 30 registros */}
+                  {totalItems > 30 && (
+                    <div className="px-3 lg:px-4 xl:px-6 py-4 lg:py-6 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                        {/* Información de página */}
+                        <div className="flex items-center text-sm text-gray-700">
+                          <span className="font-medium">
+                            Mostrando {startIndex + 1} a {Math.min(endIndex, totalItems)} de {totalItems} registros
+                          </span>
+                        </div>
+                        
+                        {/* Controles de paginación */}
+                        <div className="flex items-center space-x-2">
+                          {/* Botón Anterior */}
+                          <button
+                            onClick={goToPreviousPage}
+                            disabled={currentPage === 1}
+                            className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors duration-200 ${
+                              currentPage === 1
+                                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                            }`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          
+                          {/* Números de página */}
+                          <div className="flex items-center space-x-1">
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                              let pageNum;
+                              if (totalPages <= 5) {
+                                pageNum = i + 1;
+                              } else if (currentPage <= 3) {
+                                pageNum = i + 1;
+                              } else if (currentPage >= totalPages - 2) {
+                                pageNum = totalPages - 4 + i;
+                              } else {
+                                pageNum = currentPage - 2 + i;
+                              }
+                              
+                              return (
+                                <button
+                                  key={pageNum}
+                                  onClick={() => goToPage(pageNum)}
+                                  className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors duration-200 ${
+                                    currentPage === pageNum
+                                      ? 'bg-emerald-600 text-white border-emerald-600'
+                                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                                  }`}
+                                >
+                                  {pageNum}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          
+                          {/* Botón Siguiente */}
+                          <button
+                            onClick={goToNextPage}
+                            disabled={currentPage === totalPages}
+                            className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors duration-200 ${
+                              currentPage === totalPages
+                                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                            }`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

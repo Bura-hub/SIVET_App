@@ -260,18 +260,108 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
   });
 
   // Estados para almacenar los datos de cada gráfico
-  const [monthlyGenerationData, setMonthlyGenerationData] = useState(null);
-  const [dailyGenerationData, setDailyGenerationData] = useState(null);
-  const [efficiencyData, setEfficiencyData] = useState(null);
-  const [inverterStatusData, setInverterStatusData] = useState(null);
-  const [generationVsIrradianceData, setGenerationVsIrradianceData] = useState(null);
+  const [monthlyGenerationData, setMonthlyGenerationData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Sin datos',
+      data: [],
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9CA3AF',
+      borderWidth: 1,
+    }]
+  });
+  const [dailyGenerationData, setDailyGenerationData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Sin datos',
+      data: [],
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9CA3AF',
+      borderWidth: 1,
+    }]
+  });
+  const [efficiencyData, setEfficiencyData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Sin datos',
+      data: [],
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9CA3AF',
+      borderWidth: 1,
+    }]
+  });
+  const [inverterStatusData, setInverterStatusData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Sin datos',
+      data: [],
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9CA3AF',
+      borderWidth: 1,
+    }]
+  });
+  const [generationVsIrradianceData, setGenerationVsIrradianceData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Sin datos',
+      data: [],
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9CA3AF',
+      borderWidth: 1,
+    }]
+  });
   
   // Nuevos estados para gráficos adicionales
-  const [phaseUnbalanceData, setPhaseUnbalanceData] = useState(null);
-  const [powerFactorData, setPowerFactorData] = useState(null);
-  const [frequencyData, setFrequencyData] = useState(null);
-  const [thdData, setThdData] = useState(null);
-  const [temperatureVsEfficiencyData, setTemperatureVsEfficiencyData] = useState(null);
+  const [phaseUnbalanceData, setPhaseUnbalanceData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Sin datos',
+      data: [],
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9CA3AF',
+      borderWidth: 1,
+    }]
+  });
+  const [powerFactorData, setPowerFactorData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Sin datos',
+      data: [],
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9CA3AF',
+      borderWidth: 1,
+    }]
+  });
+  const [frequencyData, setFrequencyData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Sin datos',
+      data: [],
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9CA3AF',
+      borderWidth: 1,
+    }]
+  });
+  const [thdData, setThdData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Sin datos',
+      data: [],
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9CA3AF',
+      borderWidth: 1,
+    }]
+  });
+  const [temperatureVsEfficiencyData, setTemperatureVsEfficiencyData] = useState({
+    labels: [],
+    datasets: [{
+      label: 'Sin datos',
+      data: [],
+      backgroundColor: '#E5E7EB',
+      borderColor: '#9CA3AF',
+      borderWidth: 1,
+    }]
+  });
 
   // Función para obtener datos de inversores
   const fetchInverterData = useCallback(async (filters) => {
@@ -704,6 +794,48 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     setMonthlyGenerationData(monthlyData);
   }, []);
 
+  // Función para obtener datos del gráfico según el tab activo
+  const getChartDataForTab = (tabId) => {
+    let chartData;
+    switch (tabId) {
+      case 'monthlyGeneration':
+        chartData = monthlyGenerationData;
+        break;
+      case 'dailyGeneration':
+        chartData = dailyGenerationData;
+        break;
+      case 'efficiency':
+        chartData = efficiencyData;
+        break;
+      case 'generationVsIrradiance':
+        chartData = generationVsIrradianceData;
+        break;
+      case 'inverterStatus':
+        chartData = inverterStatusData;
+        break;
+      case 'phaseUnbalance':
+        chartData = phaseUnbalanceData;
+        break;
+      case 'powerFactor':
+        chartData = powerFactorData;
+        break;
+      case 'frequency':
+        chartData = frequencyData;
+        break;
+      case 'thd':
+        chartData = thdData;
+        break;
+      case 'temperatureVsEfficiency':
+        chartData = temperatureVsEfficiencyData;
+        break;
+      default:
+        return null;
+    }
+    
+    // Verificar si hay datos válidos (no solo el estado inicial vacío)
+    return chartData && chartData.labels && chartData.labels.length > 0 ? chartData : null;
+  };
+
   // Función para generar datos mensuales
   const generateMonthlyData = useCallback((chartData) => {
     const monthlyGroups = {};
@@ -760,6 +892,30 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
 
     try {
       setInverterLoading(true);
+      
+      // Resetear todos los estados de gráficos a datos vacíos antes de calcular
+      const emptyChartData = {
+        labels: [],
+        datasets: [{
+          label: 'Sin datos',
+          data: [],
+          backgroundColor: '#E5E7EB',
+          borderColor: '#9CA3AF',
+          borderWidth: 1,
+        }]
+      };
+      
+      setMonthlyGenerationData(emptyChartData);
+      setDailyGenerationData(emptyChartData);
+      setEfficiencyData(emptyChartData);
+      setInverterStatusData(emptyChartData);
+      setGenerationVsIrradianceData(emptyChartData);
+      setPhaseUnbalanceData(emptyChartData);
+      setPowerFactorData(emptyChartData);
+      setFrequencyData(emptyChartData);
+      setThdData(emptyChartData);
+      setTemperatureVsEfficiencyData(emptyChartData);
+      
       showTransitionAnimation('info', 'Calculando datos de inversores...', 2000);
 
       const defaultEndDate = new Date();
@@ -917,125 +1073,24 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     );
   }
 
-
-
-
-
-    return (
+  return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-gradient-to-r from-green-600 to-emerald-700 shadow-lg -mx-4 lg:-mx-8 -mt-4 lg:-mt-8">
+      <header className="bg-gradient-to-r from-red-600 to-red-700 shadow-lg -mx-4 lg:-mx-8 -mt-4 lg:-mt-8">
         <div className="px-4 lg:px-8 py-8 lg:py-12">
           <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-4">
             <div className="p-3 bg-white/20 rounded-xl self-start lg:self-auto">
               <svg className="w-6 h-6 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-        </div>
+            </div>
             <div>
               <h1 className="text-2xl lg:text-4xl font-bold text-white">Detalles de Inversores</h1>
-              <p className="text-green-100 mt-1 text-sm lg:text-base">Análisis y monitoreo de indicadores fotovoltaicos</p>
-      </div>
+              <p className="text-blue-100 mt-1 text-sm lg:text-base">Análisis y monitoreo de indicadores de inversores fotovoltaicos</p>
+            </div>
           </div>
         </div>
       </header>
-
-      {/* Sección de Medidores Eléctricos */}
-      <section className="mb-6 lg:mb-8">
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
-          {/* Header de la sección */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-700 px-4 lg:px-8 py-4 lg:py-6">
-            <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-4">
-              <div className="p-2 lg:p-3 bg-white/20 rounded-xl self-start lg:self-auto">
-                <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-              </div>
-              <div className="flex-1">
-                <h2 className="text-lg lg:text-2xl font-bold text-white">Indicadores de Inversores Fotovoltaicos</h2>
-                <p className="text-indigo-100 mt-1 text-sm lg:text-base">Análisis detallado por institución e inversor</p>
-                {/* Indicador de rango de fechas */}
-                {filters.startDate && filters.endDate && (
-                  <div className="mt-2 inline-flex items-center px-3 py-1 bg-white/20 rounded-full text-xs text-white">
-                    <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    {new Date(filters.startDate).toLocaleDateString('es-ES')} - {new Date(filters.endDate).toLocaleDateString('es-ES')}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {/* Contenido de la sección */}
-          <div className="p-4 lg:p-8">
-            <InverterFilters 
-              onFiltersChange={handleFiltersChange}
-              authToken={authToken}
-            />
-            
-            {/* Indicador de cálculo en progreso */}
-            {inverterLoading && (
-              <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-yellow-600 mr-3"></div>
-                  <span className="text-yellow-800 font-medium">Calculando datos de inversores...</span>
-                </div>
-                <p className="text-yellow-700 text-sm mt-2">
-                  Esto puede tomar unos minutos dependiendo de la cantidad de datos a procesar.
-                </p>
-              </div>
-            )}
-
-            {/* Mensaje informativo sobre fechas por defecto */}
-            {filters.institutionId && !filters.startDate && !filters.endDate && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center text-sm text-blue-700">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-                  <span>Mostrando datos de los últimos 10 días. Selecciona fechas específicas para personalizar el rango.</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Mensaje informativo cuando no hay institución seleccionada */}
-      {!filters.institutionId && (
-        <section className="mb-8">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-            <div className="flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <h3 className="text-lg font-semibold text-blue-800">Selecciona una Institución</h3>
-            </div>
-            <p className="text-blue-700 mb-4">
-              Para ver los indicadores y gráficos de inversores, primero selecciona una institución en los filtros superiores.
-            </p>
-            <div className="text-sm text-blue-600 mb-4">
-              <p>• Los KPIs mostrarán datos en tiempo real</p>
-              <p>• Los gráficos se actualizarán automáticamente</p>
-              <p>• Puedes filtrar por dispositivo específico</p>
-            </div>
-            <div className="text-xs text-blue-500 mb-4">
-              <p>💡 <strong>Tip:</strong> Los datos se calculan automáticamente cuando seleccionas una institución</p>
-            </div>
-          <button 
-              onClick={calculateInverterData}
-              disabled={!filters.institutionId}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-              <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-              Calcular Datos de Inversores
-          </button>
-        </div>
-        </section>
-      )}
 
       {/* KPIs */}
       <section className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 lg:p-8 -mt-4 lg:-mt-8 mb-6 lg:mb-8">
@@ -1097,7 +1152,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                     <div className="w-28 h-3 bg-blue-200 rounded"></div>
                   </div>
                 </div>
-                
+
                 {/* Overlay de shimmer azul */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/30 to-transparent animate-shimmer pointer-events-none"></div>
               </div>
@@ -1105,13 +1160,17 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
           ) : (
             // KPIs reales cuando hay datos
             Object.keys(kpiData).map((key) => {
-          const item = kpiData[key];
+              const item = kpiData[key];
               // Mapear colores del KPI a colores de estilo adaptado
               const colorMap = {
                 'text-blue-600': { bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
                 'text-red-600': { bgColor: 'bg-red-50', borderColor: 'border-red-200' },
                 'text-green-600': { bgColor: 'bg-green-50', borderColor: 'border-green-200' },
-                'text-purple-600': { bgColor: 'bg-purple-50', borderColor: 'border-purple-200' }
+                'text-purple-600': { bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
+                'text-orange-600': { bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
+                'text-indigo-600': { bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200' },
+                'text-teal-600': { bgColor: 'bg-teal-50', borderColor: 'border-teal-200' },
+                'text-pink-600': { bgColor: 'bg-pink-50', borderColor: 'border-pink-200' }
               };
               const styleColors = colorMap[item.color] || { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
               
@@ -1170,738 +1229,334 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
               </svg>
               <span className="text-yellow-700 font-medium">No hay datos disponibles para esta institución en el período seleccionado</span>
             </div>
+            <div className="mt-4">
+              <button
+                onClick={calculateInverterData}
+                disabled={inverterLoading}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {inverterLoading ? (
+                  <>
+                    <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Calculando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Calcular Datos de Inversores
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         )}
       </section>
 
-      {/* Mensaje de error si hay problemas al obtener datos */}
-      {inverterError && (
-        <section className="mb-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-red-800 font-medium">Error al obtener datos:</span>
-              <span className="text-red-700 ml-2">{inverterError}</span>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Mensaje de éxito cuando se hayan calculado datos */}
-      {inverterData && inverterData.results && inverterData.results.length > 0 && !inverterLoading && (
-        <section className="mb-8">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-green-800 font-medium">Datos disponibles:</span>
-              <span className="text-green-700 ml-2">
-                {inverterData.results.length} registro{inverterData.results.length !== 1 ? 's' : ''} de inversores
-              </span>
-            </div>
-            <p className="text-green-700 text-sm mt-2">
-              Los indicadores y gráficos se han actualizado con los datos más recientes.
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Gráficos con diseño moderno */}
-      {filters.institutionId && inverterData && !inverterLoading && (
-        <section className="mb-6 lg:mb-8">
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
-            {/* Header de la sección de gráficos */}
-            <div className="bg-gradient-to-r from-emerald-600 to-teal-700 px-4 lg:px-6 xl:px-8 py-4 lg:py-6">
-              <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-4">
-                <div className="p-2 lg:p-3 bg-white/20 rounded-xl self-start lg:self-auto">
-                  <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-lg lg:text-xl xl:text-2xl font-bold text-white">Análisis de Indicadores de Inversores</h2>
-                  <p className="text-emerald-100 mt-1 text-sm lg:text-base">Visualización detallada de métricas fotovoltaicas por período</p>
-                  {/* Indicador de fechas por defecto */}
-                  {filters.institutionId && !filters.startDate && !filters.endDate && (
-                    <div className="mt-2 inline-flex items-center px-2 py-1 bg-white/20 rounded-full text-xs text-white">
-                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Últimos 10 días
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            {/* Contenido de la sección */}
-            <div className="p-3 lg:p-4 xl:p-6">
-      {/* Tabs profesionales para diferentes vistas */}
-      <div className="mb-8">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('monthlyGeneration')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                activeTab === 'monthlyGeneration'
-                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Generación Mensual
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('dailyGeneration')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                activeTab === 'dailyGeneration'
-                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Generación Diaria
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('efficiency')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                activeTab === 'efficiency'
-                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Sección de Indicadores de Inversores Fotovoltaicos */}
+      <section className="mb-6 lg:mb-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
+          {/* Header de la sección */}
+          <div className="bg-gradient-to-r from-red-600 to-red-700 px-4 lg:px-8 py-4 lg:py-6">
+            <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-4">
+              <div className="p-2 lg:p-3 bg-white/20 rounded-xl self-start lg:self-auto">
+                <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Eficiencia
               </div>
-            </button>
+              <div className="flex-1">
+                <h2 className="text-lg lg:text-2xl font-bold text-white">Indicadores de Inversores Fotovoltaicos</h2>
+                <p className="text-indigo-100 mt-1 text-sm lg:text-base">Análisis detallado por institución e inversor</p>
+                {/* Indicador de rango de fechas */}
+                {filters.startDate && filters.endDate && (
+                  <div className="mt-2 inline-flex items-center px-3 py-1 bg-white/20 rounded-full text-xs text-white">
+                    <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {new Date(filters.startDate).toLocaleDateString('es-ES')} - {new Date(filters.endDate).toLocaleDateString('es-ES')}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Contenido de la sección */}
+          <div className="p-4 lg:p-8">
+            <InverterFilters onFiltersChange={handleFiltersChange} authToken={authToken} />
+
+            {/* Mensaje informativo sobre fechas por defecto */}
+            {filters.institutionId && !filters.startDate && !filters.endDate && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center text-sm text-blue-700">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Mostrando datos de los últimos 10 días. Selecciona fechas específicas para personalizar el rango.</span>
+                </div>
+              </div>
+            )}
+
+            {inverterLoading && (
+              <div className="flex items-center justify-center py-8 lg:py-12 transition-opacity duration-300 ease-in-out">
+                <div className="flex flex-col items-center">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-12 w-12 lg:h-16 lg:w-16 border-4 border-indigo-200"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 lg:h-16 lg:w-16 border-4 border-transparent border-t-indigo-600 absolute top-0 left-0"></div>
+                  </div>
+                  <p className="mt-3 lg:mt-4 text-base lg:text-lg font-medium text-gray-700">Cargando datos de inversores...</p>
+                  <p className="mt-1 lg:mt-2 text-sm text-gray-500">Procesando indicadores fotovoltaicos</p>
+                </div>
+              </div>
+            )}
+
+            {inverterError && (
+              <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-4 lg:p-6 shadow-sm">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <div className="p-2 bg-red-100 rounded-lg">
+                      <svg className="w-5 h-5 lg:w-6 lg:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-3 lg:ml-4">
+                    <h3 className="text-base lg:text-lg font-semibold text-red-800 mb-1">Error al cargar datos</h3>
+                    <p className="text-red-700 text-sm lg:text-base">{inverterError}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {inverterData && !inverterLoading && (
+              <>
+                {/* Mensaje cuando no hay datos */}
+                {(!inverterData.results || inverterData.results.length === 0) && (
+                  <div className="text-center py-8 lg:py-12">
+                    <div className="inline-flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-gray-100 mb-4 lg:mb-6">
+                      <svg className="w-8 h-8 lg:w-10 lg:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2">No hay datos disponibles</h3>
+                    <p className="text-gray-600 mb-6 lg:mb-8 max-w-md mx-auto">
+                      No se encontraron indicadores para los filtros seleccionados. Puedes calcular los datos o ajustar los filtros.
+                    </p>
                     <button
-                      onClick={() => setActiveTab('generationVsIrradiance')}
-                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        activeTab === 'generationVsIrradiance'
-                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
+                      onClick={calculateInverterData}
+                      disabled={inverterLoading}
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                        </svg>
-                        Generación vs Irradiancia
-                      </div>
+                      {inverterLoading ? (
+                        <>
+                          <svg className="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Calculando...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Calcular Datos de Inversores
+                        </>
+                      )}
                     </button>
-            <button
-              onClick={() => setActiveTab('inverterStatus')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                activeTab === 'inverterStatus'
-                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.5-4a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z" />
-                </svg>
-                Estado de Inversores
-              </div>
-            </button>
-                    <button
-                      onClick={() => setActiveTab('phaseUnbalance')}
-                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        activeTab === 'phaseUnbalance'
-                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 2L3 14h9l-1 8 11-12h-7z" />
-                        </svg>
-                        Desbalance de Fases
+                  </div>
+                )}
+
+                {/* Gráficos cuando hay datos */}
+                {inverterData.results && inverterData.results.length > 0 && (
+                  <div className="space-y-6 lg:space-y-8">
+                    {/* Tabs de gráficos */}
+                    <div className="border-b border-gray-200">
+                      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                        {[
+                          { id: 'monthlyGeneration', label: 'Generación Mensual', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+                          { id: 'dailyGeneration', label: 'Generación Diaria', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+                          { id: 'efficiency', label: 'Eficiencia', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+                          { id: 'generationVsIrradiance', label: 'Generación vs Irradiancia', icon: 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z' },
+                          { id: 'inverterStatus', label: 'Estado de Inversores', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+                          { id: 'phaseUnbalance', label: 'Desbalance de Fases', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+                          { id: 'powerFactor', label: 'Factor de Potencia', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+                          { id: 'frequency', label: 'Estabilidad de Frecuencia', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+                          { id: 'thd', label: 'THD y Calidad de Energía', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+                          { id: 'temperatureVsEfficiency', label: 'Eficiencia vs Temperatura', icon: 'M13 10V3L4 14h7v7l9-11h-7z' }
+                        ].map((tab) => (
+                          <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`${
+                              activeTab === tab.id
+                                ? 'border-indigo-500 text-indigo-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center space-x-2`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
+                            </svg>
+                            <span>{tab.label}</span>
+                          </button>
+                        ))}
+                      </nav>
+                    </div>
+
+                    {/* Contenido de los tabs */}
+                    <div className="min-h-[400px]">
+                      {activeTab === 'monthlyGeneration' && monthlyGenerationData && monthlyGenerationData.labels && monthlyGenerationData.labels.length > 0 && (
+                        <ChartCard
+                          title="Generación Mensual de Energía"
+                          description="Energía total generada por mes (kWh)"
+                          data={monthlyGenerationData}
+                          type="bar"
+                          height="400px"
+                        />
+                      )}
+
+                      {activeTab === 'dailyGeneration' && dailyGenerationData && dailyGenerationData.labels && dailyGenerationData.labels.length > 0 && (
+                        <ChartCard
+                          title="Generación Diaria de Energía"
+                          description="Energía total generada por día (kWh)"
+                          data={dailyGenerationData}
+                          type="line"
+                          height="400px"
+                        />
+                      )}
+
+                      {activeTab === 'efficiency' && efficiencyData && efficiencyData.labels && efficiencyData.labels.length > 0 && (
+                        <ChartCard
+                          title="Eficiencia de Conversión DC-AC"
+                          description="Porcentaje de eficiencia promedio por día"
+                          data={efficiencyData}
+                          type="line"
+                          height="400px"
+                        />
+                      )}
+
+                      {activeTab === 'generationVsIrradiance' && generationVsIrradianceData && generationVsIrradianceData.labels && generationVsIrradianceData.labels.length > 0 && (
+                        <ChartCard
+                          title="Generación vs Irradiancia"
+                          description="Relación entre generación de energía e irradiancia solar"
+                          data={generationVsIrradianceData}
+                          type="line"
+                          height="400px"
+                        />
+                      )}
+
+                      {activeTab === 'inverterStatus' && inverterStatusData && inverterStatusData.labels && inverterStatusData.labels.length > 0 && (
+                        <ChartCard
+                          title="Estado de Inversores"
+                          description="Distribución de inversores por estado operativo"
+                          data={inverterStatusData}
+                          type="bar"
+                          height="400px"
+                        />
+                      )}
+
+                      {activeTab === 'phaseUnbalance' && phaseUnbalanceData && phaseUnbalanceData.labels && phaseUnbalanceData.labels.length > 0 && (
+                        <ChartCard
+                          title="Desbalance de Fases"
+                          description="Análisis del desbalance de fases en la inyección"
+                          data={phaseUnbalanceData}
+                          type="line"
+                          height="400px"
+                        />
+                      )}
+
+                      {activeTab === 'powerFactor' && powerFactorData && powerFactorData.labels && powerFactorData.labels.length > 0 && (
+                        <ChartCard
+                          title="Factor de Potencia"
+                          description="Factor de potencia promedio por día"
+                          data={powerFactorData}
+                          type="line"
+                          height="400px"
+                        />
+                      )}
+
+                      {activeTab === 'frequency' && frequencyData && frequencyData.labels && frequencyData.labels.length > 0 && (
+                        <ChartCard
+                          title="Estabilidad de Frecuencia"
+                          description="Frecuencia promedio por día"
+                          data={frequencyData}
+                          type="line"
+                          height="400px"
+                        />
+                      )}
+
+                      {activeTab === 'thd' && thdData && thdData.labels && thdData.labels.length > 0 && (
+                        <ChartCard
+                          title="THD y Calidad de Energía"
+                          description="Distorsión armónica total y calidad de energía"
+                          data={thdData}
+                          type="line"
+                          height="400px"
+                        />
+                      )}
+
+                      {activeTab === 'temperatureVsEfficiency' && temperatureVsEfficiencyData && temperatureVsEfficiencyData.labels && temperatureVsEfficiencyData.labels.length > 0 && (
+                        <ChartCard
+                          title="Eficiencia vs Temperatura"
+                          description="Relación entre eficiencia y temperatura del inversor"
+                          data={temperatureVsEfficiencyData}
+                          type="line"
+                          height="400px"
+                        />
+                      )}
+
+                      {/* Mensaje cuando no hay datos para el tab seleccionado */}
+                      {!getChartDataForTab(activeTab) && (
+                        <div className="text-center py-12">
+                          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay datos para este gráfico</h3>
+                          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                            Los datos para este gráfico no están disponibles. Puedes calcular los datos o seleccionar otro gráfico.
+                          </p>
+                          <button
+                            onClick={calculateInverterData}
+                            disabled={inverterLoading}
+                            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {inverterLoading ? (
+                              <>
+                                <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Calculando...
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                Calcular Datos
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('powerFactor')}
-                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        activeTab === 'powerFactor'
-                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v20"></path>
-                          <path d="M2 12h20"></path>
-                          <path d="M12 2a10 10 0 0 1 0 20"></path>
-                        </svg>
-                        Factor de Potencia
-      </div>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('frequency')}
-                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        activeTab === 'frequency'
-                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v20"></path>
-                          <path d="M2 12h20"></path>
-                          <path d="M12 2a10 10 0 0 1 0 20"></path>
-              </svg>
-                        Estabilidad Frecuencia
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('thd')}
-                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        activeTab === 'thd'
-                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4"></path>
-                          <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z"></path>
-                          <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z"></path>
-                </svg>
-                        THD y Calidad
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('temperatureVsEfficiency')}
-                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        activeTab === 'temperatureVsEfficiency'
-                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                        </svg>
-                        Eficiencia vs Temperatura
-                      </div>
-                    </button>
-                  </nav>
-            </div>
-          </div>
-
-              {/* Contenido de los gráficos */}
-              {activeTab === 'monthlyGeneration' && (
-                <div className="space-y-6">
-                  <SectionHeader
-                    title="Generación Mensual de Inversores"
-                    icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    infoText="Hover sobre los gráficos para ver controles"
-                  />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                    {monthlyGenerationData && monthlyGenerationData.labels && monthlyGenerationData.labels.length > 0 ? (
-            <ChartCard
-              title="Generación Mensual (Año Actual)"
-              type="bar"
-              data={monthlyGenerationData}
-                        options={CHART_OPTIONS}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
-                        <p className="text-gray-500 mb-4">
-                          {!filters.institutionId 
-                            ? "Selecciona una institución para ver la generación mensual"
-                            : "No hay datos de generación mensual para el período seleccionado"
-                          }
-                        </p>
-                        {filters.institutionId && (
-                          <button
-                            onClick={calculateInverterData}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                            Calcular Datos
-                          </button>
-                        )}
-            </div>
-                    )}
-          </div>
-                </div>
-              )}
-
-              {activeTab === 'dailyGeneration' && (
-                <div className="space-y-6">
-                  <SectionHeader
-                    title="Generación Diaria de Inversores"
-                    icon="M13 10V3L4 14h7v7l9-11h-7z"
-                    infoText="Hover sobre los gráficos para ver controles"
-                  />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                    {dailyGenerationData && dailyGenerationData.labels && dailyGenerationData.labels.length > 0 ? (
-            <ChartCard
-              title="Generación Diaria (Últimos 30 Días)"
-              type="line"
-              data={dailyGenerationData}
-                        options={CHART_OPTIONS}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
-                        <p className="text-gray-500 mb-4">
-                          {!filters.institutionId 
-                            ? "Selecciona una institución para ver la generación diaria"
-                            : "No hay datos de generación diaria para el período seleccionado"
-                          }
-                        </p>
-                        {filters.institutionId && (
-                          <button
-                            onClick={calculateInverterData}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Calcular Datos
-                          </button>
-                        )}
-          </div>
-                    )}
-                  </div>
-                </div>
-      )}
-
-      {activeTab === 'efficiency' && (
-                <div className="space-y-6">
-                  <SectionHeader
-                    title="Análisis de Eficiencia"
-                    icon="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    infoText="Hover sobre los gráficos para ver controles"
-                  />
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                    {efficiencyData && efficiencyData.labels && efficiencyData.labels.length > 0 ? (
-                      <ChartCard
-                        title="Eficiencia Diaria (Últimos 30 Días)"
-                        type="line"
-                        data={efficiencyData}
-                        options={CHART_OPTIONS}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
-                        <p className="text-gray-500 mb-4">
-                          {!filters.institutionId 
-                            ? "Selecciona una institución para ver los datos de eficiencia"
-                            : "No hay datos de eficiencia para el período seleccionado"
-                          }
-                        </p>
-                        {filters.institutionId && (
-                          <button
-                            onClick={calculateInverterData}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                            Calcular Datos
-                          </button>
-                        )}
-            </div>
-                    )}
-          </div>
-                </div>
-              )}
-
-              {activeTab === 'generationVsIrradiance' && (
-                <div className="space-y-6">
-                  <SectionHeader
-                    title="Generación vs Irradiancia"
-                    icon="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
-                    infoText="Hover sobre los gráficos para ver controles"
-                  />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                    {generationVsIrradianceData && generationVsIrradianceData.labels && generationVsIrradianceData.labels.length > 0 ? (
-            <ChartCard
-                        title="Generación vs Irradiancia (Últimos 30 Días)"
-              type="line"
-                        data={generationVsIrradianceData}
-                        options={CHART_OPTIONS}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                        </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
-                        <p className="text-gray-500 mb-4">
-                          {!filters.institutionId 
-                            ? "Selecciona una institución para ver la relación generación vs irradiancia"
-                            : "No hay datos de generación vs irradiancia para el período seleccionado"
-                          }
-                        </p>
-                        {filters.institutionId && (
-                          <button
-                            onClick={calculateInverterData}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Calcular Datos
-                          </button>
-                        )}
-          </div>
-                    )}
-                  </div>
-                </div>
-      )}
-
-      {activeTab === 'inverterStatus' && (
-                <div className="space-y-6">
-                  <SectionHeader
-                    title="Estado de Inversores"
-                    icon="M9 12l2 2 4-4m5.5-4a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z"
-                    infoText="Hover sobre los gráficos para ver controles"
-                  />
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                    {inverterStatusData && inverterStatusData.labels && inverterStatusData.labels.length > 0 ? (
-                      <ChartCard
-                        title="Potencia Actual por Inversor"
-                        type="bar"
-                        data={inverterStatusData}
-                        options={CHART_OPTIONS}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.5-4a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z" />
-              </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
-                        <p className="text-gray-500 mb-4">
-                          {!filters.institutionId 
-                            ? "Selecciona una institución para ver el estado de los inversores"
-                            : "No hay datos de estado de inversores para el período seleccionado"
-                          }
-                        </p>
-                        {filters.institutionId && (
-                          <button
-                            onClick={calculateInverterData}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                            Calcular Datos
-                          </button>
-                        )}
-            </div>
-                    )}
-          </div>
-                </div>
-              )}
-
-              {activeTab === 'phaseUnbalance' && (
-                <div className="space-y-6">
-                  <SectionHeader
-                    title="Desbalance de Fases"
-                    icon="M13 2L3 14h9l-1 8 11-12h-7z"
-                    infoText="Hover sobre los gráficos para ver controles"
-                  />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                    {phaseUnbalanceData && phaseUnbalanceData.labels && phaseUnbalanceData.labels.length > 0 ? (
-            <ChartCard
-                        title="Desbalance de Voltaje y Corriente por Fase"
-                        type="line"
-                        data={phaseUnbalanceData}
-                        options={CHART_OPTIONS}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 2L3 14h9l-1 8 11-12h-7z" />
-                        </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
-                        <p className="text-gray-500 mb-4">
-                          {!filters.institutionId 
-                            ? "Selecciona una institución para ver el desbalance de fases"
-                            : "No hay datos de desbalance de fases para el período seleccionado"
-                          }
-                        </p>
-                        {filters.institutionId && (
-                          <button
-                            onClick={calculateInverterData}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Calcular Datos
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'powerFactor' && (
-                <div className="space-y-6">
-                  <SectionHeader
-                    title="Factor de Potencia"
-                    icon="M12 2v20"
-                    infoText="Hover sobre los gráficos para ver controles"
-                  />
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                    {powerFactorData && powerFactorData.labels && powerFactorData.labels.length > 0 ? (
-                      <ChartCard
-                        title="Factor de Potencia Promedio por Día"
-                        type="line"
-                        data={powerFactorData}
-                        options={CHART_OPTIONS}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v20"></path>
-                          <path d="M2 12h20"></path>
-                          <path d="M12 2a10 10 0 0 1 0 20"></path>
-                        </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
-                        <p className="text-gray-500 mb-4">
-                          {!filters.institutionId 
-                            ? "Selecciona una institución para ver el factor de potencia"
-                            : "No hay datos de factor de potencia para el período seleccionado"
-                          }
-                        </p>
-                        {filters.institutionId && (
-                          <button
-                            onClick={calculateInverterData}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Calcular Datos
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'frequency' && (
-                <div className="space-y-6">
-                  <SectionHeader
-                    title="Estabilidad de Frecuencia"
-                    icon="M12 2v20"
-                    infoText="Hover sobre los gráficos para ver controles"
-                  />
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                    {frequencyData && frequencyData.labels && frequencyData.labels.length > 0 ? (
-                      <ChartCard
-                        title="Frecuencia Promedio por Día"
-                        type="line"
-                        data={frequencyData}
-                        options={CHART_OPTIONS}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v20"></path>
-                          <path d="M2 12h20"></path>
-                          <path d="M12 2a10 10 0 0 1 0 20"></path>
-                        </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
-                        <p className="text-gray-500 mb-4">
-                          {!filters.institutionId 
-                            ? "Selecciona una institución para ver la estabilidad de frecuencia"
-                            : "No hay datos de frecuencia para el período seleccionado"
-                          }
-                        </p>
-                        {filters.institutionId && (
-                          <button
-                            onClick={calculateInverterData}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Calcular Datos
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'thd' && (
-                <div className="space-y-6">
-                  <SectionHeader
-                    title="THD y Calidad de Energía"
-                    icon="M9 12l2 2 4-4"
-                    infoText="Hover sobre los gráficos para ver controles"
-                  />
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                    {thdData && thdData.labels && thdData.labels.length > 0 ? (
-                      <ChartCard
-                        title="THD de Voltaje y Corriente por Día"
-                        type="line"
-                        data={thdData}
-                        options={CHART_OPTIONS}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4"></path>
-                          <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z"></path>
-                          <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z"></path>
-                        </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
-                        <p className="text-gray-500 mb-4">
-                          {!filters.institutionId 
-                            ? "Selecciona una institución para ver los datos de THD"
-                            : "No hay datos de THD para el período seleccionado"
-                          }
-                        </p>
-                        {filters.institutionId && (
-                          <button
-                            onClick={calculateInverterData}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Calcular Datos
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'temperatureVsEfficiency' && (
-                <div className="space-y-6">
-                  <SectionHeader
-                    title="Eficiencia vs Temperatura"
-                    icon="M12 9v2m0 4h.01"
-                    infoText="Hover sobre los gráficos para ver controles"
-                  />
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                    {temperatureVsEfficiencyData && temperatureVsEfficiencyData.labels && temperatureVsEfficiencyData.labels.length > 0 ? (
-                      <ChartCard
-                        title="Correlación Eficiencia vs Temperatura"
-                        type="scatter"
-                        data={temperatureVsEfficiencyData}
-                        options={CHART_OPTIONS}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                        </svg>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
-                        <p className="text-gray-500 mb-4">
-                          {!filters.institutionId 
-                            ? "Selecciona una institución para ver la correlación eficiencia vs temperatura"
-                            : "No hay datos de correlación para el período seleccionado"
-                          }
-                        </p>
-                        {filters.institutionId && (
-                          <button
-                            onClick={calculateInverterData}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Calcular Datos
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
+      </section>
 
       {/* Overlay de transición */}
-      <TransitionOverlay 
+      <TransitionOverlay
         show={showTransition}
         type={transitionType}
         message={transitionMessage}
+        onClose={() => setShowTransition(false)}
       />
-
-      {/* Estados de carga y error */}
-      {inverterLoading && (
-        <div className="flex items-center justify-center py-8 lg:py-12 transition-opacity duration-300 ease-in-out">
-          <div className="flex flex-col items-center">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-12 w-12 lg:h-16 lg:w-16 border-4 border-emerald-200"></div>
-              <div className="animate-spin rounded-full h-12 w-12 lg:h-16 lg:w-16 border-4 border-transparent border-t-emerald-600 absolute top-0 left-0"></div>
-            </div>
-            <p className="mt-3 lg:mt-4 text-base lg:text-lg font-medium text-gray-700">Cargando datos de inversores...</p>
-            <p className="mt-1 lg:mt-2 text-sm text-gray-500">Procesando indicadores fotovoltaicos</p>
-          </div>
-        </div>
-      )}
-
-      {inverterError && (
-        <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-4 lg:p-6 shadow-sm">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <svg className="w-5 h-5 lg:w-6 lg:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <div className="ml-3 lg:ml-4">
-              <h3 className="text-base lg:text-lg font-semibold text-red-800 mb-1">Error al cargar datos</h3>
-              <p className="text-red-700 text-sm lg:text-base">{inverterError}</p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

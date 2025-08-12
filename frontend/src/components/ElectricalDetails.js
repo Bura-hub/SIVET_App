@@ -624,7 +624,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       <section className="mb-6 lg:mb-8">
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
           {/* Header de la sección */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-700 px-4 lg:px-8 py-4 lg:py-6">
+          <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-4 lg:px-8 py-4 lg:py-6">
             <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-4">
               <div className="p-2 lg:p-3 bg-white/20 rounded-xl self-start lg:self-auto">
                 <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

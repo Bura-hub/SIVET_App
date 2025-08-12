@@ -457,50 +457,50 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     });
 
     // Gráfico de Generación Diaria (4.2. Energía Total Generada)
-    const dailyGenerationData = {
+      const dailyGenerationData = {
       labels,
       datasets: [{
-        label: 'Generación Diaria (kWh)',
+            label: 'Generación Diaria (kWh)',
         data: sortedDates.map(date => {
           const dailyGen = dataByDate[date].generation.reduce((sum, val) => sum + (val || 0), 0);
           return Math.round(dailyGen * 100) / 100; // Redondear a 2 decimales
         }),
-        borderColor: '#3B82F6',
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        fill: true,
-        tension: 0.4,
+            borderColor: '#3B82F6',
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            fill: true,
+            tension: 0.4,
         pointRadius: 3,
         pointBackgroundColor: '#3B82F6',
       }]
     };
 
     // Gráfico de Eficiencia (4.1. Eficiencia de Conversión DC-AC)
-    const efficiencyData = {
+      const efficiencyData = {
       labels,
-      datasets: [
-        {
-          label: 'Eficiencia Promedio (%)',
+        datasets: [
+          {
+            label: 'Eficiencia Promedio (%)',
           data: sortedDates.map(date => {
             const avgEfficiency = dataByDate[date].efficiency.reduce((sum, val) => sum + (val || 0), 0) / 
                                 Math.max(dataByDate[date].efficiency.filter(v => v !== null).length, 1);
             return Math.round(avgEfficiency * 100) / 100;
           }),
-          borderColor: '#F59E0B',
-          backgroundColor: 'rgba(245, 158, 11, 0.2)',
-          fill: true,
-          tension: 0.4,
+            borderColor: '#F59E0B',
+            backgroundColor: 'rgba(245, 158, 11, 0.2)',
+            fill: true,
+            tension: 0.4,
           pointRadius: 3,
-          pointBackgroundColor: '#F59E0B',
-        },
-        {
-          label: 'Meta de Eficiencia (%)',
+            pointBackgroundColor: '#F59E0B',
+          },
+          {
+            label: 'Meta de Eficiencia (%)',
           data: labels.map(() => 95),
-          borderColor: '#EF4444',
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          fill: false,
-          tension: 0.4,
-          pointRadius: 0,
-          borderDash: [5, 5],
+            borderColor: '#EF4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 0,
+            borderDash: [5, 5],
         }
       ]
     };
@@ -543,13 +543,13 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     };
 
     // Gráfico de Estado de Inversores (4.5. Factor de Potencia y Calidad de Inyección)
-    const inverterStatusData = {
+      const inverterStatusData = {
       labels: sortedDates.map(date => {
         const d = new Date(date);
         return d.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
       }),
-      datasets: [
-        {
+        datasets: [
+          {
           label: 'Potencia AC Promedio (kW)',
           data: sortedDates.map(date => {
             const avgAcPower = dataByDate[date].acPower.reduce((sum, val) => sum + (val || 0), 0) / 
@@ -689,9 +689,9 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     };
 
     // Actualizar estados de gráficos
-    setDailyGenerationData(dailyGenerationData);
-    setEfficiencyData(efficiencyData);
-    setInverterStatusData(inverterStatusData);
+      setDailyGenerationData(dailyGenerationData);
+      setEfficiencyData(efficiencyData);
+      setInverterStatusData(inverterStatusData);
     setGenerationVsIrradianceData(generationVsIrradianceData);
     setPhaseUnbalanceData(phaseUnbalanceData);
     setPowerFactorData(powerFactorData);
@@ -921,7 +921,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
 
 
 
-  return (
+    return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-gradient-to-r from-green-600 to-emerald-700 shadow-lg -mx-4 lg:-mx-8 -mt-4 lg:-mt-8">
@@ -931,11 +931,11 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
               <svg className="w-6 h-6 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-            </div>
+        </div>
             <div>
               <h1 className="text-2xl lg:text-4xl font-bold text-white">Detalles de Inversores</h1>
               <p className="text-green-100 mt-1 text-sm lg:text-base">Análisis y monitoreo de indicadores fotovoltaicos</p>
-            </div>
+      </div>
           </div>
         </div>
       </header>
@@ -949,7 +949,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
               <div className="p-2 lg:p-3 bg-white/20 rounded-xl self-start lg:self-auto">
                 <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            </svg>
               </div>
               <div className="flex-1">
                 <h2 className="text-lg lg:text-2xl font-bold text-white">Indicadores de Inversores Fotovoltaicos</h2>
@@ -993,7 +993,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                 <div className="flex items-center text-sm text-blue-700">
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+            </svg>
                   <span>Mostrando datos de los últimos 10 días. Selecciona fechas específicas para personalizar el rango.</span>
                 </div>
               </div>
@@ -1023,17 +1023,17 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
             <div className="text-xs text-blue-500 mb-4">
               <p>💡 <strong>Tip:</strong> Los datos se calculan automáticamente cuando seleccionas una institución</p>
             </div>
-            <button
+          <button 
               onClick={calculateInverterData}
               disabled={!filters.institutionId}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
             >
               <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
+            </svg>
               Calcular Datos de Inversores
-            </button>
-          </div>
+          </button>
+        </div>
         </section>
       )}
 
@@ -1105,7 +1105,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
           ) : (
             // KPIs reales cuando hay datos
             Object.keys(kpiData).map((key) => {
-              const item = kpiData[key];
+          const item = kpiData[key];
               // Mapear colores del KPI a colores de estilo adaptado
               const colorMap = {
                 'text-blue-600': { bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
@@ -1239,55 +1239,55 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
             
             {/* Contenido de la sección */}
             <div className="p-3 lg:p-4 xl:p-6">
-              {/* Tabs profesionales para diferentes vistas */}
-              <div className="mb-8">
-                <div className="border-b border-gray-200">
-                  <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button
-                      onClick={() => setActiveTab('monthlyGeneration')}
-                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        activeTab === 'monthlyGeneration'
+      {/* Tabs profesionales para diferentes vistas */}
+      <div className="mb-8">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('monthlyGeneration')}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                activeTab === 'monthlyGeneration'
                           ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        Generación Mensual
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('dailyGeneration')}
-                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        activeTab === 'dailyGeneration'
+                </svg>
+                Generación Mensual
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('dailyGeneration')}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                activeTab === 'dailyGeneration'
                           ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Generación Diaria
-                      </div>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('efficiency')}
-                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        activeTab === 'efficiency'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Generación Diaria
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('efficiency')}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                activeTab === 'efficiency'
                           ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Eficiencia
-                      </div>
-                    </button>
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Eficiencia
+              </div>
+            </button>
                     <button
                       onClick={() => setActiveTab('generationVsIrradiance')}
                       className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
@@ -1303,21 +1303,21 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                         Generación vs Irradiancia
                       </div>
                     </button>
-                    <button
-                      onClick={() => setActiveTab('inverterStatus')}
-                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
-                        activeTab === 'inverterStatus'
+            <button
+              onClick={() => setActiveTab('inverterStatus')}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                activeTab === 'inverterStatus'
                           ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.5-4a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z" />
-                        </svg>
-                        Estado de Inversores
-                      </div>
-                    </button>
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.5-4a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z" />
+                </svg>
+                Estado de Inversores
+              </div>
+            </button>
                     <button
                       onClick={() => setActiveTab('phaseUnbalance')}
                       className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
@@ -1331,7 +1331,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 2L3 14h9l-1 8 11-12h-7z" />
                         </svg>
                         Desbalance de Fases
-                      </div>
+        </div>
                     </button>
                     <button
                       onClick={() => setActiveTab('powerFactor')}
@@ -1348,7 +1348,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           <path d="M12 2a10 10 0 0 1 0 20"></path>
                         </svg>
                         Factor de Potencia
-                      </div>
+      </div>
                     </button>
                     <button
                       onClick={() => setActiveTab('frequency')}
@@ -1363,7 +1363,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v20"></path>
                           <path d="M2 12h20"></path>
                           <path d="M12 2a10 10 0 0 1 0 20"></path>
-                        </svg>
+              </svg>
                         Estabilidad Frecuencia
                       </div>
                     </button>
@@ -1380,7 +1380,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4"></path>
                           <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z"></path>
                           <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z"></path>
-                        </svg>
+                </svg>
                         THD y Calidad
                       </div>
                     </button>
@@ -1400,8 +1400,8 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                       </div>
                     </button>
                   </nav>
-                </div>
-              </div>
+            </div>
+          </div>
 
               {/* Contenido de los gráficos */}
               {activeTab === 'monthlyGeneration' && (
@@ -1411,20 +1411,20 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                     icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                     infoText="Hover sobre los gráficos para ver controles"
                   />
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                     {monthlyGenerationData && monthlyGenerationData.labels && monthlyGenerationData.labels.length > 0 ? (
-                      <ChartCard
-                        title="Generación Mensual (Año Actual)"
-                        type="bar"
-                        data={monthlyGenerationData}
+            <ChartCard
+              title="Generación Mensual (Año Actual)"
+              type="bar"
+              data={monthlyGenerationData}
                         options={CHART_OPTIONS}
                       />
                     ) : (
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
                         <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
+              </svg>
                         <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
                         <p className="text-gray-500 mb-4">
                           {!filters.institutionId 
@@ -1439,13 +1439,13 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           >
                             <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
+                </svg>
                             Calcular Datos
                           </button>
                         )}
-                      </div>
+            </div>
                     )}
-                  </div>
+          </div>
                 </div>
               )}
 
@@ -1456,13 +1456,13 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                     icon="M13 10V3L4 14h7v7l9-11h-7z"
                     infoText="Hover sobre los gráficos para ver controles"
                   />
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                     {dailyGenerationData && dailyGenerationData.labels && dailyGenerationData.labels.length > 0 ? (
-                      <ChartCard
-                        title="Generación Diaria (Últimos 30 Días)"
-                        type="line"
-                        data={dailyGenerationData}
+            <ChartCard
+              title="Generación Diaria (Últimos 30 Días)"
+              type="line"
+              data={dailyGenerationData}
                         options={CHART_OPTIONS}
                       />
                     ) : (
@@ -1488,13 +1488,13 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                             Calcular Datos
                           </button>
                         )}
-                      </div>
+          </div>
                     )}
                   </div>
                 </div>
-              )}
+      )}
 
-              {activeTab === 'efficiency' && (
+      {activeTab === 'efficiency' && (
                 <div className="space-y-6">
                   <SectionHeader
                     title="Análisis de Eficiencia"
@@ -1513,8 +1513,8 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                     ) : (
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
                         <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
                         <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
                         <p className="text-gray-500 mb-4">
                           {!filters.institutionId 
@@ -1529,13 +1529,13 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           >
                             <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
+                </svg>
                             Calcular Datos
                           </button>
                         )}
-                      </div>
+            </div>
                     )}
-                  </div>
+          </div>
                 </div>
               )}
 
@@ -1546,12 +1546,12 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                     icon="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
                     infoText="Hover sobre los gráficos para ver controles"
                   />
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                     {generationVsIrradianceData && generationVsIrradianceData.labels && generationVsIrradianceData.labels.length > 0 ? (
-                      <ChartCard
+            <ChartCard
                         title="Generación vs Irradiancia (Últimos 30 Días)"
-                        type="line"
+              type="line"
                         data={generationVsIrradianceData}
                         options={CHART_OPTIONS}
                       />
@@ -1578,13 +1578,13 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                             Calcular Datos
                           </button>
                         )}
-                      </div>
+          </div>
                     )}
                   </div>
                 </div>
-              )}
+      )}
 
-              {activeTab === 'inverterStatus' && (
+      {activeTab === 'inverterStatus' && (
                 <div className="space-y-6">
                   <SectionHeader
                     title="Estado de Inversores"
@@ -1603,8 +1603,8 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                     ) : (
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
                         <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.5-4a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z" />
-                        </svg>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.5-4a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z" />
+              </svg>
                         <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
                         <p className="text-gray-500 mb-4">
                           {!filters.institutionId 
@@ -1619,13 +1619,13 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           >
                             <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
+                </svg>
                             Calcular Datos
                           </button>
                         )}
-                      </div>
+            </div>
                     )}
-                  </div>
+          </div>
                 </div>
               )}
 
@@ -1636,10 +1636,10 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                     icon="M13 2L3 14h9l-1 8 11-12h-7z"
                     infoText="Hover sobre los gráficos para ver controles"
                   />
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                     {phaseUnbalanceData && phaseUnbalanceData.labels && phaseUnbalanceData.labels.length > 0 ? (
-                      <ChartCard
+            <ChartCard
                         title="Desbalance de Voltaje y Corriente por Fase"
                         type="line"
                         data={phaseUnbalanceData}

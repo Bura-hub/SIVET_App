@@ -84,6 +84,7 @@ code {
 .chart-container {
   position: relative;
   width: 100%;
+  /* Eliminar max-width para usar todo el espacio disponible */
   /* La altura ahora se controla dinámicamente via props */
   margin-left: auto;
   margin-right: auto; /* Centrado horizontal */

@@ -5,8 +5,23 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
   const [timeRange, setTimeRange] = useState('daily');
   const [selectedInstitution, setSelectedInstitution] = useState('');
   const [selectedDevice, setSelectedDevice] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  
+  // Calcular fechas por defecto: 10 días atrás hasta hoy
+  const getDefaultDates = () => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 10);
+    
+    return {
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0]
+    };
+  };
+  
+  const defaultDates = getDefaultDates();
+  const [startDate, setStartDate] = useState(defaultDates.startDate);
+  const [endDate, setEndDate] = useState(defaultDates.endDate);
+  
   const [institutions, setInstitutions] = useState([]);
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(false);

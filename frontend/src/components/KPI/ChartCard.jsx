@@ -489,7 +489,7 @@ export function ChartCard({
 
             {/* Contenido del modal */}
             <div className="p-6">
-              <div className="chart-container" style={{ height: fullscreenHeight, maxHeight: maxFullscreenHeight }}>
+              <div className="chart-container w-full" style={{ height: fullscreenHeight, maxHeight: maxFullscreenHeight }}>
                 <ChartComponent ref={fullscreenChartRef} data={data} options={chartOptions} />
               </div>
             </div>

@@ -144,28 +144,6 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
   const debounceRef = useRef(null);
   const lastFiltersRef = useRef(null);
 
-  // Función para obtener fechas por defecto (10 días atrás)
-  const getDefaultDateRange = () => {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(endDate.getDate() - 10);
-    return {
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0]
-    };
-  };
-
-  // Función para obtener fechas reales a usar en la consulta
-  const getEffectiveDateRange = () => {
-    if (filters.startDate && filters.endDate) {
-      return {
-        startDate: filters.startDate,
-        endDate: filters.endDate
-      };
-    }
-    return getDefaultDateRange();
-  };
-
   // KPIs dinámicos basados en datos reales
   const [kpiData, setKpiData] = useState({
     totalEnergyConsumed: { 
@@ -227,15 +205,18 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       setMeterLoading(true);
       setMeterError(null);
       
-      const timeRange = filters.timeRange || 'daily';
-      const effectiveDates = getEffectiveDateRange();
+      // Usar fechas por defecto si no se han especificado
+      const defaultEndDate = new Date();
+      const defaultStartDate = new Date();
+      defaultStartDate.setDate(defaultStartDate.getDate() - 10);
       
+      const timeRange = filters.timeRange || 'daily';
       const baseParams = {
         time_range: timeRange,
         ...(filters.institutionId && { institution_id: filters.institutionId }),
         ...(filters.deviceId && { device_id: filters.deviceId }),
-        start_date: effectiveDates.startDate,
-        end_date: effectiveDates.endDate
+        start_date: filters.startDate || defaultStartDate.toISOString().split('T')[0],
+        end_date: filters.endDate || defaultEndDate.toISOString().split('T')[0]
       };
 
       const indicatorsParams = new URLSearchParams(baseParams);
@@ -274,15 +255,6 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     console.log('Previous filters:', filters);
     setFilters(newFilters);
     
-    // Si se selecciona una institución por primera vez, ejecutar fetch automáticamente
-    if (newFilters.institutionId && !filters.institutionId) {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        fetchMeterData(newFilters);
-      }, 300);
-      return;
-    }
-    
     // Evitar fetch si filtros no cambiaron
     const prev = lastFiltersRef.current || {};
     const same = prev.timeRange === newFilters.timeRange &&
@@ -293,13 +265,19 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     if (same) return;
     lastFiltersRef.current = newFilters;
 
+    // Si se seleccionó una institución, cargar datos inmediatamente
+    if (newFilters.institutionId && (!prev.institutionId || prev.institutionId !== newFilters.institutionId)) {
+      fetchMeterData(newFilters);
+      return;
+    }
+
     if (debounceRef.current) clearTimeout(debounceRef.current);
     // Ocultar loader mientras debouncing para evitar parpadeos si el usuario cambia rápidamente
     setMeterLoading(false);
     debounceRef.current = setTimeout(() => {
       fetchMeterData(newFilters);
     }, 450);
-  }, [fetchMeterData, filters.institutionId]);
+  }, [fetchMeterData]);
 
 
 
@@ -309,17 +287,13 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     setLoading(false);
   }, []);
 
-  // Efecto para cargar datos automáticamente cuando se seleccione una institución
+  // Efecto para actualizar datos cuando cambien los filtros
   useEffect(() => {
-    if (filters.institutionId && !meterData && !meterLoading) {
-      // Pequeño delay para asegurar que los filtros estén completamente actualizados
-      const timer = setTimeout(() => {
-        fetchMeterData(filters);
-      }, 100);
-      
-      return () => clearTimeout(timer);
+    if (filters.institutionId && (filters.startDate || filters.endDate)) {
+      // Si hay institución seleccionada y fechas, cargar datos
+      fetchMeterData(filters);
     }
-  }, [filters.institutionId, meterData, meterLoading, fetchMeterData, filters]);
+  }, [filters, fetchMeterData]);
 
   // Actualizar KPIs cuando cambien los datos del medidor
   useEffect(() => {
@@ -505,17 +479,6 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
           </div>
         )}
         
-        {filters.institutionId && !filters.startDate && !filters.endDate && (
-          <div className="text-center mt-4 lg:mt-6">
-            <div className="inline-flex items-center px-3 lg:px-4 py-2 bg-amber-50 border border-amber-200 rounded-full text-sm lg:text-base">
-              <svg className="w-4 h-4 lg:w-5 lg:h-5 text-amber-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-amber-700 font-medium">Mostrando últimos 10 días por defecto</span>
-            </div>
-          </div>
-        )}
-        
         {filters.institutionId && meterLoading && (
           <div className="text-center mt-4 lg:mt-6">
             <div className="inline-flex items-center px-3 lg:px-4 py-2 bg-blue-50 border border-blue-200 rounded-full text-sm lg:text-base">
@@ -550,9 +513,18 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div>
+              <div className="flex-1">
                 <h2 className="text-lg lg:text-2xl font-bold text-white">Indicadores de Medidores Eléctricos</h2>
                 <p className="text-indigo-100 mt-1 text-sm lg:text-base">Análisis detallado por institución y medidor</p>
+                {/* Indicador de rango de fechas */}
+                {filters.startDate && filters.endDate && (
+                  <div className="mt-2 inline-flex items-center px-3 py-1 bg-white/20 rounded-full text-xs text-white">
+                    <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {new Date(filters.startDate).toLocaleDateString('es-ES')} - {new Date(filters.endDate).toLocaleDateString('es-ES')}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -561,22 +533,17 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
           <div className="p-4 lg:p-8">
           <ElectricMeterFilters onFiltersChange={handleFiltersChange} authToken={authToken} />
 
-            {/* Información del rango de fechas */}
-            {filters.institutionId && (
-              <div className="mb-4 lg:mb-6">
-                <div className="inline-flex items-center px-3 lg:px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm lg:text-base">
-                  <svg className="w-4 h-4 lg:w-5 lg:h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-gray-700 font-medium">
-                    {filters.startDate && filters.endDate 
-                      ? `Período: ${filters.startDate} al ${filters.endDate}`
-                      : `Últimos 10 días (${getDefaultDateRange().startDate} al ${getDefaultDateRange().endDate})`
-                    }
-                  </span>
-                </div>
+          {/* Mensaje informativo sobre fechas por defecto */}
+          {filters.institutionId && !filters.startDate && !filters.endDate && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center text-sm text-blue-700">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Mostrando datos de los últimos 10 días. Selecciona fechas específicas para personalizar el rango.</span>
               </div>
-            )}
+            </div>
+          )}
 
           {meterLoading && (
             <div className="flex items-center justify-center py-8 lg:py-12 transition-opacity duration-300 ease-in-out">
@@ -615,7 +582,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
 
               {/* Gráficos con diseño moderno */}
               {meterData.results && meterData.results.length > 0 && (
-                <div className="space-y-6 lg:space-y-8 w-full">
+                <div className="space-y-6 lg:space-y-8">
                   {/* Gráfico principal de energía - Ancho completo */}
                   <div className="w-full">
                   <ChartCard
@@ -690,12 +657,12 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                           }
                         }
                       }}
-                      height="350px"
-                      fullscreenHeight="700px"
+                      height="400px"
+                      fullscreenHeight="800px"
                     />
                   </div>
 
-                  {/* Gráficos secundarios en grid responsive */}
+                  {/* Gráficos secundarios en grid responsive - Máximo ancho */}
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 xl:gap-8 w-full">
                     {/* Indicadores de calidad */}
                   <ChartCard
@@ -750,8 +717,8 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                           }
                         }
                       }}
-                      height="300px"
-                      fullscreenHeight="600px"
+                      height="350px"
+                      fullscreenHeight="700px"
                     />
 
                     {/* Calidad de energía */}
@@ -807,8 +774,8 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                           }
                         }
                       }}
-                      height="300px"
-                      fullscreenHeight="600px"
+                      height="350px"
+                      fullscreenHeight="700px"
                     />
                   </div>
                 </div>

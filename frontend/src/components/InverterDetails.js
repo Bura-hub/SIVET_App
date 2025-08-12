@@ -1072,7 +1072,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       </div>
     );
   }
-
+  
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
@@ -1080,8 +1080,11 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
         <div className="px-4 lg:px-8 py-8 lg:py-12">
           <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-4">
             <div className="p-3 bg-white/20 rounded-xl self-start lg:self-auto">
-              <svg className="w-6 h-6 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <svg className="w-6 h-6 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+              <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect>
+              <path d="M7 12h2l1 2 2-4 1 2h2"></path>
+              <path d="M17 16h.01"></path>
+              <path d="M17 8h.01"></path>
               </svg>
             </div>
             <div>

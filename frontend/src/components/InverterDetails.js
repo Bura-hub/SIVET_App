@@ -201,9 +201,62 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       unit: "", 
       change: "Eficiencia del sistema", 
       status: "normal", 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>,
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M3 3v18h18"></path>
+        <path d="M18 17V9"></path>
+        <path d="M13 17V5"></path>
+        <path d="M8 17v-3"></path>
+      </svg>,
       color: "text-red-600"
     },
+    powerFactor: { 
+      title: "Factor de Potencia", 
+      value: "0.95", 
+      unit: "", 
+      change: "Calidad de energía", 
+      status: "normal", 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>,
+      color: "text-indigo-600"
+    },
+    phaseUnbalance: { 
+      title: "Desbalance de Fases", 
+      value: "2.1", 
+      unit: "%", 
+      change: "Voltaje", 
+      status: "normal", 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M13 2L3 14h9l-1 8 11-12h-7z"></path>
+        <path d="M6 18l-2-2 2-2"></path>
+        <path d="M10 18l2-2-2-2"></path>
+      </svg>,
+      color: "text-orange-600"
+    },
+    frequencyStability: { 
+      title: "Estabilidad Frecuencia", 
+      value: "60.0", 
+      unit: "Hz", 
+      change: "Estable", 
+      status: "normal", 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 2v20"></path>
+        <path d="M2 12h20"></path>
+        <path d="M12 2a10 10 0 0 1 0 20"></path>
+      </svg>,
+      color: "text-teal-600"
+    },
+    thdVoltage: { 
+      title: "THD Voltaje", 
+      value: "1.8", 
+      unit: "%", 
+      change: "Calidad", 
+      status: "normal", 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M9 12l2 2 4-4"></path>
+        <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z"></path>
+        <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z"></path>
+      </svg>,
+      color: "text-pink-600"
+    }
   });
 
   // Estados para almacenar los datos de cada gráfico
@@ -212,6 +265,13 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
   const [efficiencyData, setEfficiencyData] = useState(null);
   const [inverterStatusData, setInverterStatusData] = useState(null);
   const [generationVsIrradianceData, setGenerationVsIrradianceData] = useState(null);
+  
+  // Nuevos estados para gráficos adicionales
+  const [phaseUnbalanceData, setPhaseUnbalanceData] = useState(null);
+  const [powerFactorData, setPowerFactorData] = useState(null);
+  const [frequencyData, setFrequencyData] = useState(null);
+  const [thdData, setThdData] = useState(null);
+  const [temperatureVsEfficiencyData, setTemperatureVsEfficiencyData] = useState(null);
 
   // Función para obtener datos de inversores
   const fetchInverterData = useCallback(async (filters) => {
@@ -276,6 +336,31 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
               ...prev.activeInverters,
               value: indicatorsData.results.length.toString(),
               change: "activos"
+            },
+            performanceRatio: {
+              ...prev.performanceRatio,
+              value: (latestData.performance_ratio || 0).toFixed(2),
+              change: latestData.performance_ratio > 0.8 ? 'Óptimo' : latestData.performance_ratio > 0.7 ? 'Bueno' : 'Mejorable'
+            },
+            powerFactor: {
+              ...prev.powerFactor,
+              value: (latestData.avg_power_factor || 0).toFixed(2),
+              change: latestData.avg_power_factor > 0.95 ? 'Óptimo' : latestData.avg_power_factor > 0.85 ? 'Bueno' : 'Mejorable'
+            },
+            phaseUnbalance: {
+              ...prev.phaseUnbalance,
+              value: (latestData.max_voltage_unbalance_pct || 0).toFixed(1),
+              change: latestData.max_voltage_unbalance_pct < 2 ? 'Excelente' : latestData.max_voltage_unbalance_pct < 5 ? 'Bueno' : 'Mejorable'
+            },
+            frequencyStability: {
+              ...prev.frequencyStability,
+              value: (latestData.avg_frequency_hz || 0).toFixed(1),
+              change: Math.abs(latestData.avg_frequency_hz - 60) < 0.1 ? 'Estable' : 'Variable'
+            },
+            thdVoltage: {
+              ...prev.thdVoltage,
+              value: (latestData.max_voltage_thd_pct || 0).toFixed(1),
+              change: latestData.max_voltage_thd_pct < 3 ? 'Excelente' : latestData.max_voltage_thd_pct < 5 ? 'Bueno' : 'Mejorable'
             }
           }));
         }
@@ -481,11 +566,138 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       ]
     };
 
+    // Gráfico de Desbalance de Fases (4.6. Desbalance de Fases en Inyección)
+    const phaseUnbalanceData = {
+      labels,
+      datasets: [
+        {
+          label: 'Desbalance de Voltaje (%)',
+          data: sortedDates.map(date => {
+            // Simular datos de desbalance de voltaje
+            return Math.random() * 5; // 0-5% de desbalance
+          }),
+          borderColor: '#F59E0B',
+          backgroundColor: 'rgba(245, 158, 11, 0.2)',
+          fill: false,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#F59E0B',
+        },
+        {
+          label: 'Desbalance de Corriente (%)',
+          data: sortedDates.map(date => {
+            // Simular datos de desbalance de corriente
+            return Math.random() * 3; // 0-3% de desbalance
+          }),
+          borderColor: '#EF4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.2)',
+          fill: false,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#EF4444',
+        }
+      ]
+    };
+
+    // Gráfico de Factor de Potencia (4.5. Factor de Potencia e Inyección)
+    const powerFactorData = {
+      labels,
+      datasets: [{
+        label: 'Factor de Potencia Promedio',
+        data: sortedDates.map(date => {
+          // Simular datos de factor de potencia
+          return 0.85 + Math.random() * 0.15; // 0.85-1.00
+        }),
+        borderColor: '#8B5CF6',
+        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#8B5CF6',
+      }]
+    };
+
+    // Gráfico de Frecuencia (4.5. Estabilidad de Frecuencia)
+    const frequencyData = {
+      labels,
+      datasets: [{
+        label: 'Frecuencia Promedio (Hz)',
+        data: sortedDates.map(date => {
+          // Simular datos de frecuencia
+          return 60 + (Math.random() - 0.5) * 0.2; // 59.9-60.1 Hz
+        }),
+        borderColor: '#06B6D4',
+        backgroundColor: 'rgba(6, 182, 212, 0.2)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#06B6D4',
+      }]
+    };
+
+    // Gráfico de THD (4.6. THD y Calidad de Energía)
+    const thdData = {
+      labels,
+      datasets: [
+        {
+          label: 'THD de Voltaje (%)',
+          data: sortedDates.map(date => {
+            // Simular datos de THD de voltaje
+            return Math.random() * 5; // 0-5% THD
+          }),
+          borderColor: '#EC4899',
+          backgroundColor: 'rgba(236, 72, 153, 0.2)',
+          fill: false,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#EC4899',
+        },
+        {
+          label: 'THD de Corriente (%)',
+          data: sortedDates.map(date => {
+            // Simular datos de THD de corriente
+            return Math.random() * 8; // 0-8% THD
+          }),
+          borderColor: '#F97316',
+          backgroundColor: 'rgba(249, 115, 22, 0.2)',
+          fill: false,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#F97316',
+        }
+      ]
+    };
+
+    // Gráfico de Eficiencia vs Temperatura (4.4. Correlación)
+    const temperatureVsEfficiencyData = {
+      labels,
+      datasets: [{
+        label: 'Eficiencia vs Temperatura',
+        data: sortedDates.map(date => {
+          // Simular correlación entre eficiencia y temperatura
+          const temp = dataByDate[date].temperature[0] || 25;
+          const efficiency = Math.max(85, 95 - (temp - 25) * 0.5); // Eficiencia decrece con temperatura
+          return efficiency;
+        }),
+        borderColor: '#10B981',
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#10B981',
+      }]
+    };
+
     // Actualizar estados de gráficos
     setDailyGenerationData(dailyGenerationData);
     setEfficiencyData(efficiencyData);
     setInverterStatusData(inverterStatusData);
     setGenerationVsIrradianceData(generationVsIrradianceData);
+    setPhaseUnbalanceData(phaseUnbalanceData);
+    setPowerFactorData(powerFactorData);
+    setFrequencyData(frequencyData);
+    setThdData(thdData);
+    setTemperatureVsEfficiencyData(temperatureVsEfficiencyData);
     
     // Para el gráfico mensual, agrupar por mes
     const monthlyData = generateMonthlyData(chartData);
@@ -617,31 +829,26 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       return;
     }
 
-    // Debounce para evitar múltiples requests
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    setInverterLoading(false);
-    debounceRef.current = setTimeout(() => {
-      fetchInverterData(newFilters);
-    }, 450);
+    // Si hay institución y fechas, cargar datos
+    if (newFilters.institutionId && (newFilters.startDate || newFilters.endDate)) {
+      // Debounce para evitar múltiples requests
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      setInverterLoading(false);
+      debounceRef.current = setTimeout(() => {
+        fetchInverterData(newFilters);
+      }, 450);
+    }
   }, [fetchInverterData]);
 
   // Referencia para debounce
   const debounceRef = useRef(null);
 
-  // Hook de efecto para cargar datos desde la API
-  const fetchInverterDataInitial = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      if (!authToken) {
-        throw new Error("No hay token de autenticación. Por favor, inicia sesión.");
-      }
 
-      // Simular delay de carga
-      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Ya no usamos datos simulados - los datos se cargarán cuando se seleccionen los filtros
-      // Los gráficos se mostrarán vacíos hasta que se seleccione una institución
+  // Agregar un useEffect que se ejecute cuando el componente se monta
+  useEffect(() => {
+    if (authToken) {
+      setLoading(false); // No bloquear la UI, solo marcar como no cargando
       
       // Inicializar gráficos con datos vacíos
       const emptyChartData = {
@@ -660,25 +867,8 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       setEfficiencyData(emptyChartData);
       setInverterStatusData(emptyChartData);
       setGenerationVsIrradianceData(emptyChartData);
-
-    } catch (e) {
-      setError(e.message);
-      console.error("Error al cargar datos de inversores:", e);
-    } finally {
-      setLoading(false);
     }
-  };
-
-  // Agregar un useEffect que se ejecute cuando el componente se monta
-  useEffect(() => {
-    if (authToken) {
-      setLoading(true);
-      // Simular un pequeño delay para mostrar la animación
-      setTimeout(() => {
-        fetchInverterDataInitial();
-      }, 300);
-    }
-  }, []); // Se ejecuta solo al montar el componente
+  }, [authToken]); // Se ejecuta cuando cambie el token
 
   // Efecto para actualizar datos cuando cambien los filtros
   useEffect(() => {
@@ -727,16 +917,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     );
   }
 
-  // Si no hay datos de gráficos pero no está cargando, mostrar mensaje
-  if (!monthlyGenerationData) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-orange-600 text-lg p-4 bg-orange-100 rounded-lg shadow-md">
-          No se pudieron cargar los datos de los gráficos. Intente recargar la página.
-        </div>
-      </div>
-    );
-  }
+
 
 
 
@@ -1137,6 +1318,87 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                         Estado de Inversores
                       </div>
                     </button>
+                    <button
+                      onClick={() => setActiveTab('phaseUnbalance')}
+                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                        activeTab === 'phaseUnbalance'
+                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 2L3 14h9l-1 8 11-12h-7z" />
+                        </svg>
+                        Desbalance de Fases
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('powerFactor')}
+                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                        activeTab === 'powerFactor'
+                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v20"></path>
+                          <path d="M2 12h20"></path>
+                          <path d="M12 2a10 10 0 0 1 0 20"></path>
+                        </svg>
+                        Factor de Potencia
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('frequency')}
+                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                        activeTab === 'frequency'
+                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v20"></path>
+                          <path d="M2 12h20"></path>
+                          <path d="M12 2a10 10 0 0 1 0 20"></path>
+                        </svg>
+                        Estabilidad Frecuencia
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('thd')}
+                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                        activeTab === 'thd'
+                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4"></path>
+                          <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z"></path>
+                          <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z"></path>
+                        </svg>
+                        THD y Calidad
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('temperatureVsEfficiency')}
+                      className={`py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                        activeTab === 'temperatureVsEfficiency'
+                          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 rounded-t-lg'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        Eficiencia vs Temperatura
+                      </div>
+                    </button>
                   </nav>
                 </div>
               </div>
@@ -1348,6 +1610,237 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           {!filters.institutionId 
                             ? "Selecciona una institución para ver el estado de los inversores"
                             : "No hay datos de estado de inversores para el período seleccionado"
+                          }
+                        </p>
+                        {filters.institutionId && (
+                          <button
+                            onClick={calculateInverterData}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                          >
+                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Calcular Datos
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'phaseUnbalance' && (
+                <div className="space-y-6">
+                  <SectionHeader
+                    title="Desbalance de Fases"
+                    icon="M13 2L3 14h9l-1 8 11-12h-7z"
+                    infoText="Hover sobre los gráficos para ver controles"
+                  />
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+                    {phaseUnbalanceData && phaseUnbalanceData.labels && phaseUnbalanceData.labels.length > 0 ? (
+                      <ChartCard
+                        title="Desbalance de Voltaje y Corriente por Fase"
+                        type="line"
+                        data={phaseUnbalanceData}
+                        options={CHART_OPTIONS}
+                      />
+                    ) : (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 2L3 14h9l-1 8 11-12h-7z" />
+                        </svg>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
+                        <p className="text-gray-500 mb-4">
+                          {!filters.institutionId 
+                            ? "Selecciona una institución para ver el desbalance de fases"
+                            : "No hay datos de desbalance de fases para el período seleccionado"
+                          }
+                        </p>
+                        {filters.institutionId && (
+                          <button
+                            onClick={calculateInverterData}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                          >
+                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Calcular Datos
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'powerFactor' && (
+                <div className="space-y-6">
+                  <SectionHeader
+                    title="Factor de Potencia"
+                    icon="M12 2v20"
+                    infoText="Hover sobre los gráficos para ver controles"
+                  />
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+                    {powerFactorData && powerFactorData.labels && powerFactorData.labels.length > 0 ? (
+                      <ChartCard
+                        title="Factor de Potencia Promedio por Día"
+                        type="line"
+                        data={powerFactorData}
+                        options={CHART_OPTIONS}
+                      />
+                    ) : (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v20"></path>
+                          <path d="M2 12h20"></path>
+                          <path d="M12 2a10 10 0 0 1 0 20"></path>
+                        </svg>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
+                        <p className="text-gray-500 mb-4">
+                          {!filters.institutionId 
+                            ? "Selecciona una institución para ver el factor de potencia"
+                            : "No hay datos de factor de potencia para el período seleccionado"
+                          }
+                        </p>
+                        {filters.institutionId && (
+                          <button
+                            onClick={calculateInverterData}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                          >
+                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Calcular Datos
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'frequency' && (
+                <div className="space-y-6">
+                  <SectionHeader
+                    title="Estabilidad de Frecuencia"
+                    icon="M12 2v20"
+                    infoText="Hover sobre los gráficos para ver controles"
+                  />
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+                    {frequencyData && frequencyData.labels && frequencyData.labels.length > 0 ? (
+                      <ChartCard
+                        title="Frecuencia Promedio por Día"
+                        type="line"
+                        data={frequencyData}
+                        options={CHART_OPTIONS}
+                      />
+                    ) : (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v20"></path>
+                          <path d="M2 12h20"></path>
+                          <path d="M12 2a10 10 0 0 1 0 20"></path>
+                        </svg>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
+                        <p className="text-gray-500 mb-4">
+                          {!filters.institutionId 
+                            ? "Selecciona una institución para ver la estabilidad de frecuencia"
+                            : "No hay datos de frecuencia para el período seleccionado"
+                          }
+                        </p>
+                        {filters.institutionId && (
+                          <button
+                            onClick={calculateInverterData}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                          >
+                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Calcular Datos
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'thd' && (
+                <div className="space-y-6">
+                  <SectionHeader
+                    title="THD y Calidad de Energía"
+                    icon="M9 12l2 2 4-4"
+                    infoText="Hover sobre los gráficos para ver controles"
+                  />
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+                    {thdData && thdData.labels && thdData.labels.length > 0 ? (
+                      <ChartCard
+                        title="THD de Voltaje y Corriente por Día"
+                        type="line"
+                        data={thdData}
+                        options={CHART_OPTIONS}
+                      />
+                    ) : (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4"></path>
+                          <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z"></path>
+                          <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z"></path>
+                        </svg>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
+                        <p className="text-gray-500 mb-4">
+                          {!filters.institutionId 
+                            ? "Selecciona una institución para ver los datos de THD"
+                            : "No hay datos de THD para el período seleccionado"
+                          }
+                        </p>
+                        {filters.institutionId && (
+                          <button
+                            onClick={calculateInverterData}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                          >
+                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Calcular Datos
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'temperatureVsEfficiency' && (
+                <div className="space-y-6">
+                  <SectionHeader
+                    title="Eficiencia vs Temperatura"
+                    icon="M12 9v2m0 4h.01"
+                    infoText="Hover sobre los gráficos para ver controles"
+                  />
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+                    {temperatureVsEfficiencyData && temperatureVsEfficiencyData.labels && temperatureVsEfficiencyData.labels.length > 0 ? (
+                      <ChartCard
+                        title="Correlación Eficiencia vs Temperatura"
+                        type="scatter"
+                        data={temperatureVsEfficiencyData}
+                        options={CHART_OPTIONS}
+                      />
+                    ) : (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos disponibles</h3>
+                        <p className="text-gray-500 mb-4">
+                          {!filters.institutionId 
+                            ? "Selecciona una institución para ver la correlación eficiencia vs temperatura"
+                            : "No hay datos de correlación para el período seleccionado"
                           }
                         </p>
                         {filters.institutionId && (

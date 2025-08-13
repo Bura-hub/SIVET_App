@@ -750,12 +750,42 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
         )}
       </section>
 
-      {/* Filtros */}
-      <section className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 lg:p-8 mb-6 lg:mb-8">
-        <WeatherStationFilters 
-          onFiltersChange={handleFilterChange}
-          authToken={authToken}
-        />
+      {/* Sección de Indicadores de Estaciones Meteorológicas */}
+      <section className="mb-6 lg:mb-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
+          {/* Header de la sección */}
+          <div className="bg-gradient-to-r from-orange-600 to-amber-700 px-4 lg:px-8 py-4 lg:py-6">
+            <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-4">
+              <div className="p-2 lg:p-3 bg-white/20 rounded-xl self-start lg:self-auto">
+                <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l-1.41-1.41M2 12h2M20 12h2M6.34 6.34l-1.41-1.41M17.66 6.34l-1.41-1.41" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg lg:text-2xl font-bold text-white">Indicadores de Estaciones Meteorológicas</h2>
+                <p className="text-orange-100 mt-1 text-sm lg:text-base">Análisis detallado por institución y estación</p>
+                {/* Indicador de rango de fechas */}
+                {filters.startDate && filters.endDate && (
+                  <div className="mt-2 inline-flex items-center px-3 py-1 bg-white/20 rounded-full text-xs text-white">
+                    <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {new Date(filters.startDate).toLocaleDateString('es-ES')} - {new Date(filters.endDate).toLocaleDateString('es-ES')}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Contenido de la sección */}
+          <div className="p-4 lg:p-8">
+            <WeatherStationFilters 
+              onFiltersChange={handleFilterChange}
+              authToken={authToken}
+            />
+
+                </div>
+        </div>
       </section>
 
       {/* Gráficos */}

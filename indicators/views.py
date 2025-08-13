@@ -2201,7 +2201,8 @@ class WeatherStationsListView(APIView):
                         'name': station.institution.name
                     },
                     'is_active': station.is_active,
-                    'last_measurement': station.last_measurement_date.isoformat() if station.last_measurement_date else None
+                    'scada_id': station.scada_id,
+                    'status': station.status
                 })
             
             return Response({

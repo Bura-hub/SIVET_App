@@ -27,3 +27,4 @@ celerybeat.pid
 .idea/
 
 .cursor
+celery.log

@@ -155,6 +155,19 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
   const debounceRef = useRef(null);
   const lastFiltersRef = useRef(null);
 
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(20);
+
+  // Verificar que los estados estén correctamente inicializados
+  useEffect(() => {
+    // Limpiar estados al montar el componente
+    setWeatherData(null);
+    setWeatherError(null);
+    setWeatherLoading(false);
+    setKpiData({});
+  }, []);
+
   // KPIs dinámicos basados en datos reales
   const [kpiData, setKpiData] = useState({
     irradiance: { 
@@ -183,6 +196,15 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
       status: "normal", 
       icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 8h10"/><path d="M4 12h16"/><path d="M8 16h8"/></svg>,
       color: "text-blue-600"
+    },
+    windDirection: { 
+      title: "Dirección del Viento", 
+      value: "N/A", 
+      unit: "", 
+      change: "Predominante", 
+      status: "normal", 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>,
+      color: "text-indigo-600"
     },
     precipitation: { 
       title: "Precipitación Acumulada", 
@@ -295,19 +317,44 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
         return;
       }
 
-      setWeatherData(indicatorsData);
-      
-      // Procesar KPIs si hay datos
-      if (indicatorsData.results && indicatorsData.results.length > 0) {
-        const latest = indicatorsData.results[0];
-        processKPIData(latest);
+      if (seq === requestSeqRef.current) {
+        // Verificar que indicatorsData sea válido antes de procesarlo
+        if (!indicatorsData || typeof indicatorsData !== 'object') {
+          console.error('fetchWeatherData: indicatorsData no es válido:', indicatorsData);
+          setWeatherError('Datos recibidos no son válidos');
+          setWeatherLoading(false);
+          return;
+        }
+        
+        console.log('🔍 fetchWeatherData - Actualizando estado con datos:', indicatorsData);
+        console.log('🔍 fetchWeatherData - Tipo de datos:', typeof indicatorsData);
+        console.log('🔍 fetchWeatherData - Estructura de datos:', JSON.stringify(indicatorsData, null, 2));
+        
+        setWeatherData(indicatorsData);
+        console.log('🔍 fetchWeatherData - setWeatherData llamado con:', indicatorsData);
+        
+        // Procesar KPIs si hay datos
+        if (indicatorsData.results && Array.isArray(indicatorsData.results) && indicatorsData.results.length > 0) {
+          const latest = indicatorsData.results[0];
+          console.log('🔍 fetchWeatherData - Procesando KPIs con datos:', latest);
+          processKPIData(latest);
+          console.log('🔍 fetchWeatherData - KPIs procesados correctamente');
+        } else {
+          console.log('🔍 fetchWeatherData - No hay resultados de indicadores para procesar KPIs');
+          console.log('🔍 fetchWeatherData - indicatorsData.results:', indicatorsData.results);
+        }
+        
+        console.log('🔍 fetchWeatherData - Estado actualizado, weatherData debería estar disponible');
       } else {
+        console.log('🔍 fetchWeatherData - Secuencia no coincide ANTES de procesar, saltando. Seq actual:', seq, 'RequestSeq:', requestSeqRef.current);
       }
       
     } catch (error) {
       console.error('🔍 fetchWeatherData - Error capturado:', error);
       if (seq === requestSeqRef.current) {
-        setWeatherError(error.message || 'Error desconocido');
+        setWeatherError(error.message || 'Error desconocido al cargar datos meteorológicos');
+        setWeatherData(null); // Limpiar datos en caso de error
+        setKpiData({}); // Limpiar KPIs en caso de error
       }
     } finally {
       if (seq === requestSeqRef.current) setWeatherLoading(false);
@@ -368,6 +415,70 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
 
   // Función para procesar datos de KPIs
   const processKPIData = (latestData) => {
+    // Verificar que latestData existe y es válido
+    if (!latestData || typeof latestData !== 'object') {
+      console.warn('processKPIData: latestData no es válido:', latestData);
+      return;
+    }
+    
+    // Obtener el estado inicial de kpiData para acceder a los iconos y colores
+    const initialKpiData = {
+      irradiance: { 
+        title: "Irradiancia Acumulada", 
+        value: "0.00", 
+        unit: "kWh/m²", 
+        change: "Este período", 
+        status: "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66-1.41-1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 6.34-1.41-1.41"/><path d="m17.66 6.34l-1.41-1.41"/></svg>,
+        color: "text-orange-600"
+      },
+      hsp: { 
+        title: "Horas Solares Pico", 
+        value: "0.0", 
+        unit: "HSP", 
+        change: "Equivalente solar", 
+        status: "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v6"/><path d="M12 17v6"/><path d="M4.22 4.22l4.24 4.24"/><path d="M15.54 15.54l4.24 4.24"/><path d="M1 12h6"/><path d="M17 12h6"/><path d="M4.22 19.78l4.24-4.24"/><path d="M15.54 8.46l4.24-4.24"/></svg>,
+        color: "text-yellow-600"
+      },
+      windSpeed: { 
+        title: "Velocidad del Viento", 
+        value: "0.0", 
+        unit: "km/h", 
+        change: "Promedio del período", 
+        status: "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 8h10"/><path d="M4 12h16"/><path d="M8 16h8"/></svg>,
+        color: "text-blue-600"
+      },
+      windDirection: { 
+        title: "Dirección del Viento", 
+        value: "N/A", 
+        unit: "", 
+        change: "Predominante", 
+        status: "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>,
+        color: "text-indigo-600"
+      },
+      precipitation: { 
+        title: "Precipitación Acumulada", 
+        value: "0.00", 
+        unit: "cm/día", 
+        change: "Acumulado del período", 
+        status: "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/></svg>,
+        color: "text-cyan-600"
+      },
+      pvPower: { 
+        title: "Potencia Fotovoltaica", 
+        value: "0.0", 
+        unit: "W", 
+        change: "Basada en irradiancia", 
+        status: "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect><path d="M7 12h2l1 2 2-4 1 2h2"></path><path d="M17 16h.01"></path><path d="M17 8h.01"></path></svg>,
+        color: "text-purple-600"
+      }
+    };
+    
     const kpis = {
       irradiance: {
         title: "Irradiancia Acumulada",
@@ -375,8 +486,8 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
         unit: "kWh/m²",
         change: latestData.daily_hsp_hours ? `${latestData.daily_hsp_hours.toFixed(1)} HSP` : "N/A",
         status: "normal",
-        icon: kpiData.irradiance.icon,
-        color: kpiData.irradiance.color
+        icon: initialKpiData.irradiance.icon,
+        color: initialKpiData.irradiance.color
       },
       hsp: {
         title: "Horas Solares Pico",
@@ -384,8 +495,8 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
         unit: "HSP",
         change: "Equivalente solar",
         status: "normal",
-        icon: kpiData.hsp.icon,
-        color: kpiData.hsp.color
+        icon: initialKpiData.hsp.icon,
+        color: initialKpiData.hsp.color
       },
       windSpeed: {
         title: "Velocidad del Viento",
@@ -393,8 +504,17 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
         unit: "km/h",
         change: "Promedio del período",
         status: "normal",
-        icon: kpiData.windSpeed.icon,
-        color: kpiData.windSpeed.color
+        icon: initialKpiData.windSpeed.icon,
+        color: initialKpiData.windSpeed.color
+      },
+      windDirection: {
+        title: "Dirección Predominante",
+        value: getPredominantWindDirection(weatherData?.results || []),
+        unit: "",
+        change: "Viento más frecuente",
+        status: "normal",
+        icon: initialKpiData.windDirection.icon,
+        color: initialKpiData.windDirection.color
       },
       precipitation: {
         title: "Precipitación Acumulada",
@@ -402,21 +522,180 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
         unit: "cm/día",
         change: "Acumulado del período",
         status: "normal",
-        icon: kpiData.precipitation.icon,
-        color: kpiData.precipitation.color
+        icon: initialKpiData.precipitation.icon,
+        color: initialKpiData.precipitation.color
       },
       pvPower: {
         title: "Potencia Fotovoltaica",
-        value: (latestData.theoretical_pv_power_w || 0).toFixed(1),
+        value: (latestData.theoretical_pv_power_w || calculateTheoreticalPVPower(
+          latestData.daily_irradiance_kwh_m2 || 0,
+          latestData.avg_temperature_c || 25
+        )).toFixed(1),
         unit: "W",
-        change: "Basada en irradiancia",
+        change: "Basada en irradiancia y temperatura",
         status: "normal",
-        icon: kpiData.pvPower.icon,
-        color: kpiData.pvPower.color
+        icon: initialKpiData.pvPower.icon,
+        color: initialKpiData.pvPower.color
       }
     };
 
     setKpiData(kpis);
+  };
+
+  // Función para calcular datos de la rosa de los vientos
+  const calculateWindRoseData = (data, minSpeed, maxSpeed) => {
+    // Verificar que data existe y tiene resultados
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      return [0, 0, 0, 0, 0, 0, 0, 0]; // Retornar array vacío si no hay datos
+    }
+    
+    // Direcciones cardinales en grados (N=0°, NE=45°, E=90°, etc.)
+    const directions = [0, 45, 90, 135, 180, 225, 270, 315];
+    const directionNames = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    
+    // Inicializar contadores para cada dirección
+    const directionCounts = directions.map(() => 0);
+    
+    // Contar ocurrencias en cada dirección para el rango de velocidad
+    data.forEach(item => {
+      if (!item) return; // Saltar items nulos
+      
+      // Usar windSpeed si está disponible, sino usar avg_wind_speed_kmh
+      const windSpeed = item.wind_speed_kmh || item.avg_wind_speed_kmh || 0;
+      
+      // Verificar si la velocidad está en el rango especificado
+      if (windSpeed >= minSpeed && windSpeed < maxSpeed) {
+        // Si no hay windDirection, distribuir uniformemente
+        if (!item.wind_direction_deg) {
+          // Distribuir uniformemente entre todas las direcciones
+          directionCounts.forEach((_, index) => {
+            directionCounts[index]++;
+          });
+        } else {
+          // Encontrar la dirección más cercana
+          let minDiff = 360;
+          let closestDirection = 0;
+          
+          directions.forEach((dir, index) => {
+            const diff = Math.abs(item.wind_direction_deg - dir);
+            const normalizedDiff = Math.min(diff, 360 - diff);
+            
+            if (normalizedDiff < minDiff) {
+              minDiff = normalizedDiff;
+              closestDirection = index;
+            }
+          });
+          
+          directionCounts[closestDirection]++;
+        }
+      }
+    });
+    
+    // Normalizar los datos para que el máximo sea 10 (para mejor visualización)
+    const maxCount = Math.max(...directionCounts);
+    if (maxCount > 0) {
+      return directionCounts.map(count => (count / maxCount) * 10);
+    }
+    
+    return directionCounts;
+  };
+
+  // Función para calcular potencia fotovoltaica teórica
+  const calculateTheoreticalPVPower = (irradiance, temperature = 25) => {
+    // Verificar que irradiance sea un número válido
+    if (!irradiance || isNaN(irradiance) || irradiance < 0) {
+      return 0;
+    }
+    
+    // Verificar que temperature sea un número válido
+    if (!temperature || isNaN(temperature)) {
+      temperature = 25; // Usar temperatura estándar si no es válida
+    }
+    
+    // Parámetros estándar de un panel solar (pueden ser configurables)
+    const panelEfficiency = 0.20; // 20% eficiencia estándar
+    const panelArea = 1.6; // 1.6 m² por panel
+    const temperatureCoefficient = -0.004; // -0.4% por °C
+    const standardTemperature = 25; // Temperatura estándar de prueba
+    
+    // Calcular potencia teórica
+    let power = irradiance * panelArea * panelEfficiency;
+    
+    // Ajustar por temperatura si está disponible
+    if (temperature !== 25) {
+      const tempAdjustment = 1 + (temperatureCoefficient * (temperature - standardTemperature));
+      power *= tempAdjustment;
+    }
+    
+    return Math.max(0, power); // No puede ser negativa
+  };
+
+  // Función para obtener la dirección predominante del viento
+  const getPredominantWindDirection = (data) => {
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      return "N/A";
+    }
+
+    const windDirections = data.map(item => item?.wind_direction_deg || 0).filter(deg => deg !== null && deg !== undefined);
+    
+    if (windDirections.length === 0) {
+      return "N/A";
+    }
+    
+    const directionCounts = [0, 0, 0, 0, 0, 0, 0, 0]; // N, NE, E, SE, S, SW, W, NW
+
+    windDirections.forEach(deg => {
+      if (deg >= 337.5 || deg < 22.5) directionCounts[0]++; // N
+      else if (deg >= 22.5 && deg < 67.5) directionCounts[1]++; // NE
+      else if (deg >= 67.5 && deg < 112.5) directionCounts[2]++; // E
+      else if (deg >= 112.5 && deg < 157.5) directionCounts[3]++; // SE
+      else if (deg >= 157.5 && deg < 202.5) directionCounts[4]++; // S
+      else if (deg >= 202.5 && deg < 247.5) directionCounts[5]++; // SW
+      else if (deg >= 247.5 && deg < 292.5) directionCounts[6]++; // W
+      else if (deg >= 292.5 && deg < 337.5) directionCounts[7]++; // NW
+    });
+
+    const maxCount = Math.max(...directionCounts);
+    const predominantDirection = directionCounts.findIndex(count => count === maxCount);
+
+    const directionNames = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    return directionNames[predominantDirection] || "N/A";
+  };
+
+  // Funciones de paginación
+  const getCurrentPageData = () => {
+    if (!weatherData?.results || !Array.isArray(weatherData.results)) {
+      return [];
+    }
+    
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+    return weatherData.results.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = () => {
+    if (!weatherData?.results || !Array.isArray(weatherData.results)) {
+      return 0;
+    }
+    return Math.ceil(weatherData.results.length / recordsPerPage);
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    // Scroll hacia arriba de la tabla
+    window.scrollTo({
+      top: document.querySelector('.bg-white\\/95')?.offsetTop - 100 || 0,
+      behavior: 'smooth'
+    });
+  };
+
+  const resetPagination = () => {
+    setCurrentPage(1);
+  };
+
+  const handleRecordsPerPageChange = (newRecordsPerPage) => {
+    setRecordsPerPage(newRecordsPerPage);
+    setCurrentPage(1); // Resetear a la primera página
   };
 
   // Efectos
@@ -436,6 +715,11 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
       fetchWeatherData(filters);
     }
   }, [filters.institutionId, authToken]); // Solo depender de institutionId y authToken
+
+  // Efecto para resetear paginación cuando cambien los filtros
+  useEffect(() => {
+    resetPagination();
+  }, [filters.institutionId, filters.deviceId, filters.startDate, filters.endDate]);
 
   // Si está cargando, muestra un spinner
   if (loading) {
@@ -479,12 +763,14 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
         </div>
       </header>
 
+
+
       {/* KPIs */}
       <section className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 lg:p-8 -mt-4 lg:-mt-8 mb-6 lg:mb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-6">
           {!filters.institutionId ? (
             // Estado de carga cuando no hay institución seleccionada
-            Array.from({ length: 5 }).map((_, index) => (
+            Array.from({ length: 6 }).map((_, index) => (
               <div key={index} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 overflow-hidden relative">
                 {/* Skeleton loader con animación */}
                 <div className="animate-pulse">
@@ -515,7 +801,7 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
             ))
           ) : weatherLoading ? (
             // Estado de carga cuando se están cargando los datos
-            Array.from({ length: 5 }).map((_, index) => (
+            Array.from({ length: 6 }).map((_, index) => (
               <div key={index} className="bg-white rounded-xl shadow-lg border border-orange-200 p-6 overflow-hidden relative">
                 {/* Skeleton loader con animación naranja */}
                 <div className="animate-pulse">
@@ -553,6 +839,7 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                 'text-orange-600': { bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
                 'text-yellow-600': { bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200' },
                 'text-blue-600': { bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
+                'text-indigo-600': { bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200' },
                 'text-cyan-600': { bgColor: 'bg-cyan-50', borderColor: 'border-cyan-200' },
                 'text-purple-600': { bgColor: 'bg-purple-50', borderColor: 'border-purple-200' }
               };
@@ -890,47 +1177,193 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
         </section>
       )}
 
-      {/* Mensaje cuando no hay gráficos */}
-      {(!weatherData || !weatherData.results || weatherData.results.length === 0) && (
+      {/* Rosa de los Vientos - Nuevo gráfico */}
+      {weatherData && weatherData.results && weatherData.results.length > 0 && (
         <section className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 lg:p-8 mb-6 lg:mb-8">
-          <div className="text-center">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 lg:p-8">
-              <svg className="w-16 h-16 mx-auto text-yellow-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-              <h3 className="text-lg lg:text-xl font-medium text-yellow-800 mb-2">No hay gráficos disponibles</h3>
-              <p className="text-yellow-700 text-sm lg:text-base mb-4">
-                Selecciona una institución y espera a que se carguen los datos meteorológicos.
-              </p>
-              
-              <button
-                onClick={() => {
-                  if (filters.institutionId) {
-                    fetchWeatherData(filters);
+          <div className="space-y-6 lg:space-y-8">
+            <div className="w-full">
+              <ChartCard
+                title="Rosa de los Vientos"
+                description="Distribución de dirección y velocidad del viento en el período seleccionado"
+                type="radar"
+                data={{
+                  labels: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
+                  datasets: [
+                    {
+                      label: 'Frecuencia de Viento (0-5 km/h)',
+                      data: calculateWindRoseData(weatherData.results, 0, 5),
+                      borderColor: '#10B981',
+                      backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                      pointBackgroundColor: '#10B981',
+                      pointBorderColor: '#ffffff',
+                      pointBorderWidth: 2,
+                      pointRadius: 4,
+                    },
+                    {
+                      label: 'Frecuencia de Viento (5-10 km/h)',
+                      data: calculateWindRoseData(weatherData.results, 5, 10),
+                      borderColor: '#F59E0B',
+                      backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                      pointBackgroundColor: '#F59E0B',
+                      pointBorderColor: '#ffffff',
+                      pointBorderWidth: 2,
+                      pointRadius: 4,
+                    },
+                    {
+                      label: 'Frecuencia de Viento (10+ km/h)',
+                      data: calculateWindRoseData(weatherData.results, 10, Infinity),
+                      borderColor: '#EF4444',
+                      backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                      pointBackgroundColor: '#EF4444',
+                      pointBorderColor: '#ffffff',
+                      pointBorderWidth: 2,
+                      pointRadius: 4,
+                    }
+                  ],
+                }}
+                options={{
+                  ...CHART_OPTIONS,
+                  plugins: {
+                    ...CHART_OPTIONS.plugins,
+                    title: { display: false },
+                    legend: {
+                      ...CHART_OPTIONS.plugins.legend,
+                      position: 'top',
+                      align: 'start',
+                      labels: {
+                        ...CHART_OPTIONS.plugins.legend.labels,
+                        usePointStyle: true,
+                        padding: 20,
+                        font: { size: 13, weight: '600' }
+                      }
+                    }
+                  },
+                  scales: {
+                    r: {
+                      beginAtZero: true,
+                      max: weatherData?.results && weatherData.results.length > 0 ? 
+                        Math.max(...weatherData.results.map(item => 
+                          Math.max(
+                            calculateWindRoseData([item], 0, 5)[0],
+                            calculateWindRoseData([item], 5, 10)[0],
+                            calculateWindRoseData([item], 10, Infinity)[0]
+                          )
+                        )) + 5 : 10,
+                      grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                      ticks: {
+                        stepSize: 1,
+                        font: { size: 12 }
+                      }
+                    }
                   }
                 }}
-                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Cargar Datos
-              </button>
+                height="400px"
+                fullscreenHeight="800px"
+              />
             </div>
           </div>
         </section>
       )}
 
-      {/* Mensaje cuando no hay datos disponibles */}
-      {!weatherData?.results || weatherData.results.length === 0 ? (
-        <div className="bg-white p-8 rounded-lg shadow-md text-center">
-          <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay datos meteorológicos disponibles</h3>
-          <p className="text-gray-500">Selecciona una institución y estación para ver los datos meteorológicos</p>
-        </div>
-      ) : (
+      {/* Potencia Fotovoltaica Teórica - Nuevo gráfico */}
+      {weatherData && weatherData.results && weatherData.results.length > 0 && (
+        <section className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 lg:p-8 mb-6 lg:mb-8">
+          <div className="space-y-6 lg:space-y-8">
+            <div className="w-full">
+              <ChartCard
+                title="Potencia Fotovoltaica Teórica"
+                description="Potencia teórica generada basada en irradiancia solar y condiciones ambientales"
+                type="line"
+                data={{
+                  labels: weatherData?.results ? weatherData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')) : [],
+                  datasets: [
+                    {
+                      label: 'Potencia Teórica (W)',
+                      data: weatherData?.results ? weatherData.results.slice().reverse().map(item => 
+                        calculateTheoreticalPVPower(
+                          item?.daily_irradiance_kwh_m2 || 0,
+                          item?.avg_temperature_c || 25
+                        )
+                      ) : [],
+                      borderColor: '#8B5CF6',
+                      backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                      fill: true,
+                      tension: 0.4,
+                      pointRadius: 4,
+                      pointBackgroundColor: '#8B5CF6',
+                      pointBorderColor: '#ffffff',
+                      pointBorderWidth: 2,
+                    },
+                    {
+                      label: 'Irradiancia (kWh/m²)',
+                      data: weatherData?.results ? weatherData.results.slice().reverse().map(item => item?.daily_irradiance_kwh_m2 || 0) : [],
+                      borderColor: '#F59E0B',
+                      backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                      fill: false,
+                      tension: 0.4,
+                      pointRadius: 3,
+                      borderDash: [6, 3],
+                      pointBackgroundColor: '#F59E0B',
+                      pointBorderColor: '#ffffff',
+                      pointBorderWidth: 1,
+                      yAxisID: 'y1'
+                    }
+                  ],
+                }}
+                options={{
+                  ...CHART_OPTIONS,
+                  plugins: {
+                    ...CHART_OPTIONS.plugins,
+                    title: { display: false },
+                    legend: {
+                      ...CHART_OPTIONS.plugins.legend,
+                      position: 'top',
+                      align: 'start',
+                      labels: {
+                        ...CHART_OPTIONS.plugins.legend.labels,
+                        usePointStyle: true,
+                        padding: 20,
+                        font: { size: 13, weight: '600' }
+                      }
+                    }
+                  },
+                  scales: {
+                    y: {
+                      ...CHART_OPTIONS.scales.y,
+                      beginAtZero: true,
+                      grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                      title: {
+                        display: true,
+                        text: 'Potencia (W)',
+                        font: { size: 14, weight: '600' }
+                      }
+                    },
+                    y1: {
+                      type: 'linear',
+                      display: true,
+                      position: 'right',
+                      beginAtZero: true,
+                      grid: { drawOnChartArea: false },
+                      title: {
+                        display: true,
+                        text: 'Irradiancia (kWh/m²)',
+                        font: { size: 14, weight: '600' }
+                      }
+                    }
+                  }
+                }}
+                height="400px"
+                fullscreenHeight="800px"
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
+
+
+      {/* Datos Históricos Detallados */}
+      {weatherData?.results && weatherData.results.length > 0 && (
         // Nueva Sección de Tabla de Datos
         <section className="mb-6 lg:mb-8">
           <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
@@ -977,8 +1410,13 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className="px-3 lg:px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 text-white text-sm font-semibold rounded-lg shadow-sm">
-                        {weatherData.results.length} registros
+                        {weatherData.results.length} registros totales
                       </div>
+                      {getTotalPages() > 1 && (
+                        <div className="px-3 lg:px-4 py-2 bg-blue-100 text-blue-700 text-sm font-semibold rounded-lg">
+                          Página {currentPage} de {getTotalPages()}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1004,10 +1442,10 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-50">
-                      {weatherData.results && weatherData.results.length > 0 ? (
-                        weatherData.results.map((item, index) => (
-                          <tr key={index} className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 transition-all duration-200 border-b border-gray-50">
+                    <tbody className="bg-white divide-y divide-y divide-gray-50">
+                      {getCurrentPageData().length > 0 ? (
+                        getCurrentPageData().map((item, index) => (
+                          <tr key={`${currentPage}-${index}`} className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 transition-all duration-200 border-b border-gray-50">
                             <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
                               <div className="text-xs lg:text-sm font-medium text-gray-900">
                                 {new Date(item.date).toLocaleDateString('es-ES')}
@@ -1061,6 +1499,129 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                     </tbody>
                   </table>
                 </div>
+                
+                {/* Controles de paginación */}
+                {getTotalPages() > 1 && (
+                  <div className="px-3 lg:px-4 xl:px-6 py-4 lg:py-6 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+                    <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+                      {/* Información de paginación y selector de registros por página */}
+                      <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                        <div className="text-sm text-gray-600">
+                          Mostrando {((currentPage - 1) * recordsPerPage) + 1} a {Math.min(currentPage * recordsPerPage, weatherData.results.length)} de {weatherData.results.length} registros
+                        </div>
+                        
+                        {/* Selector de registros por página */}
+                        <div className="flex items-center space-x-2">
+                          <label className="text-sm text-gray-600">Mostrar:</label>
+                          <select
+                            value={recordsPerPage}
+                            onChange={(e) => handleRecordsPerPageChange(Number(e.target.value))}
+                            className="px-3 py-1 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                          >
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                          </select>
+                          <span className="text-sm text-gray-600">por página</span>
+                        </div>
+                      </div>
+                      
+                      {/* Controles de navegación */}
+                      <div className="flex items-center space-x-2">
+                        {/* Botón Primera Página */}
+                        <button
+                          onClick={() => handlePageChange(1)}
+                          disabled={currentPage === 1}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            currentPage === 1
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        
+                        {/* Botón Página Anterior */}
+                        <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            currentPage === 1
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        
+                        {/* Números de página */}
+                        <div className="flex items-center space-x-1">
+                          {Array.from({ length: Math.min(5, getTotalPages()) }, (_, i) => {
+                            let pageNum;
+                            if (getTotalPages() <= 5) {
+                              pageNum = i + 1;
+                            } else if (currentPage <= 3) {
+                              pageNum = i + 1;
+                            } else if (currentPage >= getTotalPages() - 2) {
+                              pageNum = getTotalPages() - 4 + i;
+                            } else {
+                              pageNum = currentPage - 2 + i;
+                            }
+                            
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => handlePageChange(pageNum)}
+                                className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                                  currentPage === pageNum
+                                    ? 'bg-orange-600 text-white'
+                                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Botón Página Siguiente */}
+                        <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === getTotalPages()}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            currentPage === getTotalPages()
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                        
+                        {/* Botón Última Página */}
+                        <button
+                          onClick={() => handlePageChange(getTotalPages())}
+                          disabled={currentPage === getTotalPages()}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            currentPage === getTotalPages()
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M6 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

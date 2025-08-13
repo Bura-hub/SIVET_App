@@ -218,7 +218,14 @@ class WeatherStationIndicatorsSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = WeatherStationIndicators
-        fields = '__all__'
+        fields = [
+            'id', 'device', 'device_name', 'institution', 'institution_name',
+            'date', 'time_range', 'daily_irradiance_kwh_m2', 'daily_hsp_hours',
+            'avg_wind_speed_kmh', 'wind_direction_distribution', 'wind_speed_distribution',
+            'daily_precipitation_cm', 'theoretical_pv_power_w', 'avg_temperature_c',
+            'avg_humidity_pct', 'max_temperature_c', 'min_temperature_c',
+            'measurement_count', 'last_measurement_date', 'calculated_at'
+        ]
 
 
 class WeatherStationChartDataSerializer(serializers.ModelSerializer):
@@ -227,7 +234,14 @@ class WeatherStationChartDataSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = WeatherStationChartData
-        fields = '__all__'
+        fields = [
+            'id', 'device', 'device_name', 'institution', 'institution_name',
+            'date', 'hourly_irradiance', 'daily_irradiance_kwh_m2',
+            'hourly_temperature', 'avg_daily_temperature_c', 'hourly_humidity',
+            'avg_daily_humidity_pct', 'hourly_wind_speed', 'hourly_wind_direction',
+            'avg_daily_wind_speed_kmh', 'hourly_precipitation', 'daily_precipitation_cm',
+            'calculated_at'
+        ]
 
 
 # Serializer para la solicitud de cálculo de estaciones meteorológicas

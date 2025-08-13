@@ -1686,108 +1686,78 @@ def _calculate_monthly_electrical_data(meter, start_date, end_date):
 
     return records_created, records_updated
 
-@shared_task(bind=True, retry_backoff=60, max_retries=3)
-def calculate_weather_station_indicators(self, time_range='daily', start_date=None, end_date=None, institution_id=None, device_id=None):
+@shared_task
+def calculate_weather_station_indicators(time_range='daily', start_date_str=None, end_date_str=None, institution_id=None, device_id=None):
     """
     Calcula los indicadores meteorológicos para estaciones meteorológicas
     en diferentes rangos de tiempo (diario/mensual).
+    
+    Parámetros:
+        time_range: 'daily' o 'monthly'
+        start_date_str: fecha de inicio en formato ISO
+        end_date_str: fecha de fin en formato ISO
+        institution_id: ID de la institución (opcional)
+        device_id: ID del dispositivo específico (opcional)
     """
     logger.info("=== INICIANDO TAREA: calculate_weather_station_indicators ===")
-    logger.info(f"Parámetros: time_range={time_range}, start_date={start_date}, end_date={end_date}, institution_id={institution_id}, device_id={device_id}")
+    logger.info(f"Parámetros: time_range={time_range}, start_date_str={start_date_str}, end_date_str={end_date_str}, institution_id={institution_id}, device_id={device_id}")
     
     try:
-        # Actualizar el progreso de la tarea
-        task_progress = TaskProgress.objects.create(
-            task_id=self.request.id,
-            task_name="calculate_weather_station_indicators",
-            status="running",
-            progress=0,
-            total_steps=5
-        )
-        
         # Paso 1: Validar y preparar fechas
-        task_progress.progress = 20
-        task_progress.save()
-        
-        if not start_date or not end_date:
+        if not start_date_str or not end_date_str:
+            # Por defecto, último mes
             end_date = get_colombia_date()
             if time_range == 'daily':
                 start_date = end_date
             else:  # monthly
                 start_date = end_date.replace(day=1)
+        else:
+            start_date = datetime.fromisoformat(start_date_str).date()
+            end_date = datetime.fromisoformat(end_date_str).date()
         
-        if isinstance(start_date, str):
-            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-        if isinstance(end_date, str):
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-        
-        logger.info(f"Rango de fechas: {start_date} -> {end_date}")
+        logger.info(f"Calculando datos para rango: {time_range}, desde {start_date} hasta {end_date}")
         
         # Paso 2: Obtener dispositivos
-        task_progress.progress = 40
-        task_progress.save()
-        
         # Filtrar por categoría de estación meteorológica (category_id=3 según variables.json)
         weather_stations = Device.objects.filter(category__id=3, is_active=True)
         
         if institution_id:
             weather_stations = weather_stations.filter(institution_id=institution_id)
+            logger.info(f"Filtrado por institución ID: {institution_id}")
         
         if device_id:
-            weather_stations = weather_stations.filter(id=device_id)
+            weather_stations = weather_stations.filter(scada_id=device_id)
+            logger.info(f"Filtrado por dispositivo ID: {device_id}")
         
-        logger.info(f"Estaciones meteorológicas encontradas: {weather_stations.count()}")
+        logger.info(f"Procesando {weather_stations.count()} estaciones meteorológicas")
         
-        # Paso 3: Calcular indicadores para cada estación
-        task_progress.progress = 60
-        task_progress.save()
-        
-        total_processed = 0
+        total_records_created = 0
+        total_records_updated = 0
         
         for station in weather_stations:
-            logger.info(f"Procesando estación: {station.name} ({station.institution.name})")
+            logger.info(f"Procesando estación: {station.name} (ID: {station.id}, SCADA ID: {station.scada_id})")
             
-            # Obtener mediciones para el rango de fechas
-            measurements = Measurement.objects.filter(
-                device=station,
-                date__date__range=(start_date, end_date)
-            ).order_by('date')
-            
-            if not measurements.exists():
-                logger.warning(f"No hay mediciones para {station.name} en el rango especificado")
-                continue
-            
-            # Calcular indicadores diarios o mensuales
             if time_range == 'daily':
-                total_processed += calculate_daily_weather_indicators(station, measurements, start_date, end_date)
+                records_created, records_updated = _calculate_daily_weather_station_data(station, start_date, end_date)
             else:  # monthly
-                total_processed += calculate_monthly_weather_indicators(station, measurements, start_date, end_date)
+                records_created, records_updated = _calculate_monthly_weather_station_data(station, start_date, end_date)
+            
+            total_records_created += records_created
+            total_records_updated += records_updated
         
-        # Paso 4: Finalizar
-        task_progress.progress = 100
-        task_progress.status = "completed"
-        task_progress.save()
+        logger.info(f"=== RESUMEN DE PROCESAMIENTO ===")
+        logger.info(f"Registros creados: {total_records_created}")
+        logger.info(f"Registros actualizados: {total_records_updated}")
+        logger.info("=== TAREA COMPLETADA: calculate_weather_station_indicators ===")
         
-        logger.info(f"=== TAREA COMPLETADA: calculate_weather_station_indicators ===")
-        logger.info(f"Total de registros procesados: {total_processed}")
-        
-        return {
-            'success': True,
-            'message': f'Indicadores meteorológicos calculados exitosamente. {total_processed} registros procesados.',
-            'total_processed': total_processed
-        }
+        return f"Procesadas {weather_stations.count()} estaciones meteorológicas. Creados: {total_records_created}, Actualizados: {total_records_updated}"
         
     except Exception as e:
-        logger.error(f"Error en calculate_weather_station_indicators: {str(e)}")
+        logger.error(f"=== ERROR EN TAREA: calculate_weather_station_indicators ===")
+        logger.error(f"Error calculando datos de estaciones meteorológicas: {e}", exc_info=True)
+        raise
         
-        # Actualizar progreso con error
-        if 'task_progress' in locals():
-            task_progress.status = "failed"
-            task_progress.error_message = str(e)
-            task_progress.save()
-        
-        # Reintentar la tarea
-        raise self.retry(exc=e, countdown=60, max_retries=3)
+
 
 
 def calculate_daily_weather_indicators(station, measurements, start_date, end_date):
@@ -1954,7 +1924,7 @@ def calculate_single_day_weather_indicators(measurements):
         # Si precipitation ya está en cm/día (acumulador diario), tomar el último valor
         # Si es una tasa instantánea, se deben sumar las lecturas de 2 minutos
         # Asumiendo que cm/día significa que es un acumulador de reinicio diario
-        indicators['daily_precipitation_cm'] = precipitation_values[-1] if precipitation_values else 0.0
+        indicators['daily_precipitation_cm'] = precipitation_values[len(precipitation_values)-1] if precipitation_values else 0.0
     
     # Datos adicionales
     if temperature_values:
@@ -1967,7 +1937,7 @@ def calculate_single_day_weather_indicators(measurements):
     
     # Metadatos
     indicators['measurement_count'] = len(measurements)
-    indicators['last_measurement_date'] = measurements[-1].date if measurements else None
+    indicators['last_measurement_date'] = measurements[len(measurements)-1].date if measurements else None
     
     return indicators
 
@@ -2020,7 +1990,7 @@ def calculate_single_month_weather_indicators(measurements):
     
     # Metadatos
     monthly_indicators['measurement_count'] = sum(ind.get('measurement_count', 0) for ind in daily_indicators)
-    monthly_indicators['last_measurement_date'] = measurements[-1].date if measurements else None
+    monthly_indicators['last_measurement_date'] = measurements[len(measurements)-1].date if measurements else None
     
     return monthly_indicators
 
@@ -2095,7 +2065,7 @@ def calculate_single_day_weather_chart_data(measurements):
         
         # Precipitación acumulada por hora (si es acumulador)
         if hourly_data[hour]['precipitation']:
-            chart_data['hourly_precipitation'].append(hourly_data[hour]['precipitation'][-1])  # Último valor
+            chart_data['hourly_precipitation'].append(hourly_data[hour]['precipitation'][len(hourly_data[hour]['precipitation'])-1])  # Último valor
         else:
             chart_data['hourly_precipitation'].append(0)
     
@@ -2104,7 +2074,7 @@ def calculate_single_day_weather_chart_data(measurements):
     chart_data['avg_daily_temperature_c'] = sum(chart_data['hourly_temperature']) / 24
     chart_data['avg_daily_humidity_pct'] = sum(chart_data['hourly_humidity']) / 24
     chart_data['avg_daily_wind_speed_kmh'] = sum(chart_data['hourly_wind_speed']) / 24
-    chart_data['daily_precipitation_cm'] = chart_data['hourly_precipitation'][-1] if chart_data['hourly_precipitation'] else 0
+    chart_data['daily_precipitation_cm'] = chart_data['hourly_precipitation'][len(chart_data['hourly_precipitation'])-1] if chart_data['hourly_precipitation'] else 0
     
     return chart_data
 
@@ -2165,3 +2135,119 @@ def calculate_wind_speed_distribution(wind_speeds):
             speed_ranges['30+'] += 1
     
     return speed_ranges
+
+
+def _calculate_daily_weather_station_data(station, start_date, end_date):
+    """
+    Calcula datos diarios para una estación meteorológica específica
+    """
+    records_created = 0
+    records_updated = 0
+    
+    current_date = start_date
+    while current_date <= end_date:
+        logger.info(f"  Procesando fecha: {current_date}")
+        
+        try:
+            # Obtener mediciones para el día específico
+            measurements = Measurement.objects.filter(
+                device=station,
+                date__date=current_date
+            ).order_by('date')
+            
+            if measurements.exists():
+                # Convertir QuerySet a lista para evitar problemas de indexación
+                measurements_list = list(measurements)
+                
+                # Calcular indicadores para el día
+                indicators = calculate_single_day_weather_indicators(measurements_list)
+                
+                # Guardar o actualizar indicadores
+                weather_indicator, created = WeatherStationIndicators.objects.update_or_create(
+                    device=station,
+                    institution=station.institution,
+                    date=current_date,
+                    time_range='daily',
+                    defaults=indicators
+                )
+                
+                if created:
+                    records_created += 1
+                else:
+                    records_updated += 1
+                
+                # Calcular y guardar datos de gráficos
+                chart_data = calculate_single_day_weather_chart_data(measurements_list)
+                weather_chart, chart_created = WeatherStationChartData.objects.update_or_create(
+                    device=station,
+                    institution=station.institution,
+                    date=current_date,
+                    defaults=chart_data
+                )
+                
+                logger.info(f"  Indicadores diarios calculados para {station.name} - {current_date}")
+            else:
+                logger.warning(f"  No hay mediciones para {station.name} en {current_date}")
+                
+        except Exception as e:
+            logger.error(f"  Error calculando indicadores diarios para {station.name} - {current_date}: {str(e)}")
+        
+        current_date += timedelta(days=1)
+
+    return records_created, records_updated
+
+
+def _calculate_monthly_weather_station_data(station, start_date, end_date):
+    """
+    Calcula datos mensuales para una estación meteorológica específica
+    """
+    records_created = 0
+    records_updated = 0
+    
+    # Agrupar por mes
+    current_date = start_date.replace(day=1)  # Primer día del mes
+    while current_date <= end_date:
+        month_end = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        month_end = min(month_end, end_date)
+        
+        logger.info(f"  Procesando mes: {current_date.strftime('%Y-%m')}")
+        
+        try:
+            # Obtener mediciones para el mes
+            measurements = Measurement.objects.filter(
+                device=station,
+                date__date__range=(current_date, month_end)
+            ).order_by('date')
+            
+            if measurements.exists():
+                # Convertir QuerySet a lista para evitar problemas de indexación
+                measurements_list = list(measurements)
+                
+                # Calcular indicadores para el mes
+                indicators = calculate_single_month_weather_indicators(measurements_list)
+                
+                # Guardar o actualizar indicadores
+                weather_indicator, created = WeatherStationIndicators.objects.update_or_create(
+                    device=station,
+                    institution=station.institution,
+                    date=current_date,
+                    time_range='monthly',
+                    defaults=indicators
+                )
+                
+                if created:
+                    records_created += 1
+                else:
+                    records_updated += 1
+                
+                logger.info(f"  Indicadores mensuales calculados para {station.name} - {current_date.strftime('%Y-%m')}")
+            else:
+                logger.warning(f"  No hay mediciones para {station.name} en {current_date.strftime('%Y-%m')}")
+                
+        except Exception as e:
+            logger.error(f"  Error calculando indicadores mensuales para {station.name} - {current_date.strftime('%Y-%m')}: {str(e)}")
+        
+        # Avanzar al siguiente mes
+        current_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
+
+    return records_created, records_updated

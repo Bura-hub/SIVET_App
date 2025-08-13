@@ -1819,16 +1819,6 @@ class InvertersListView(APIView):
 class WeatherStationIndicatorsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_scada_token(self):
-        try:
-            return scada_client.get_token()
-        except EnvironmentError as e:
-            logger.error(f"SCADA configuration error: {e}")
-            return Response({"detail": "SCADA server configuration error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error getting SCADA token: {e}")
-            return Response({"detail": "No se pudo autenticar con la API SCADA. Revise las credenciales."}, status=status.HTTP_502_BAD_GATEWAY)
-
     @extend_schema(
         summary="Obtener indicadores de estaciones meteorológicas",
         description="Obtiene los indicadores meteorológicos calculados para estaciones meteorológicas",
@@ -1857,10 +1847,6 @@ class WeatherStationIndicatorsView(APIView):
         
         Obtiene los indicadores meteorológicos calculados para estaciones meteorológicas.
         """
-        token = self.get_scada_token()
-        if isinstance(token, Response):
-            return token
-
         try:
             # Obtener parámetros de consulta
             time_range = request.query_params.get('time_range', 'daily')
@@ -1880,7 +1866,14 @@ class WeatherStationIndicatorsView(APIView):
             filters = Q(time_range=time_range)
             
             if institution_id:
-                filters &= Q(institution_id=institution_id)
+                try:
+                    institution_id = int(institution_id)
+                    filters &= Q(institution_id=institution_id)
+                except ValueError:
+                    return Response(
+                        {"detail": "institution_id debe ser un número entero válido"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             
             if device_id:
                 filters &= Q(device_id=device_id)
@@ -1905,8 +1898,10 @@ class WeatherStationIndicatorsView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # Obtener indicadores
-            indicators = WeatherStationIndicators.objects.filter(filters).order_by('-date')
+            # Obtener indicadores con select_related para optimizar consultas
+            indicators = WeatherStationIndicators.objects.filter(filters).select_related(
+                'device', 'institution'
+            ).order_by('-date')
             
             # Serializar y devolver resultados
             serializer = WeatherStationIndicatorsSerializer(indicators, many=True)
@@ -1934,16 +1929,6 @@ class WeatherStationIndicatorsView(APIView):
 @method_decorator(cache_page(60 * 5), name='dispatch')
 class WeatherStationChartDataView(APIView):
     permission_classes = [IsAuthenticated]
-
-    def get_scada_token(self):
-        try:
-            return scada_client.get_token()
-        except EnvironmentError as e:
-            logger.error(f"SCADA configuration error: {e}")
-            return Response({"detail": "SCADA server configuration error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error getting SCADA token: {e}")
-            return Response({"detail": "No se pudo autenticar con la API SCADA. Revise las credenciales."}, status=status.HTTP_502_BAD_GATEWAY)
 
     @extend_schema(
         summary="Obtener datos de gráficos de estaciones meteorológicas",
@@ -1973,10 +1958,6 @@ class WeatherStationChartDataView(APIView):
         
         Obtiene los datos de gráficos meteorológicos para visualización.
         """
-        token = self.get_scada_token()
-        if isinstance(token, Response):
-            return token
-
         try:
             # Obtener parámetros de consulta
             time_range = request.query_params.get('time_range', 'daily')
@@ -1996,7 +1977,14 @@ class WeatherStationChartDataView(APIView):
             filters = Q()
             
             if institution_id:
-                filters &= Q(institution_id=institution_id)
+                try:
+                    institution_id = int(institution_id)
+                    filters &= Q(institution_id=institution_id)
+                except ValueError:
+                    return Response(
+                        {"detail": "institution_id debe ser un número entero válido"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             
             if device_id:
                 filters &= Q(device_id=device_id)
@@ -2021,8 +2009,10 @@ class WeatherStationChartDataView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # Obtener datos de gráficos
-            chart_data = WeatherStationChartData.objects.filter(filters).order_by('-date')
+            # Obtener datos de gráficos con select_related para optimizar consultas
+            chart_data = WeatherStationChartData.objects.filter(filters).select_related(
+                'device', 'institution'
+            ).order_by('-date')
             
             # Serializar y devolver resultados
             serializer = WeatherStationChartDataSerializer(chart_data, many=True)
@@ -2127,16 +2117,6 @@ class CalculateWeatherStationDataView(APIView):
 class WeatherStationsListView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_scada_token(self):
-        try:
-            return scada_client.get_token()
-        except EnvironmentError as e:
-            logger.error(f"SCADA configuration error: {e}")
-            return Response({"detail": "SCADA server configuration error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error getting SCADA token: {e}")
-            return Response({"detail": "No se pudo autenticar con la API SCADA. Revise las credenciales."}, status=status.HTTP_502_BAD_GATEWAY)
-
     @extend_schema(
         summary="Listar estaciones meteorológicas",
         description="Obtiene la lista de estaciones meteorológicas disponibles",
@@ -2173,10 +2153,6 @@ class WeatherStationsListView(APIView):
         
         Obtiene la lista de estaciones meteorológicas disponibles.
         """
-        token = self.get_scada_token()
-        if isinstance(token, Response):
-            return token
-
         try:
             # Obtener parámetros de consulta
             institution_id = request.query_params.get('institution_id')
@@ -2185,10 +2161,19 @@ class WeatherStationsListView(APIView):
             filters = Q(category__id=3, is_active=True)  # category_id=3 para estaciones meteorológicas
             
             if institution_id:
-                filters &= Q(institution_id=institution_id)
+                try:
+                    institution_id = int(institution_id)
+                    filters &= Q(institution_id=institution_id)
+                except ValueError:
+                    return Response(
+                        {"detail": "institution_id debe ser un número entero válido"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-            # Obtener estaciones meteorológicas
-            weather_stations = Device.objects.filter(filters).select_related('institution').order_by('institution__name', 'name')
+            # Obtener estaciones meteorológicas con select_related para optimizar consultas
+            weather_stations = Device.objects.filter(filters).select_related(
+                'institution', 'category'
+            ).order_by('institution__name', 'name')
             
             # Preparar respuesta
             results = []

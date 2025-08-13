@@ -51,29 +51,39 @@ const WeatherStationFilters = ({ onFiltersChange, authToken }) => {
 
   // Notificar cambios en los filtros
   useEffect(() => {
-    console.log('Filters changed:', { timeRange, selectedInstitution, selectedDevice, startDate, endDate });
-    onFiltersChange({
+    console.log('🔍 WeatherStationFilters - useEffect filters changed:', { timeRange, selectedInstitution, selectedDevice, startDate, endDate });
+    const newFilters = {
       timeRange,
       institutionId: selectedInstitution,
       deviceId: selectedDevice,
       startDate,
       endDate
-    });
+    };
+    console.log('🔍 WeatherStationFilters - Llamando onFiltersChange con:', newFilters);
+    onFiltersChange(newFilters);
   }, [timeRange, selectedInstitution, selectedDevice, startDate, endDate, onFiltersChange]);
 
   const fetchInstitutions = async () => {
     try {
+      console.log('🔍 WeatherStationFilters - fetchInstitutions iniciando');
+      // Usar el endpoint correcto para instituciones (compartido entre todas las categorías)
       const response = await fetch(ENDPOINTS.electrical.institutions, {
         ...getDefaultFetchOptions(authToken)
       });
+      console.log('🔍 WeatherStationFilters - fetchInstitutions response status:', response.status);
+      
       if (!response.ok) {
         throw new Error(`Error ${response.status}`);
       }
       const data = await response.json();
+      console.log('🔍 WeatherStationFilters - fetchInstitutions data recibida:', data);
+      
       // Espera formato: [{id, name}]
-      setInstitutions(Array.isArray(data) ? data : (data.results || []));
+      const institutionsList = Array.isArray(data) ? data : (data.results || []);
+      console.log('🔍 WeatherStationFilters - fetchInstitutions instituciones procesadas:', institutionsList);
+      setInstitutions(institutionsList);
     } catch (error) {
-      console.error('Error fetching institutions:', error);
+      console.error('🔍 WeatherStationFilters - fetchInstitutions error:', error);
       setInstitutions([]);
     }
   };
@@ -81,45 +91,43 @@ const WeatherStationFilters = ({ onFiltersChange, authToken }) => {
   const fetchDevices = async (institutionId) => {
     setLoading(true);
     try {
-      console.log('Fetching devices for institution:', institutionId, 'Type:', typeof institutionId);
-      console.log('Institutions available:', institutions);
+      console.log('🔍 WeatherStationFilters - fetchDevices iniciando para institución:', institutionId);
+      console.log('🔍 WeatherStationFilters - institutions disponibles:', institutions);
       
       // Usar el endpoint específico para estaciones meteorológicas
       const url = `${ENDPOINTS.weather.stations}?institution_id=${institutionId}`;
-      console.log('Request URL:', url);
-      console.log('Request headers:', getDefaultFetchOptions(authToken));
+      console.log('🔍 WeatherStationFilters - fetchDevices URL:', url);
+      console.log('🔍 WeatherStationFilters - fetchDevices headers:', getDefaultFetchOptions(authToken));
       
       const response = await fetch(url, {
         ...getDefaultFetchOptions(authToken)
       });
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
+      console.log('🔍 WeatherStationFilters - fetchDevices response status:', response.status);
+      console.log('🔍 WeatherStationFilters - fetchDevices response ok:', response.ok);
       
       if (!response.ok) {
-        throw new Error(`Error ${response.status}`);
+        const errorText = await response.text();
+        console.error('🔍 WeatherStationFilters - fetchDevices error response:', errorText);
+        throw new Error(`Error ${response.status}: ${errorText}`);
       }
+      
       const data = await response.json();
-      console.log('Devices response:', data);
+      console.log('🔍 WeatherStationFilters - fetchDevices data recibida:', data);
       
-      // Backend devuelve { results: [ { id, name, institution, ... } ], count }
-      const parsed = Array.isArray(data) ? data : (data.results || []);
-      console.log('Parsed devices:', parsed);
-      console.log('Number of devices found:', parsed.length);
+      // Espera formato: {count, results: [{id, name, institution, is_active}]}
+      const devicesList = Array.isArray(data) ? data : (data.results || []);
+      console.log('🔍 WeatherStationFilters - fetchDevices dispositivos procesados:', devicesList);
       
-      // Verificar si los dispositivos tienen la estructura esperada
-      if (parsed.length > 0) {
-        console.log('First device structure:', parsed[0]);
-        console.log('Device keys:', Object.keys(parsed[0]));
+      setDevices(devicesList);
+      
+      // Reset device selection if current device is not in new list
+      if (selectedDevice && !devicesList.find(d => d.id === selectedDevice)) {
+        console.log('🔍 WeatherStationFilters - fetchDevices reseteando device selection');
+        setSelectedDevice('');
       }
       
-      setDevices(parsed);
-      
-      // Si solo hay un dispositivo, seleccionarlo automáticamente
-      if (parsed.length === 1) {
-        setSelectedDevice(parsed[0].id);
-      }
     } catch (error) {
-      console.error('Error fetching devices:', error);
+      console.error('🔍 WeatherStationFilters - fetchDevices error:', error);
       setDevices([]);
       setSelectedDevice('');
     } finally {

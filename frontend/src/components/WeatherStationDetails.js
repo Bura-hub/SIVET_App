@@ -604,7 +604,7 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
   const calculateTheoreticalPVPower = (irradiance, temperature = 25) => {
     // Verificar que irradiance sea un número válido
     if (!irradiance || isNaN(irradiance) || irradiance < 0) {
-      return 0;
+                return 0;
     }
     
     // Verificar que temperature sea un número válido
@@ -959,7 +959,7 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                   </svg>
                   <span>Mostrando datos de los últimos 10 días. Selecciona fechas específicas para personalizar el rango.</span>
                 </div>
-              </div>
+        </div>
             )}
 
             {/* Estado de carga */}
@@ -969,7 +969,7 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent mr-2"></div>
                   <span>Cargando datos meteorológicos...</span>
                 </div>
-              </div>
+                </div>
             )}
 
             {weatherLoading && (
@@ -978,11 +978,11 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                   <div className="relative">
                     <div className="animate-spin rounded-full h-12 w-12 lg:h-16 lg:w-16 border-4 border-orange-200"></div>
                     <div className="animate-spin rounded-full h-12 w-12 lg:h-16 lg:w-16 border-4 border-transparent border-t-orange-600 absolute top-0 left-0"></div>
-                  </div>
+                </div>
                   <p className="mt-3 lg:mt-4 text-base lg:text-lg font-medium text-gray-700">Cargando datos meteorológicos...</p>
                   <p className="mt-1 lg:mt-2 text-sm text-gray-500">Procesando indicadores meteorológicos</p>
                 </div>
-              </div>
+                </div>
             )}
 
             {weatherError && (
@@ -992,16 +992,16 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                     <div className="p-2 bg-red-100 rounded-lg">
                       <svg className="w-5 h-5 lg:w-6 lg:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
+                </svg>
+              </div>
+          </div>
                   <div className="ml-3 lg:ml-4">
                     <h3 className="text-base lg:text-lg font-semibold text-red-800 mb-1">Error al cargar datos</h3>
                     <p className="text-red-700 text-sm lg:text-base">{weatherError}</p>
-                  </div>
-                </div>
               </div>
-            )}
+              </div>
+          </div>
+        )}
           </div>
         </div>
       </section>
@@ -1013,10 +1013,10 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
           <div className="space-y-6 lg:space-y-8">
             {/* Gráfico principal de irradiancia - Ancho completo */}
             <div className="w-full">
-              <ChartCard
+                <ChartCard
                 title="Análisis de Irradiancia Solar"
                 description="Irradiancia acumulada y horas solares pico en el tiempo"
-                type="line"
+                  type="line"
                 data={{
                   labels: weatherData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
                   datasets: [
@@ -1075,8 +1075,8 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                 }}
                 height="400px"
                 fullscreenHeight="800px"
-              />
-            </div>
+                />
+              </div>
 
             {/* Gráficos secundarios en grid responsive - Máximo ancho */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 xl:gap-8 w-full">
@@ -1127,10 +1127,10 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
               />
 
               {/* Condiciones del viento */}
-              <ChartCard
+                <ChartCard
                 title="Condiciones del Viento"
                 description="Velocidad del viento y precipitación"
-                type="line"
+                  type="line"
                 data={{
                   labels: weatherData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
                   datasets: [
@@ -1171,9 +1171,9 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                 }}
                 height="350px"
                 fullscreenHeight="700px"
-              />
-            </div>
-          </div>
+                />
+              </div>
+              </div>
         </section>
       )}
 
@@ -1183,7 +1183,7 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
           <div className="space-y-6 lg:space-y-8">
             <div className="w-full">
               <ChartCard
-                title="Rosa de los Vientos"
+              title="Rosa de los Vientos"
                 description="Distribución de dirección y velocidad del viento en el período seleccionado"
                 type="radar"
                 data={{
@@ -1260,8 +1260,8 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                 height="400px"
                 fullscreenHeight="800px"
               />
-            </div>
-          </div>
+                          </div>
+                        </div>
         </section>
       )}
 
@@ -1355,9 +1355,9 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                 height="400px"
                 fullscreenHeight="800px"
               />
-            </div>
-          </div>
-        </section>
+                          </div>
+                        </div>
+      </section>
       )}
 
 

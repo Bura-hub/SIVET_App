@@ -143,12 +143,12 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
   });
 
   // Estados para los datos de indicadores
-  const [inverterData, setInverterData] = useState(null);
+  const [inverterData, setInverterData] = useState({ results: [] });
   const [inverterLoading, setInverterLoading] = useState(false);
   const [inverterError, setInverterError] = useState(null);
 
   // Estado para la pestaña activa
-  const [activeTab, setActiveTab] = useState('monthlyGeneration');
+
 
   // Estado para la animación de transición
   const [showTransition, setShowTransition] = useState(false);
@@ -158,6 +158,10 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
   // Referencias para control de requests
   const requestSeqRef = useRef(0);
   const lastFiltersRef = useRef(null);
+  
+  // Variables de estado para paginación de la tabla
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   // Iconos mejorados más acordes a cada título
   const generationIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-solar-panel" aria-hidden="true"><path d="M12 2v20"></path><path d="M2 12h20"></path><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"></path><path d="M4 12V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8"></path><path d="M12 6v4"></path><path d="M8 8h8"></path></svg>;
@@ -259,109 +263,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     }
   });
 
-  // Estados para almacenar los datos de cada gráfico
-  const [monthlyGenerationData, setMonthlyGenerationData] = useState({
-    labels: [],
-    datasets: [{
-      label: 'Sin datos',
-      data: [],
-      backgroundColor: '#E5E7EB',
-      borderColor: '#9CA3AF',
-      borderWidth: 1,
-    }]
-  });
-  const [dailyGenerationData, setDailyGenerationData] = useState({
-    labels: [],
-    datasets: [{
-      label: 'Sin datos',
-      data: [],
-      backgroundColor: '#E5E7EB',
-      borderColor: '#9CA3AF',
-      borderWidth: 1,
-    }]
-  });
-  const [efficiencyData, setEfficiencyData] = useState({
-    labels: [],
-    datasets: [{
-      label: 'Sin datos',
-      data: [],
-      backgroundColor: '#E5E7EB',
-      borderColor: '#9CA3AF',
-      borderWidth: 1,
-    }]
-  });
-  const [inverterStatusData, setInverterStatusData] = useState({
-    labels: [],
-    datasets: [{
-      label: 'Sin datos',
-      data: [],
-      backgroundColor: '#E5E7EB',
-      borderColor: '#9CA3AF',
-      borderWidth: 1,
-    }]
-  });
-  const [generationVsIrradianceData, setGenerationVsIrradianceData] = useState({
-    labels: [],
-    datasets: [{
-      label: 'Sin datos',
-      data: [],
-      backgroundColor: '#E5E7EB',
-      borderColor: '#9CA3AF',
-      borderWidth: 1,
-    }]
-  });
   
-  // Nuevos estados para gráficos adicionales
-  const [phaseUnbalanceData, setPhaseUnbalanceData] = useState({
-    labels: [],
-    datasets: [{
-      label: 'Sin datos',
-      data: [],
-      backgroundColor: '#E5E7EB',
-      borderColor: '#9CA3AF',
-      borderWidth: 1,
-    }]
-  });
-  const [powerFactorData, setPowerFactorData] = useState({
-    labels: [],
-    datasets: [{
-      label: 'Sin datos',
-      data: [],
-      backgroundColor: '#E5E7EB',
-      borderColor: '#9CA3AF',
-      borderWidth: 1,
-    }]
-  });
-  const [frequencyData, setFrequencyData] = useState({
-    labels: [],
-    datasets: [{
-      label: 'Sin datos',
-      data: [],
-      backgroundColor: '#E5E7EB',
-      borderColor: '#9CA3AF',
-      borderWidth: 1,
-    }]
-  });
-  const [thdData, setThdData] = useState({
-    labels: [],
-    datasets: [{
-      label: 'Sin datos',
-      data: [],
-      backgroundColor: '#E5E7EB',
-      borderColor: '#9CA3AF',
-      borderWidth: 1,
-    }]
-  });
-  const [temperatureVsEfficiencyData, setTemperatureVsEfficiencyData] = useState({
-    labels: [],
-    datasets: [{
-      label: 'Sin datos',
-      data: [],
-      backgroundColor: '#E5E7EB',
-      borderColor: '#9CA3AF',
-      borderWidth: 1,
-    }]
-  });
 
   // Función para obtener datos de inversores
   const fetchInverterData = useCallback(async (filters) => {
@@ -404,7 +306,9 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       const indicatorsData = await indicatorsResp.json();
 
       if (seq === requestSeqRef.current) {
-        setInverterData(indicatorsData);
+        setInverterData(indicatorsData || { results: [] });
+        
+
         
         // Actualizar KPIs con datos reales
         if (indicatorsData.results && indicatorsData.results.length > 0) {
@@ -457,6 +361,9 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
 
         // Obtener datos de gráficos después de obtener indicadores
         await fetchChartData(filters, seq);
+        
+        // Resetear página cuando cambien los filtros
+        setCurrentPage(1);
       }
     } catch (error) {
       // Mostrar error solo si esta solicitud sigue siendo la vigente
@@ -565,323 +472,45 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     };
 
     // Gráfico de Eficiencia (4.1. Eficiencia de Conversión DC-AC)
-      const efficiencyData = {
+    const efficiencyData = {
       labels,
-        datasets: [
-          {
-            label: 'Eficiencia Promedio (%)',
+      datasets: [
+        {
+          label: 'Eficiencia Promedio (%)',
           data: sortedDates.map(date => {
             const avgEfficiency = dataByDate[date].efficiency.reduce((sum, val) => sum + (val || 0), 0) / 
                                 Math.max(dataByDate[date].efficiency.filter(v => v !== null).length, 1);
             return Math.round(avgEfficiency * 100) / 100;
           }),
-            borderColor: '#F59E0B',
-            backgroundColor: 'rgba(245, 158, 11, 0.2)',
-            fill: true,
-            tension: 0.4,
-          pointRadius: 3,
-            pointBackgroundColor: '#F59E0B',
-          },
-          {
-            label: 'Meta de Eficiencia (%)',
-          data: labels.map(() => 95),
-            borderColor: '#EF4444',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            fill: false,
-            tension: 0.4,
-            pointRadius: 0,
-            borderDash: [5, 5],
-        }
-      ]
-    };
-
-    // Gráfico de Generación vs Irradiancia (4.4. Curva de Generación vs. Irradiancia/Temperatura)
-    const generationVsIrradianceData = {
-      labels: sortedDates.map(date => {
-        const d = new Date(date);
-        return d.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
-      }),
-      datasets: [
-        {
-          label: 'Generación (kWh)',
-          data: sortedDates.map(date => {
-            const dailyGen = dataByDate[date].generation.reduce((sum, val) => sum + (val || 0), 0);
-            return Math.round(dailyGen * 100) / 100;
-          }),
-          borderColor: '#10B981',
-          backgroundColor: 'rgba(16, 185, 129, 0.2)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 3,
-          yAxisID: 'y',
-        },
-        {
-          label: 'Irradiancia Promedio (W/m²)',
-          data: sortedDates.map(date => {
-            const avgIrradiance = dataByDate[date].irradiance.reduce((sum, val) => sum + (val || 0), 0) / 
-                                Math.max(dataByDate[date].irradiance.filter(v => v !== null).length, 1);
-            return Math.round(avgIrradiance);
-          }),
-          borderColor: '#F59E0B',
-          backgroundColor: 'rgba(245, 158, 11, 0.1)',
-          fill: false,
-          tension: 0.4,
-          pointRadius: 2,
-          yAxisID: 'y1',
-        }
-      ]
-    };
-
-    // Gráfico de Estado de Inversores (4.5. Factor de Potencia y Calidad de Inyección)
-      const inverterStatusData = {
-      labels: sortedDates.map(date => {
-        const d = new Date(date);
-        return d.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
-      }),
-        datasets: [
-          {
-          label: 'Potencia AC Promedio (kW)',
-          data: sortedDates.map(date => {
-            const avgAcPower = dataByDate[date].acPower.reduce((sum, val) => sum + (val || 0), 0) / 
-                             Math.max(dataByDate[date].acPower.filter(v => v !== null).length, 1);
-            return Math.round((avgAcPower / 1000) * 100) / 100; // Convertir W a kW
-          }),
-          borderColor: '#8B5CF6',
-          backgroundColor: 'rgba(139, 92, 246, 0.2)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 3,
-          pointBackgroundColor: '#8B5CF6',
-        }
-      ]
-    };
-
-    // Gráfico de Desbalance de Fases (4.6. Desbalance de Fases en Inyección)
-    const phaseUnbalanceData = {
-      labels,
-      datasets: [
-        {
-          label: 'Desbalance de Voltaje (%)',
-          data: sortedDates.map(date => {
-            // Simular datos de desbalance de voltaje
-            return Math.random() * 5; // 0-5% de desbalance
-          }),
           borderColor: '#F59E0B',
           backgroundColor: 'rgba(245, 158, 11, 0.2)',
-          fill: false,
+          fill: true,
           tension: 0.4,
           pointRadius: 3,
           pointBackgroundColor: '#F59E0B',
         },
         {
-          label: 'Desbalance de Corriente (%)',
-          data: sortedDates.map(date => {
-            // Simular datos de desbalance de corriente
-            return Math.random() * 3; // 0-3% de desbalance
-          }),
+          label: 'Meta de Eficiencia (%)',
+          data: labels.map(() => 95),
           borderColor: '#EF4444',
-          backgroundColor: 'rgba(239, 68, 68, 0.2)',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
           fill: false,
           tension: 0.4,
-          pointRadius: 3,
-          pointBackgroundColor: '#EF4444',
+          pointRadius: 0,
+          borderDash: [5, 5],
         }
       ]
     };
 
-    // Gráfico de Factor de Potencia (4.5. Factor de Potencia e Inyección)
-    const powerFactorData = {
-      labels,
-      datasets: [{
-        label: 'Factor de Potencia Promedio',
-        data: sortedDates.map(date => {
-          // Simular datos de factor de potencia
-          return 0.85 + Math.random() * 0.15; // 0.85-1.00
-        }),
-        borderColor: '#8B5CF6',
-        backgroundColor: 'rgba(139, 92, 246, 0.2)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        pointBackgroundColor: '#8B5CF6',
-      }]
-    };
-
-    // Gráfico de Frecuencia (4.5. Estabilidad de Frecuencia)
-    const frequencyData = {
-      labels,
-      datasets: [{
-        label: 'Frecuencia Promedio (Hz)',
-        data: sortedDates.map(date => {
-          // Simular datos de frecuencia
-          return 60 + (Math.random() - 0.5) * 0.2; // 59.9-60.1 Hz
-        }),
-        borderColor: '#06B6D4',
-        backgroundColor: 'rgba(6, 182, 212, 0.2)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        pointBackgroundColor: '#06B6D4',
-      }]
-    };
-
-    // Gráfico de THD (4.6. THD y Calidad de Energía)
-    const thdData = {
-      labels,
-      datasets: [
-        {
-          label: 'THD de Voltaje (%)',
-          data: sortedDates.map(date => {
-            // Simular datos de THD de voltaje
-            return Math.random() * 5; // 0-5% THD
-          }),
-          borderColor: '#EC4899',
-          backgroundColor: 'rgba(236, 72, 153, 0.2)',
-          fill: false,
-          tension: 0.4,
-          pointRadius: 3,
-          pointBackgroundColor: '#EC4899',
-        },
-        {
-          label: 'THD de Corriente (%)',
-          data: sortedDates.map(date => {
-            // Simular datos de THD de corriente
-            return Math.random() * 8; // 0-8% THD
-          }),
-          borderColor: '#F97316',
-          backgroundColor: 'rgba(249, 115, 22, 0.2)',
-          fill: false,
-          tension: 0.4,
-          pointRadius: 3,
-          pointBackgroundColor: '#F97316',
-        }
-      ]
-    };
-
-    // Gráfico de Eficiencia vs Temperatura (4.4. Correlación)
-    const temperatureVsEfficiencyData = {
-      labels,
-      datasets: [{
-        label: 'Eficiencia vs Temperatura',
-        data: sortedDates.map(date => {
-          // Simular correlación entre eficiencia y temperatura
-          const temp = dataByDate[date].temperature[0] || 25;
-          const efficiency = Math.max(85, 95 - (temp - 25) * 0.5); // Eficiencia decrece con temperatura
-          return efficiency;
-        }),
-        borderColor: '#10B981',
-        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        pointBackgroundColor: '#10B981',
-      }]
-    };
-
-    // Actualizar estados de gráficos
-      setDailyGenerationData(dailyGenerationData);
-      setEfficiencyData(efficiencyData);
-      setInverterStatusData(inverterStatusData);
-    setGenerationVsIrradianceData(generationVsIrradianceData);
-    setPhaseUnbalanceData(phaseUnbalanceData);
-    setPowerFactorData(powerFactorData);
-    setFrequencyData(frequencyData);
-    setThdData(thdData);
-    setTemperatureVsEfficiencyData(temperatureVsEfficiencyData);
-    
-    // Para el gráfico mensual, agrupar por mes
-    const monthlyData = generateMonthlyData(chartData);
-    setMonthlyGenerationData(monthlyData);
+    // Aquí se procesarían los datos para los gráficos si fuera necesario
+    // Por ahora, los gráficos se generan directamente desde los datos de la API
   }, []);
 
-  // Función para obtener datos del gráfico según el tab activo
-  const getChartDataForTab = (tabId) => {
-    let chartData;
-    switch (tabId) {
-      case 'monthlyGeneration':
-        chartData = monthlyGenerationData;
-        break;
-      case 'dailyGeneration':
-        chartData = dailyGenerationData;
-        break;
-      case 'efficiency':
-        chartData = efficiencyData;
-        break;
-      case 'generationVsIrradiance':
-        chartData = generationVsIrradianceData;
-        break;
-      case 'inverterStatus':
-        chartData = inverterStatusData;
-        break;
-      case 'phaseUnbalance':
-        chartData = phaseUnbalanceData;
-        break;
-      case 'powerFactor':
-        chartData = powerFactorData;
-        break;
-      case 'frequency':
-        chartData = frequencyData;
-        break;
-      case 'thd':
-        chartData = thdData;
-        break;
-      case 'temperatureVsEfficiency':
-        chartData = temperatureVsEfficiencyData;
-        break;
-      default:
-        return null;
-    }
-    
-    // Verificar si hay datos válidos (no solo el estado inicial vacío)
-    return chartData && chartData.labels && chartData.labels.length > 0 ? chartData : null;
-  };
 
-  // Función para generar datos mensuales
-  const generateMonthlyData = useCallback((chartData) => {
-    const monthlyGroups = {};
-    
-    chartData.forEach(item => {
-      const date = new Date(item.date);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      
-      if (!monthlyGroups[monthKey]) {
-        monthlyGroups[monthKey] = {
-          generation: 0,
-          count: 0
-        };
-      }
-      
-      // Sumar generación diaria
-      if (item.hourly_generation) {
-        const dailyGen = item.hourly_generation.reduce((sum, val) => sum + (val || 0), 0);
-        monthlyGroups[monthKey].generation += dailyGen;
-        monthlyGroups[monthKey].count++;
-      }
-    });
 
-    // Convertir a formato de gráfico
-    const months = Object.keys(monthlyGroups).sort();
-    const monthLabels = months.map(month => {
-      const [year, monthNum] = month.split('-');
-      const date = new Date(parseInt(year), parseInt(monthNum) - 1);
-      return date.toLocaleDateString('es-ES', { month: 'short' });
-    });
 
-    return {
-      labels: monthLabels,
-      datasets: [{
-        label: 'Generación Mensual (kWh)',
-        data: months.map(month => {
-          const avgGen = monthlyGroups[month].generation / Math.max(monthlyGroups[month].count, 1);
-          return Math.round(avgGen * 100) / 100;
-        }),
-        backgroundColor: '#10B981',
-        borderColor: '#059669',
-        borderWidth: 1,
-        borderRadius: 5,
-      }]
-    };
-  }, []);
+
+
 
   // Función para calcular datos de inversores
   const calculateInverterData = useCallback(async () => {
@@ -893,28 +522,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     try {
       setInverterLoading(true);
       
-      // Resetear todos los estados de gráficos a datos vacíos antes de calcular
-      const emptyChartData = {
-        labels: [],
-        datasets: [{
-          label: 'Sin datos',
-          data: [],
-          backgroundColor: '#E5E7EB',
-          borderColor: '#9CA3AF',
-          borderWidth: 1,
-        }]
-      };
-      
-      setMonthlyGenerationData(emptyChartData);
-      setDailyGenerationData(emptyChartData);
-      setEfficiencyData(emptyChartData);
-      setInverterStatusData(emptyChartData);
-      setGenerationVsIrradianceData(emptyChartData);
-      setPhaseUnbalanceData(emptyChartData);
-      setPowerFactorData(emptyChartData);
-      setFrequencyData(emptyChartData);
-      setThdData(emptyChartData);
-      setTemperatureVsEfficiencyData(emptyChartData);
+
       
       showTransitionAnimation('info', 'Calculando datos de inversores...', 2000);
 
@@ -965,8 +573,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
 
   // Función para manejar cambios en los filtros
   const handleFiltersChange = useCallback((newFilters) => {
-    console.log('Filters changed in InverterDetails:', newFilters);
-    console.log('Previous filters:', filters);
+
     setFilters(newFilters);
     
     // Evitar fetch si filtros no cambiaron
@@ -998,6 +605,25 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
 
   // Referencia para debounce
   const debounceRef = useRef(null);
+  
+  // Funciones de paginación
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages && totalPages > 0) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1 && totalPages > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
 
 
@@ -1006,23 +632,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     if (authToken) {
       setLoading(false); // No bloquear la UI, solo marcar como no cargando
       
-      // Inicializar gráficos con datos vacíos
-      const emptyChartData = {
-        labels: [],
-        datasets: [{
-          label: 'Sin datos',
-          data: [],
-          backgroundColor: '#E5E7EB',
-          borderColor: '#9CA3AF',
-          borderWidth: 1,
-        }]
-      };
 
-      setMonthlyGenerationData(emptyChartData);
-      setDailyGenerationData(emptyChartData);
-      setEfficiencyData(emptyChartData);
-      setInverterStatusData(emptyChartData);
-      setGenerationVsIrradianceData(emptyChartData);
     }
   }, [authToken]); // Se ejecuta cuando cambie el token
 
@@ -1052,6 +662,23 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       onLogout();
     }, 1500);
   };
+
+  // Variables calculadas para paginación
+  const totalItems = inverterData?.results?.length || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  
+  // Asegurar que currentPage no exceda totalPages
+  const safeCurrentPage = totalPages > 0 ? Math.min(currentPage, totalPages) : 1;
+  if (safeCurrentPage !== currentPage) {
+    setCurrentPage(safeCurrentPage);
+  }
+  
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = inverterData?.results?.slice(startIndex, endIndex) || [];
+  
+  // Verificar que inverterData existe antes de usar
+  const hasData = inverterData && inverterData.results && inverterData.results.length > 0;
 
   // Estados de carga y error (suavizados)
   if (loading) {
@@ -1371,187 +998,538 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
               </div>
                 )}
 
-                {/* Gráficos cuando hay datos */}
-                {inverterData.results && inverterData.results.length > 0 && (
+                {/* Gráficos con diseño moderno */}
+                {hasData && (
+                  <>
+
                   <div className="space-y-6 lg:space-y-8">
-                    {/* Tabs de gráficos */}
-                    <div className="border-b border-gray-200">
-                      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                        {[
-                          { id: 'monthlyGeneration', label: 'Generación Mensual', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-                          { id: 'dailyGeneration', label: 'Generación Diaria', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-                          { id: 'efficiency', label: 'Eficiencia', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-                          { id: 'generationVsIrradiance', label: 'Generación vs Irradiancia', icon: 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z' },
-                          { id: 'inverterStatus', label: 'Estado de Inversores', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-                          { id: 'phaseUnbalance', label: 'Desbalance de Fases', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-                          { id: 'powerFactor', label: 'Factor de Potencia', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-                          { id: 'frequency', label: 'Estabilidad de Frecuencia', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-                          { id: 'thd', label: 'THD y Calidad de Energía', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-                          { id: 'temperatureVsEfficiency', label: 'Eficiencia vs Temperatura', icon: 'M13 10V3L4 14h7v7l9-11h-7z' }
-                        ].map((tab) => (
-            <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`${
-                              activeTab === tab.id
-                                ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center space-x-2`}
-            >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
-                </svg>
-                            <span>{tab.label}</span>
-            </button>
-                        ))}
-          </nav>
-      </div>
+                    {/* Gráfico principal de generación - Ancho completo */}
+                    <div className="w-full">
+                      <ChartCard
+                        title="Análisis de Generación Fotovoltaica"
+                        description="Energía generada, eficiencia y rendimiento del sistema en el tiempo"
+                        type="line"
+                        data={{
+                          labels: inverterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                          datasets: [
+                            {
+                              label: 'Energía Total Generada (kWh)',
+                              data: inverterData.results.slice().reverse().map(item => item.total_generated_energy_kwh || 0),
+                              borderColor: '#10B981',
+                              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                              fill: true,
+                              tension: 0.4,
+                              pointRadius: 4,
+                              pointBackgroundColor: '#10B981',
+                              pointBorderColor: '#ffffff',
+                              pointBorderWidth: 2,
+                            },
+                            {
+                              label: 'Eficiencia DC-AC (%)',
+                              data: inverterData.results.slice().reverse().map(item => item.dc_ac_efficiency_pct || 0),
+                              borderColor: '#F59E0B',
+                              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                              fill: true,
+                              tension: 0.4,
+                              pointRadius: 4,
+                              pointBackgroundColor: '#F59E0B',
+                              pointBorderColor: '#ffffff',
+                              pointBorderWidth: 2,
+                            },
+                            {
+                              label: 'Performance Ratio',
+                              data: inverterData.results.slice().reverse().map(item => item.performance_ratio || 0),
+                              borderColor: '#8B5CF6',
+                              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                              fill: false,
+                              tension: 0.4,
+                              pointRadius: 4,
+                              borderDash: [8, 4],
+                              pointBackgroundColor: '#8B5CF6',
+                              pointBorderColor: '#ffffff',
+                              pointBorderWidth: 2,
+                            }
+                          ]
+                        }}
+                        options={{
+                          ...CHART_OPTIONS,
+                          plugins: {
+                            ...CHART_OPTIONS.plugins,
+                            title: { display: false },
+                            legend: {
+                              ...CHART_OPTIONS.plugins.legend,
+                              position: 'top',
+                              align: 'start',
+                              labels: {
+                                ...CHART_OPTIONS.plugins.legend.labels,
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { size: 13, weight: '600' }
+                              }
+                            }
+                          },
+                          scales: {
+                            ...CHART_OPTIONS.scales,
+                            y: {
+                              ...CHART_OPTIONS.scales.y,
+                              beginAtZero: true,
+                              grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                            }
+                          }
+                        }}
+                        height="400px"
+                        fullscreenHeight="800px"
+                      />
+                    </div>
 
-                    {/* Contenido de los tabs */}
-                    <div className="min-h-[400px]">
-                      {activeTab === 'monthlyGeneration' && monthlyGenerationData && monthlyGenerationData.labels && monthlyGenerationData.labels.length > 0 && (
-                        <ChartCard
-                          title="Generación Mensual de Energía"
-                          description="Energía total generada por mes (kWh)"
-                          data={monthlyGenerationData}
-                          type="bar"
-                          height="400px"
-                        />
-                      )}
+                    {/* Gráficos secundarios en grid responsive */}
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 xl:gap-8 w-full">
+                      {/* Calidad de energía y factor de potencia */}
+                      <ChartCard
+                        title="Calidad de Energía y Factor de Potencia"
+                        description="Factor de potencia, THD y estabilidad del sistema"
+                        type="line"
+                        data={{
+                          labels: inverterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                          datasets: [
+                            {
+                              label: 'Factor de Potencia Promedio',
+                              data: inverterData.results.slice().reverse().map(item => item.avg_power_factor || item.power_factor || item.power_factor_avg || 0),
+                              borderColor: '#3B82F6',
+                              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                              fill: true,
+                              tension: 0.4,
+                              pointRadius: 3,
+                              pointBackgroundColor: '#3B82F6',
+                            },
+                            {
+                              label: 'THD de Voltaje (%)',
+                              data: inverterData.results.slice().reverse().map(item => item.max_voltage_thd_pct || item.voltage_thd_pct || item.thd_voltage || item.voltage_thd || 0),
+                              borderColor: '#EF4444',
+                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                              fill: true,
+                              tension: 0.4,
+                              pointRadius: 3,
+                              pointBackgroundColor: '#EF4444',
+                            },
+                            {
+                              label: 'THD de Corriente (%)',
+                              data: inverterData.results.slice().reverse().map(item => item.max_current_thd_pct || item.current_thd_pct || item.thd_current || item.current_thd || 0),
+                              borderColor: '#8B5CF6',
+                              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                              fill: false,
+                              tension: 0.4,
+                              pointRadius: 3,
+                              borderDash: [6, 3],
+                              pointBackgroundColor: '#8B5CF6',
+                            }
+                          ]
+                        }}
+                        options={{
+                          ...CHART_OPTIONS,
+                          plugins: {
+                            ...CHART_OPTIONS.plugins,
+                            title: { display: false },
+                            legend: {
+                              ...CHART_OPTIONS.plugins.legend,
+                              position: 'top',
+                              align: 'start'
+                            }
+                          }
+                        }}
+                        height="350px"
+                        fullscreenHeight="700px"
+                      />
 
-                      {activeTab === 'dailyGeneration' && dailyGenerationData && dailyGenerationData.labels && dailyGenerationData.labels.length > 0 && (
-            <ChartCard
-                          title="Generación Diaria de Energía"
-                          description="Energía total generada por día (kWh)"
-                          data={dailyGenerationData}
-                          type="line"
-                          height="400px"
-                        />
-                      )}
+                      {/* Desbalance de fases y frecuencia */}
+                      <ChartCard
+                        title="Desbalance de Fases y Estabilidad"
+                        description="Análisis de desbalance y frecuencia del sistema"
+                        type="line"
+                        data={{
+                          labels: inverterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                          datasets: [
+                            {
+                              label: 'Desbalance de Voltaje (%)',
+                              data: inverterData.results.slice().reverse().map(item => item.max_voltage_unbalance_pct || item.voltage_unbalance_pct || item.unbalance_voltage || item.voltage_unbalance || 0),
+                              borderColor: '#F59E0B',
+                              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                              fill: true,
+                              tension: 0.4,
+                              pointRadius: 3,
+                              pointBackgroundColor: '#F59E0B',
+                            },
+                            {
+                              label: 'Desbalance de Corriente (%)',
+                              data: inverterData.results.slice().reverse().map(item => item.max_current_unbalance_pct || item.current_unbalance_pct || item.unbalance_current || item.current_unbalance || 0),
+                              borderColor: '#10B981',
+                              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                              fill: true,
+                              tension: 0.4,
+                              pointRadius: 3,
+                              pointBackgroundColor: '#10B981',
+                            },
+                            {
+                              label: 'Frecuencia Promedio (Hz)',
+                              data: inverterData.results.slice().reverse().map(item => item.avg_frequency_hz || item.frequency_hz || item.frequency || item.freq || 0),
+                              borderColor: '#8B5CF6',
+                              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                              fill: false,
+                              tension: 0.4,
+                              pointRadius: 3,
+                              borderDash: [6, 3],
+                              pointBackgroundColor: '#8B5CF6',
+                            }
+                          ]
+                        }}
+                        options={{
+                          ...CHART_OPTIONS,
+                          plugins: {
+                            ...CHART_OPTIONS.plugins,
+                            title: { display: false },
+                            legend: {
+                              ...CHART_OPTIONS.plugins.legend,
+                              position: 'top',
+                              align: 'start'
+                            }
+                          }
+                        }}
+                        height="350px"
+                        fullscreenHeight="700px"
+                      />
+                    </div>
 
-                      {activeTab === 'efficiency' && efficiencyData && efficiencyData.labels && efficiencyData.labels.length > 0 && (
-                        <ChartCard
-                          title="Eficiencia de Conversión DC-AC"
-                          description="Porcentaje de eficiencia promedio por día"
-                          data={efficiencyData}
-                          type="line"
-                          height="400px"
-                        />
-                      )}
-
-                      {activeTab === 'generationVsIrradiance' && generationVsIrradianceData && generationVsIrradianceData.labels && generationVsIrradianceData.labels.length > 0 && (
-                        <ChartCard
-                          title="Generación vs Irradiancia"
-                          description="Relación entre generación de energía e irradiancia solar"
-                          data={generationVsIrradianceData}
-                          type="line"
-                          height="400px"
-                        />
-                      )}
-
-                      {activeTab === 'inverterStatus' && inverterStatusData && inverterStatusData.labels && inverterStatusData.labels.length > 0 && (
-                        <ChartCard
-                          title="Estado de Inversores"
-                          description="Distribución de inversores por estado operativo"
-                          data={inverterStatusData}
-              type="bar"
-                          height="400px"
-                        />
-                      )}
-
-                      {activeTab === 'phaseUnbalance' && phaseUnbalanceData && phaseUnbalanceData.labels && phaseUnbalanceData.labels.length > 0 && (
-                        <ChartCard
-                          title="Desbalance de Fases"
-                          description="Análisis del desbalance de fases en la inyección"
-                          data={phaseUnbalanceData}
-                          type="line"
-                          height="400px"
-                        />
-                      )}
-
-                      {activeTab === 'powerFactor' && powerFactorData && powerFactorData.labels && powerFactorData.labels.length > 0 && (
-            <ChartCard
-                          title="Factor de Potencia"
-                          description="Factor de potencia promedio por día"
-                          data={powerFactorData}
-              type="line"
-                          height="400px"
-                        />
-                      )}
-
-                      {activeTab === 'frequency' && frequencyData && frequencyData.labels && frequencyData.labels.length > 0 && (
-                        <ChartCard
-                          title="Estabilidad de Frecuencia"
-                          description="Frecuencia promedio por día"
-                          data={frequencyData}
-                          type="line"
-                          height="400px"
-                        />
-                      )}
-
-                      {activeTab === 'thd' && thdData && thdData.labels && thdData.labels.length > 0 && (
-            <ChartCard
-                          title="THD y Calidad de Energía"
-                          description="Distorsión armónica total y calidad de energía"
-                          data={thdData}
-              type="line"
-                          height="400px"
-                        />
-                      )}
-
-                      {activeTab === 'temperatureVsEfficiency' && temperatureVsEfficiencyData && temperatureVsEfficiencyData.labels && temperatureVsEfficiencyData.labels.length > 0 && (
-                        <ChartCard
-                          title="Eficiencia vs Temperatura"
-                          description="Relación entre eficiencia y temperatura del inversor"
-                          data={temperatureVsEfficiencyData}
-                          type="line"
-                          height="400px"
-                        />
-                      )}
-
-                      {/* Mensaje cuando no hay datos para el tab seleccionado */}
-                      {!getChartDataForTab(activeTab) && (
-                        <div className="text-center py-12">
-                          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay datos para este gráfico</h3>
-                          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                            Los datos para este gráfico no están disponibles. Puedes calcular los datos o seleccionar otro gráfico.
-                          </p>
-                          <button
-                            onClick={calculateInverterData}
-                            disabled={inverterLoading}
-                            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {inverterLoading ? (
-                              <>
-                                <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                                Calculando...
-                              </>
-                            ) : (
-                              <>
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                                Calcular Datos
-                              </>
-                            )}
-                          </button>
-            </div>
-                      )}
-          </div>
-          </div>
-      )}
+                    {/* Gráfico de temperatura vs eficiencia */}
+                    <div className="w-full">
+                      <ChartCard
+                        title="Análisis de Temperatura y Eficiencia"
+                        description="Relación entre temperatura del inversor y eficiencia del sistema"
+                        type="line"
+                        data={{
+                          labels: inverterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                          datasets: [
+                            {
+                              label: 'Temperatura Promedio (°C)',
+                              data: inverterData.results.slice().reverse().map(item => item.avg_temperature_c || 0),
+                              borderColor: '#EF4444',
+                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                              fill: true,
+                              tension: 0.4,
+                              pointRadius: 4,
+                              pointBackgroundColor: '#EF4444',
+                              pointBorderColor: '#ffffff',
+                              pointBorderWidth: 2,
+                              yAxisID: 'y'
+                            },
+                            {
+                              label: 'Eficiencia DC-AC (%)',
+                              data: inverterData.results.slice().reverse().map(item => item.dc_ac_efficiency_pct || 0),
+                              borderColor: '#10B981',
+                              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                              fill: false,
+                              tension: 0.4,
+                              pointRadius: 4,
+                              borderDash: [8, 4],
+                              pointBackgroundColor: '#10B981',
+                              pointBorderColor: '#ffffff',
+                              pointBorderWidth: 2,
+                              yAxisID: 'y1'
+                            }
+                          ]
+                        }}
+                        options={{
+                          ...CHART_OPTIONS,
+                          plugins: {
+                            ...CHART_OPTIONS.plugins,
+                            title: { display: false },
+                            legend: {
+                              ...CHART_OPTIONS.plugins.legend,
+                              position: 'top',
+                              align: 'start',
+                              labels: {
+                                ...CHART_OPTIONS.plugins.legend.labels,
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { size: 13, weight: '600' }
+                              }
+                            }
+                          },
+                          scales: {
+                            x: {
+                              ...CHART_OPTIONS.scales.x,
+                              grid: { display: true, color: 'rgba(0, 0, 0, 0.03)', drawBorder: false },
+                              ticks: { color: '#6B7280', font: { size: 11, weight: '500' }, maxRotation: 45, minRotation: 0 },
+                              border: { display: false }
+                            },
+                            y: {
+                              type: 'linear',
+                              display: true,
+                              position: 'left',
+                              grid: { color: 'rgba(0, 0, 0, 0.03)', drawBorder: false },
+                              ticks: {
+                                color: '#6B7280',
+                                font: { size: 11, weight: '500' },
+                                callback: (value) => new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 }).format(value)
+                              },
+                              border: { display: false }
+                            },
+                            y1: {
+                              type: 'linear',
+                              display: true,
+                              position: 'right',
+                              grid: { drawOnChartArea: false },
+                              ticks: {
+                                color: '#6B7280',
+                                font: { size: 11, weight: '500' },
+                                callback: (value) => new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 }).format(value)
+                              },
+                              border: { display: false }
+                            }
+                          }
+                        }}
+                        height="400px"
+                        fullscreenHeight="800px"
+                      />
+                    </div>
+                  </div>
+                </>
+                )}
               </>
             )}
           </div>
         </div>
       </section>
+
+      {/* Tabla de Registros */}
+      {hasData && (
+        <section className="mb-6 lg:mb-8">
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 overflow-hidden">
+            {/* Header de la sección de tabla */}
+            <div className="bg-gradient-to-r from-red-600 to-red-700 px-4 lg:px-6 xl:px-8 py-4 lg:py-6">
+              <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-4">
+                <div className="p-2 lg:p-3 bg-white/20 rounded-xl self-start lg:self-auto">
+                  <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-lg lg:text-xl xl:text-2xl font-bold text-white">Datos Históricos Detallados</h2>
+                  <p className="text-red-100 mt-1 text-sm lg:text-base">Registros completos de indicadores de inversores por fecha</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Contenido de la tabla */}
+            <div className="p-3 lg:p-4 xl:p-6">
+              {/* Tabla de datos moderna y responsive */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div className="px-3 lg:px-4 xl:px-6 py-3 lg:py-4 xl:py-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-red-100 rounded-lg">
+                        <svg className="w-5 h-5 lg:w-6 lg:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-base lg:text-lg xl:text-xl font-bold text-gray-800">Indicadores de Inversores Detallados</h3>
+                        <p className="text-gray-600 mt-1 text-sm">Datos históricos y análisis de tendencias</p>
+                        {/* Indicador de fechas por defecto */}
+                        {filters.institutionId && !filters.startDate && !filters.endDate && (
+                          <div className="mt-2 inline-flex items-center px-2 py-1 bg-red-50 border border-red-200 rounded-full text-xs text-red-700">
+                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Últimos 10 días
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="px-3 lg:px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold rounded-lg shadow-sm">
+                        {totalItems} registros
+                        {totalItems > 20 && totalPages > 0 && (
+                          <span className="ml-2 text-xs opacity-90">
+                            (página {currentPage} de {totalPages})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Tabla responsive con scroll horizontal */}
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-100">
+                    <thead className="bg-gradient-to-r from-red-50 to-red-100">
+                      <tr>
+                        {[
+                          { label: 'Fecha', width: 'w-20 lg:w-24 xl:w-32' },
+                          { label: 'Inversor', width: 'w-24 lg:w-28 xl:w-36' },
+                          { label: 'Energía Generada (kWh)', width: 'w-32 lg:w-36 xl:w-40' },
+                          { label: 'Eficiencia DC-AC (%)', width: 'w-28 lg:w-32 xl:w-36' },
+                          { label: 'Performance Ratio', width: 'w-28 lg:w-32 xl:w-36' },
+                          { label: 'Factor de Potencia', width: 'w-24 lg:w-28 xl:w-32' },
+                          { label: 'Temperatura (°C)', width: 'w-24 lg:w-28 xl:w-32' }
+                        ].map((header) => (
+                          <th key={header.label} className={`${header.width} px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-5 text-left text-xs font-bold text-red-700 uppercase tracking-wider border-b border-red-100`}>
+                            {header.label}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                                          <tbody className="bg-white divide-y divide-gray-50">
+                        {currentItems && Array.isArray(currentItems) && currentItems.length > 0 ? (
+                        currentItems.map((item, index) => (
+                          <tr key={startIndex + index} className="hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-200 border-b border-gray-50">
+                            <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
+                              <div className="text-xs lg:text-sm font-medium text-gray-900">
+                                {new Date(item.date).toLocaleDateString('es-ES')}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(item.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </td>
+                            <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
+                              <div className="text-xs lg:text-sm font-medium text-gray-900">{item.device_name || 'N/A'}</div>
+                            </td>
+                            <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
+                              <div className="text-xs lg:text-sm font-semibold text-green-600">
+                                {(item.total_generated_energy_kwh || 0).toFixed(2)}
+                              </div>
+                            </td>
+                            <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="text-xs lg:text-sm font-semibold text-gray-900">
+                                  {(item.dc_ac_efficiency_pct || 0).toFixed(1)}%
+                                </div>
+                                <div className={`ml-2 w-2 h-2 rounded-full ${
+                                  (item.dc_ac_efficiency_pct || 0) > 90 ? 'bg-green-500' : 
+                                  (item.dc_ac_efficiency_pct || 0) > 80 ? 'bg-yellow-500' : 'bg-red-500'
+                                }`}></div>
+                              </div>
+                            </td>
+                            <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
+                              <div className="text-xs lg:text-sm font-semibold text-blue-600">
+                                {(item.performance_ratio || 0).toFixed(2)}
+                              </div>
+                            </td>
+                            <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="text-xs lg:text-sm font-semibold text-gray-900">
+                                  {(item.avg_power_factor || 0).toFixed(2)}
+                                </div>
+                                <div className={`ml-2 w-2 h-2 rounded-full ${
+                                  (item.avg_power_factor || 0) > 0.95 ? 'bg-green-500' : 
+                                  (item.avg_power_factor || 0) > 0.85 ? 'bg-yellow-500' : 'bg-red-500'
+                                }`}></div>
+                              </div>
+                            </td>
+                            <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
+                              <div className="text-xs lg:text-sm font-semibold text-orange-600">
+                                {(item.avg_temperature_c || 0).toFixed(1)}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="7" className="px-4 lg:px-6 py-8 lg:py-12 text-center">
+                            <div className="flex flex-col items-center">
+                              <svg className="w-10 h-10 lg:w-12 lg:h-12 text-gray-400 mb-3 lg:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <p className="text-base lg:text-lg font-medium text-gray-900 mb-1 lg:mb-2">No hay datos disponibles</p>
+                              <p className="text-gray-500 text-sm lg:text-base mb-4">Selecciona una institución para ver los indicadores de inversores</p>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Paginación - Solo mostrar si hay más de 20 registros */}
+                {totalItems > 20 && totalPages > 0 && (
+                  <div className="px-3 lg:px-4 xl:px-6 py-4 lg:py-6 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                      {/* Información de página */}
+                      <div className="flex items-center text-sm text-gray-700">
+                        <span className="font-medium">
+                          Mostrando {startIndex + 1} a {Math.min(endIndex, totalItems)} de {totalItems} registros
+                        </span>
+                      </div>
+                      
+                      {/* Controles de paginación */}
+                      <div className="flex items-center space-x-2">
+                        {/* Botón Anterior */}
+                        <button
+                          onClick={goToPreviousPage}
+                          disabled={currentPage === 1}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors duration-200 ${
+                            currentPage === 1
+                              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                          }`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        
+                        {/* Números de página */}
+                        <div className="flex items-center space-x-1">
+                          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            let pageNum;
+                            if (totalPages <= 5) {
+                              pageNum = i + 1;
+                            } else if (currentPage <= 3) {
+                              pageNum = i + 1;
+                            } else if (currentPage >= totalPages - 2) {
+                              pageNum = totalPages - 4 + i;
+                            } else {
+                              pageNum = currentPage - 2 + i;
+                            }
+                            
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => goToPage(pageNum)}
+                                className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors duration-200 ${
+                                  currentPage === pageNum
+                                    ? 'bg-red-600 text-white border-red-600'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Botón Siguiente */}
+                        <button
+                          onClick={goToNextPage}
+                          disabled={currentPage === totalPages}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors duration-200 ${
+                            currentPage === totalPages
+                              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                          }`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Overlay de transición */}
       <TransitionOverlay 

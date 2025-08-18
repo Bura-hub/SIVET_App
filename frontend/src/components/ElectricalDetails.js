@@ -364,11 +364,18 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
   const currentItems = meterData?.results?.slice(startIndex, endIndex) || [];
 
 
-  // Cargar datos al montar: solo una vez
+
+
+  // Cargar datos iniciales al montar el componente
   useEffect(() => {
-    if (!authToken) return;
-    setLoading(false);
-  }, []);
+    if (authToken) {
+      setLoading(true);
+      // Simular un pequeño delay para mostrar la animación
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
+    }
+  }, [authToken]);
 
   // Efecto para actualizar datos cuando cambien los filtros
   useEffect(() => {
@@ -426,7 +433,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"></div>
           <p className="mt-4 text-lg text-gray-700">Cargando datos eléctricos...</p>
         </div>
       </div>

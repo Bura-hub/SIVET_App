@@ -2470,36 +2470,44 @@ class ReportHistoryView(APIView):
             OpenApiParameter(name='category', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, 
                            description='Categoría de dispositivo para filtrar', required=False),
             OpenApiParameter(name='page', type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, 
-                           description='Número de página', required=False),
+                           description='Número de página (por defecto: 1)', required=False),
             OpenApiParameter(name='page_size', type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, 
-                           description='Tamaño de página', required=False),
+                           description='Tamaño de página (por defecto: 5, máximo: 100)', required=False),
         ],
         responses={
             200: {
                 "type": "object",
                 "properties": {
-                    "count": {"type": "integer"},
-                    "next": {"type": "string", "nullable": True},
-                    "previous": {"type": "string", "nullable": True},
+                    "count": {"type": "integer", "description": "Total de reportes disponibles"},
+                    "total_pages": {"type": "integer", "description": "Total de páginas disponibles"},
+                    "current_page": {"type": "integer", "description": "Página actual"},
+                    "page_size": {"type": "integer", "description": "Tamaño de página actual"},
+                    "next": {"type": "integer", "nullable": True, "description": "Número de la siguiente página"},
+                    "previous": {"type": "integer", "nullable": True, "description": "Número de la página anterior"},
+                    "has_next": {"type": "boolean", "description": "Indica si hay siguiente página"},
+                    "has_previous": {"type": "boolean", "description": "Indica si hay página anterior"},
+                    "start_index": {"type": "integer", "description": "Índice del primer elemento en la página actual"},
+                    "end_index": {"type": "integer", "description": "Índice del último elemento en la página actual"},
                     "results": {
                         "type": "array",
+                        "description": "Lista de reportes en la página actual",
                         "items": {
                             "type": "object",
                             "properties": {
-                                "id": {"type": "string"},
-                                "report_type": {"type": "string"},
-                                "category": {"type": "string"},
-                                "institution_name": {"type": "string"},
-                                "devices_count": {"type": "integer"},
-                                "time_range": {"type": "string"},
-                                "start_date": {"type": "string"},
-                                "end_date": {"type": "string"},
-                                "format": {"type": "string"},
-                                "status": {"type": "string"},
-                                "file_size": {"type": "string"},
-                                "record_count": {"type": "integer"},
-                                "created_at": {"type": "string"},
-                                "download_url": {"type": "string", "nullable": True}
+                                "id": {"type": "string", "description": "ID único del reporte"},
+                                "report_type": {"type": "string", "description": "Tipo de reporte generado"},
+                                "category": {"type": "string", "description": "Categoría de dispositivo"},
+                                "institution_name": {"type": "string", "description": "Nombre de la institución"},
+                                "devices_count": {"type": "integer", "description": "Número de dispositivos incluidos"},
+                                "time_range": {"type": "string", "description": "Rango de tiempo del reporte"},
+                                "start_date": {"type": "string", "description": "Fecha de inicio"},
+                                "end_date": {"type": "string", "description": "Fecha de fin"},
+                                "format": {"type": "string", "description": "Formato del archivo generado"},
+                                "status": {"type": "string", "description": "Estado del reporte"},
+                                "file_size": {"type": "string", "description": "Tamaño del archivo"},
+                                "record_count": {"type": "integer", "description": "Número de registros en el reporte"},
+                                "created_at": {"type": "string", "description": "Fecha de creación"},
+                                "download_url": {"type": "string", "nullable": True, "description": "URL para descargar el reporte"}
                             }
                         }
                     }
@@ -2520,7 +2528,7 @@ class ReportHistoryView(APIView):
             institution_id = request.query_params.get('institution_id')
             category = request.query_params.get('category')
             page = int(request.query_params.get('page', 1))
-            page_size = int(request.query_params.get('page_size', 20))
+            page_size = int(request.query_params.get('page_size', 5))  # Cambiado a 5 registros por página
 
             # Construir filtros
             filters = Q(user_id=request.user.id)
@@ -2536,10 +2544,25 @@ class ReportHistoryView(APIView):
             
             reports = GeneratedReport.objects.filter(filters).order_by('-created_at')
             
-            # Paginación
-            from django.core.paginator import Paginator
+            # Paginación mejorada
+            from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+            
+            # Validar parámetros de paginación
+            if page < 1:
+                page = 1
+            if page_size < 1:
+                page_size = 5
+            elif page_size > 100:  # Límite máximo para evitar sobrecarga
+                page_size = 100
+            
             paginator = Paginator(reports, page_size)
-            page_obj = paginator.get_page(page)
+            
+            try:
+                page_obj = paginator.get_page(page)
+            except (EmptyPage, PageNotAnInteger):
+                # Si la página no es válida, ir a la primera página
+                page_obj = paginator.get_page(1)
+                page = 1
             
             # Serializar resultados
             results = []
@@ -2561,12 +2584,22 @@ class ReportHistoryView(APIView):
                     'download_url': f"/api/reports/download/?task_id={report.task_id}" if report.status == 'completed' else None
                 })
             
-            return Response({
+            # Información de paginación mejorada
+            pagination_info = {
                 'count': paginator.count,
+                'total_pages': paginator.num_pages,
+                'current_page': page,
+                'page_size': page_size,
                 'next': page_obj.next_page_number() if page_obj.has_next() else None,
                 'previous': page_obj.previous_page_number() if page_obj.has_previous() else None,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous(),
+                'start_index': page_obj.start_index(),
+                'end_index': page_obj.end_index(),
                 'results': results
-            })
+            }
+            
+            return Response(pagination_info)
 
         except Exception as e:
             logger.error(f"Error obteniendo historial de reportes: {str(e)}")

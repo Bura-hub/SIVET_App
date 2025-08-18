@@ -721,7 +721,7 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
     resetPagination();
   }, [filters.institutionId, filters.deviceId, filters.startDate, filters.endDate]);
 
-  // Si está cargando, muestra un spinner
+  // Si está cargando, muestra un spinner o mensaje
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -752,7 +752,12 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
           <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-4">
             <div className="p-3 bg-white/20 rounded-xl self-start lg:self-auto">
               <svg className="w-6 h-6 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l-1.41-1.41M2 12h2M20 12h2M6.34 6.34l-1.41-1.41M17.66 6.34l-1.41-1.41" />
+                <circle cx="12" cy="6" r="2"></circle>
+                <path d="M12 8v4"></path>
+                <path d="M6 20h12"></path>
+                <path d="M12 12l4 8"></path>
+                <path d="M12 12l-4 8"></path>
+                <path d="M4 10a8 8 0 0116 0"></path>
               </svg>
             </div>
             <div>
@@ -924,7 +929,12 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
             <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-4">
               <div className="p-2 lg:p-3 bg-white/20 rounded-xl self-start lg:self-auto">
                 <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l-1.41-1.41M2 12h2M20 12h2M6.34 6.34l-1.41-1.41M17.66 6.34l-1.41-1.41" />
+                  <circle cx="12" cy="6" r="2"></circle>
+                  <path d="M12 8v4"></path>
+                  <path d="M6 20h12"></path>
+                  <path d="M12 12l4 8"></path>
+                  <path d="M12 12l-4 8"></path>
+                  <path d="M4 10a8 8 0 0116 0"></path>
                 </svg>
               </div>
               <div className="flex-1">
@@ -1372,7 +1382,12 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
               <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-4">
                 <div className="p-2 lg:p-3 bg-white/20 rounded-xl self-start lg:self-auto">
                   <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    <circle cx="12" cy="6" r="2"></circle>
+                    <path d="M12 8v4"></path>
+                    <path d="M6 20h12"></path>
+                    <path d="M12 12l4 8"></path>
+                    <path d="M12 12l-4 8"></path>
+                    <path d="M4 10a8 8 0 0116 0"></path>
                   </svg>
                 </div>
                 <div>
@@ -1391,7 +1406,12 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-orange-100 rounded-lg">
                         <svg className="w-5 h-5 lg:w-6 lg:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          <circle cx="12" cy="6" r="2"></circle>
+                          <path d="M12 8v4"></path>
+                          <path d="M6 20h12"></path>
+                          <path d="M12 12l4 8"></path>
+                          <path d="M12 12l-4 8"></path>
+                          <path d="M4 10a8 8 0 0116 0"></path>
                         </svg>
                       </div>
                       <div>

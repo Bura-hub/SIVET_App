@@ -630,9 +630,11 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
   // Agregar un useEffect que se ejecute cuando el componente se monta
   useEffect(() => {
     if (authToken) {
-      setLoading(false); // No bloquear la UI, solo marcar como no cargando
-      
-
+      setLoading(true);
+      // Simular un pequeño delay para mostrar la animación
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
     }
   }, [authToken]); // Se ejecuta cuando cambie el token
 
@@ -685,7 +687,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-emerald-500"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-red-500"></div>
           <p className="mt-4 text-lg text-gray-700">Cargando datos de inversores...</p>
         </div>
       </div>

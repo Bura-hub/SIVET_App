@@ -41,6 +41,14 @@ export const ENDPOINTS = {
     deviceSync: '/local/sync-devices/',
     kpiCalculation: '/api/dashboard/calculate-kpis/',
     dailyData: '/api/dashboard/calculate-daily-data/'
+  },
+  
+  // Nuevos endpoints para generación de reportes
+  reports: {
+    generate: '/api/reports/generate/',
+    status: '/api/reports/status/',
+    download: '/api/reports/download/',
+    history: '/api/reports/history/'
   }
 };
 

@@ -23,7 +23,14 @@ from .views import (
     WeatherStationIndicatorsView,
     WeatherStationChartDataView,
     CalculateWeatherStationDataView,
-    WeatherStationsListView
+    WeatherStationsListView,
+    # =========================
+    # ENDPOINTS PARA GENERACIÓN DE REPORTES
+    # =========================
+    GenerateReportView,
+    ReportStatusView,
+    DownloadReportView,
+    ReportHistoryView
 )
 
 router = DefaultRouter()
@@ -56,6 +63,14 @@ urlpatterns = [
     path('weather-station-chart-data/', WeatherStationChartDataView.as_view(), name='weather-station-chart-data'),
     path('weather-stations/calculate/', CalculateWeatherStationDataView.as_view(), name='calculate-weather-station-data'),
     path('weather-stations/list/', WeatherStationsListView.as_view(), name='weather-stations-list'),
+
+    # =========================
+    # ENDPOINTS PARA GENERACIÓN DE REPORTES
+    # =========================
+    path('reports/generate/', GenerateReportView.as_view(), name='generate-report'),
+    path('reports/status/', ReportStatusView.as_view(), name='report-status'),
+    path('reports/download/', DownloadReportView.as_view(), name='download-report'),
+    path('reports/history/', ReportHistoryView.as_view(), name='report-history'),
     
     path('', include(router.urls)),
 ]

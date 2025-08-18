@@ -8,6 +8,9 @@ from django.utils import timezone as django_timezone
 import pytz
 from collections import defaultdict
 import statistics
+import os
+import tempfile
+import csv
 
 from scada_proxy.models import Measurement, Device, Institution, DeviceCategory, TaskProgress
 from .models import (
@@ -19,7 +22,8 @@ from .models import (
     InverterIndicators,
     InverterChartData,
     WeatherStationIndicators,
-    WeatherStationChartData
+    WeatherStationChartData,
+    GeneratedReport
 )
 
 logger = logging.getLogger(__name__)
@@ -2251,3 +2255,669 @@ def _calculate_monthly_weather_station_data(station, start_date, end_date):
         current_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
 
     return records_created, records_updated
+
+# =========================
+# TAREAS PARA GENERACIÓN DE REPORTE
+# =========================
+
+@shared_task(bind=True, retry_backoff=60, max_retries=3)
+def generate_report(self, institution_id, category, devices, report_type, time_range, start_date, end_date, format, user_id):
+    """
+    Genera un reporte en el formato especificado
+    """
+    logger.info(f"=== INICIANDO GENERACIÓN DE REPORTE ===")
+    logger.info(f"Tarea ID: {self.request.id}")
+    logger.info(f"Parámetros: {institution_id}, {category}, {report_type}, {time_range}, {start_date} - {end_date}, {format}")
+    
+    try:
+        # Crear registro del reporte
+        from .models import GeneratedReport
+        from scada_proxy.models import Institution
+        
+        # Obtener nombre de la institución
+        try:
+            institution = Institution.objects.get(id=institution_id)
+            institution_name = institution.name
+        except Institution.DoesNotExist:
+            raise ValueError(f"Institución con ID {institution_id} no encontrada")
+        
+        # Crear o actualizar registro del reporte
+        report_record, created = GeneratedReport.objects.get_or_create(
+            task_id=self.request.id,
+            defaults={
+                'user_id': user_id,
+                'report_type': report_type,
+                'category': category,
+                'institution_id': institution_id,
+                'institution_name': institution_name,
+                'devices': devices,
+                'time_range': time_range,
+                'start_date': start_date,
+                'end_date': end_date,
+                'format': format,
+                'status': 'processing'
+            }
+        )
+        
+        if not created:
+            report_record.status = 'processing'
+            report_record.save()
+        
+        # Actualizar progreso de la tarea
+        self.update_state(
+            state='PROGRESS',
+            meta={'current': 0, 'total': 100, 'status': 'Iniciando generación de reporte'}
+        )
+        
+        # Generar reporte según la categoría y tipo
+        if category == 'electricMeter':
+            report_data = generate_electric_meter_report(
+                institution_id, devices, report_type, time_range, start_date, end_date
+            )
+        elif category == 'inverter':
+            report_data = generate_inverter_report(
+                institution_id, devices, report_type, time_range, start_date, end_date
+            )
+        elif category == 'weatherStation':
+            report_data = generate_weather_station_report(
+                institution_id, devices, report_type, time_range, start_date, end_date
+            )
+        else:
+            raise ValueError(f"Categoría no válida: {category}")
+        
+        # Actualizar progreso
+        self.update_state(
+            state='PROGRESS',
+            meta={'current': 50, 'total': 100, 'status': 'Generando archivo'}
+        )
+        
+        # Generar archivo en el formato especificado
+        file_path, file_size, record_count = generate_report_file(
+            report_data, report_type, format, self.request.id
+        )
+        
+        # Actualizar progreso
+        self.update_state(
+            state='PROGRESS',
+            meta={'current': 90, 'total': 100, 'status': 'Finalizando'}
+        )
+        
+        # Actualizar registro del reporte
+        report_record.status = 'completed'
+        report_record.file_path = file_path
+        report_record.file_size = file_size
+        report_record.record_count = record_count
+        report_record.completed_at = django_timezone.now()
+        report_record.save()
+        
+        logger.info(f"Reporte generado exitosamente: {file_path}")
+        
+        return {
+            'status': 'completed',
+            'file_path': file_path,
+            'file_size': file_size,
+            'record_count': record_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generando reporte: {str(e)}")
+        
+        # Actualizar registro del reporte con error
+        try:
+            report_record = GeneratedReport.objects.get(task_id=self.request.id)
+            report_record.status = 'failed'
+            report_record.error_message = str(e)
+            report_record.save()
+        except GeneratedReport.DoesNotExist:
+            pass
+        
+        # Reintentar si es posible
+        if self.request.retries < self.max_retries:
+            raise self.retry(exc=e, countdown=60)
+        else:
+            raise e
+
+
+def generate_electric_meter_report(institution_id, devices, report_type, time_range, start_date, end_date):
+    """
+    Genera datos para reportes de medidores eléctricos
+    """
+    from .models import ElectricMeterIndicators, ElectricMeterEnergyConsumption
+    
+    logger.info(f"Generando reporte de medidores eléctricos: {report_type}")
+    logger.info(f"Parámetros: institution_id={institution_id}, devices={devices}, time_range={time_range}, start_date={start_date}, end_date={end_date}")
+    
+    # Convertir fechas
+    start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+    end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    
+    # Construir filtros base
+    filters = Q(
+        institution_id=institution_id,
+        time_range=time_range,
+        date__range=(start_date, end_date)
+    )
+    
+    # Validar y filtrar dispositivos
+    if devices and isinstance(devices, list) and len(devices) > 0:
+        # Asegurar que todos los IDs sean números
+        try:
+            device_ids = [int(device_id) for device_id in devices if device_id is not None]
+            if device_ids:
+                filters &= Q(device_id__in=device_ids)
+                logger.info(f"Filtro de dispositivos aplicado: {device_ids}")
+            else:
+                logger.info("No se aplicó filtro de dispositivos - lista vacía después de conversión")
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Error convirtiendo IDs de dispositivos: {e}. Dispositivos: {devices}")
+    else:
+        logger.info("No se aplicó filtro de dispositivos - parámetro vacío o inválido")
+    
+    # Obtener datos según el tipo de reporte
+    if report_type == 'Resumen de Consumo':
+        data = ElectricMeterEnergyConsumption.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'total_imported_energy', 'total_exported_energy', 'net_energy_consumption']
+        
+    elif report_type == 'Análisis de Demanda':
+        data = ElectricMeterIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'peak_demand_kw', 'avg_demand_kw', 'load_factor_pct']
+        
+    elif report_type == 'Calidad de Potencia':
+        data = ElectricMeterIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'max_voltage_thd_pct', 'max_current_thd_pct', 'avg_power_factor']
+        
+    elif report_type == 'Balance Energético':
+        data = ElectricMeterEnergyConsumption.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'imported_energy_low', 'imported_energy_high', 'exported_energy_low', 'exported_energy_high']
+        
+    elif report_type == 'Reporte Integral':
+        data = ElectricMeterIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'imported_energy_kwh', 'exported_energy_kwh', 'peak_demand_kw', 'avg_power_factor', 'max_voltage_thd_pct']
+        
+    else:
+        raise ValueError(f"Tipo de reporte no válido: {report_type}")
+    
+    # Preparar datos para el reporte
+    report_data = []
+    for item in data:
+        row = {}
+        for col in columns:
+            if '__' in col:
+                # Campo relacionado
+                parts = col.split('__')
+                value = item
+                for part in parts:
+                    value = getattr(value, part, None)
+                    if value is None:
+                        break
+            else:
+                # Campo directo
+                value = getattr(item, col, None)
+            
+            # Formatear valor
+            if isinstance(value, (int, float)):
+                if 'pct' in col or 'factor' in col:
+                    row[col.split('__')[-1]] = f"{value:.2f}%"
+                elif 'kw' in col or 'kwh' in col:
+                    row[col.split('__')[-1]] = f"{value:.2f}"
+                else:
+                    row[col.split('__')[-1]] = value
+            else:
+                row[col.split('__')[-1]] = value
+        
+        report_data.append(row)
+    
+    return report_data
+
+
+def generate_inverter_report(institution_id, devices, report_type, time_range, start_date, end_date):
+    """
+    Genera datos para reportes de inversores
+    """
+    from .models import InverterIndicators
+    
+    logger.info(f"Generando reporte de inversores: {report_type}")
+    logger.info(f"Parámetros: institution_id={institution_id}, devices={devices}, time_range={time_range}, start_date={start_date}, end_date={end_date}")
+    
+    # Convertir fechas
+    start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+    end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    
+    # Construir filtros base
+    filters = Q(
+        institution_id=institution_id,
+        time_range=time_range,
+        date__range=(start_date, end_date)
+    )
+    
+    # Validar y filtrar dispositivos
+    if devices and isinstance(devices, list) and len(devices) > 0:
+        # Asegurar que todos los IDs sean números
+        try:
+            device_ids = [int(device_id) for device_id in devices if device_id is not None]
+            if device_ids:
+                filters &= Q(device_id__in=device_ids)
+                logger.info(f"Filtro de dispositivos aplicado: {device_ids}")
+            else:
+                logger.info("No se aplicó filtro de dispositivos - lista vacía después de conversión")
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Error convirtiendo IDs de dispositivos: {e}. Dispositivos: {devices}")
+    else:
+        logger.info("No se aplicó filtro de dispositivos - parámetro vacío o inválido")
+    
+    # Obtener datos según el tipo de reporte
+    if report_type == 'Resumen de Generación':
+        data = InverterIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'total_generated_energy_kwh', 'dc_ac_efficiency_pct', 'energy_ac_daily_kwh']
+        
+    elif report_type == 'Análisis de Rendimiento':
+        data = InverterIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'performance_ratio_pct', 'avg_irradiance_wm2', 'avg_temperature_c']
+        
+    elif report_type == 'Métricas Operativas':
+        data = InverterIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'avg_power_factor_pct', 'avg_frequency_hz', 'frequency_stability_pct']
+        
+    elif report_type == 'Reporte de Anomalías':
+        data = InverterIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'anomaly_score', 'max_power_w', 'min_power_w']
+        
+    elif report_type == 'Reporte Integral':
+        data = InverterIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'total_generated_energy_kwh', 'dc_ac_efficiency_pct', 'performance_ratio_pct', 'avg_power_factor_pct']
+        
+    else:
+        raise ValueError(f"Tipo de reporte no válido: {report_type}")
+    
+    # Preparar datos para el reporte
+    report_data = []
+    for item in data:
+        row = {}
+        for col in columns:
+            if '__' in col:
+                # Campo relacionado
+                parts = col.split('__')
+                value = item
+                for part in parts:
+                    value = getattr(value, part, None)
+                    if value is None:
+                        break
+            else:
+                # Campo directo
+                value = getattr(item, col, None)
+            
+            # Formatear valor
+            if isinstance(value, (int, float)):
+                if 'pct' in col:
+                    row[col.split('__')[-1]] = f"{value:.2f}%"
+                elif 'kwh' in col or 'kw' in col or 'wm2' in col:
+                    row[col.split('__')[-1]] = f"{value:.2f}"
+                else:
+                    row[col.split('__')[-1]] = value
+            else:
+                row[col.split('__')[-1]] = value
+        
+        report_data.append(row)
+    
+    return report_data
+
+
+def generate_weather_station_report(institution_id, devices, report_type, time_range, start_date, end_date):
+    """
+    Genera datos para reportes de estaciones meteorológicas
+    """
+    from .models import WeatherStationIndicators
+    
+    logger.info(f"Generando reporte de estaciones meteorológicas: {report_type}")
+    logger.info(f"Parámetros: institution_id={institution_id}, devices={devices}, time_range={time_range}, start_date={start_date}, end_date={end_date}")
+    
+    # Convertir fechas
+    start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+    end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    
+    # Construir filtros base
+    filters = Q(
+        institution_id=institution_id,
+        time_range=time_range,
+        date__range=(start_date, end_date)
+    )
+    
+    # Validar y filtrar dispositivos
+    if devices and isinstance(devices, list) and len(devices) > 0:
+        # Asegurar que todos los IDs sean números
+        try:
+            device_ids = [int(device_id) for device_id in devices if device_id is not None]
+            if device_ids:
+                filters &= Q(device_id__in=device_ids)
+                logger.info(f"Filtro de dispositivos aplicado: {device_ids}")
+            else:
+                logger.info("No se aplicó filtro de dispositivos - lista vacía después de conversión")
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Error convirtiendo IDs de dispositivos: {e}. Dispositivos: {devices}")
+    else:
+        logger.info("No se aplicó filtro de dispositivos - parámetro vacío o inválido")
+    
+    # Obtener datos según el tipo de reporte
+    if report_type == 'Resumen Climático':
+        data = WeatherStationIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'avg_temperature_c', 'avg_humidity_pct', 'daily_precipitation_cm']
+        
+    elif report_type == 'Análisis Solar':
+        data = WeatherStationIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'daily_irradiance_kwh_m2', 'daily_hsp_hours', 'theoretical_pv_power_w']
+        
+    elif report_type == 'Análisis de Viento':
+        data = WeatherStationIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'avg_wind_speed_kmh', 'wind_direction_distribution', 'wind_speed_distribution']
+        
+    elif report_type == 'Impacto Ambiental':
+        data = WeatherStationIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'avg_temperature_c', 'daily_irradiance_kwh_m2', 'theoretical_pv_power_w']
+        
+    elif report_type == 'Reporte Integral':
+        data = WeatherStationIndicators.objects.filter(filters).select_related('device')
+        columns = ['device__name', 'date', 'daily_irradiance_kwh_m2', 'avg_temperature_c', 'avg_wind_speed_kmh', 'daily_precipitation_cm']
+        
+    else:
+        raise ValueError(f"Tipo de reporte no válido: {report_type}")
+    
+    # Preparar datos para el reporte
+    report_data = []
+    for item in data:
+        row = {}
+        for col in columns:
+            if '__' in col:
+                # Campo relacionado
+                parts = col.split('__')
+                value = item
+                for part in parts:
+                    value = getattr(value, part, None)
+                    if value is None:
+                        break
+            else:
+                # Campo directo
+                value = getattr(item, col, None)
+            
+            # Formatear valor
+            if isinstance(value, (int, float)):
+                if 'pct' in col:
+                    row[col.split('__')[-1]] = f"{value:.2f}%"
+                elif 'kwh' in col or 'kmh' in col or 'cm' in col:
+                    row[col.split('__')[-1]] = f"{value:.2f}"
+                else:
+                    row[col.split('__')[-1]] = value
+            else:
+                row[col.split('__')[-1]] = value
+        
+        report_data.append(row)
+    
+    return report_data
+
+
+def generate_report_file(report_data, report_type, format, task_id):
+    """
+    Genera el archivo del reporte en el formato especificado
+    """
+    from django.conf import settings
+    
+    # Crear directorio para reportes si no existe
+    reports_dir = os.path.join(settings.MEDIA_ROOT, 'reports')
+    os.makedirs(reports_dir, exist_ok=True)
+    
+    # Generar nombre del archivo
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"reporte_{report_type.replace(' ', '_')}_{timestamp}_{task_id[:8]}"
+    
+    if format == 'CSV':
+        file_path = os.path.join(reports_dir, f"{filename}.csv")
+        file_size, record_count = generate_csv_file(report_data, file_path)
+        
+    elif format == 'Excel':
+        file_path = os.path.join(reports_dir, f"{filename}.xlsx")
+        file_size, record_count = generate_excel_file(report_data, file_path)
+        
+    elif format == 'PDF':
+        file_path = os.path.join(reports_dir, f"{filename}.pdf")
+        file_size, record_count = generate_pdf_file(report_data, file_path, report_type)
+        
+    else:
+        raise ValueError(f"Formato no soportado: {format}")
+    
+    return file_path, file_size, record_count
+
+
+def generate_csv_file(report_data, file_path):
+    """
+    Genera archivo CSV
+    """
+    
+    if not report_data:
+        # Crear archivo vacío
+        with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['No hay datos disponibles para el período seleccionado'])
+        return "0 KB", 0
+    
+    # Obtener columnas del primer registro
+    columns = list(report_data[0].keys())
+    
+    with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=columns)
+        writer.writeheader()
+        writer.writerows(report_data)
+    
+    # Calcular tamaño del archivo
+    file_size = os.path.getsize(file_path)
+    file_size_str = format_file_size(file_size)
+    
+    return file_size_str, len(report_data)
+
+
+def generate_excel_file(report_data, file_path):
+    """
+    Genera archivo Excel
+    """
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, Alignment, PatternFill
+    except ImportError:
+        # Fallback a CSV si no hay openpyxl
+        logger.warning("openpyxl no disponible, generando CSV en su lugar")
+        return generate_csv_file(report_data, file_path.replace('.xlsx', '.csv'))
+    
+    if not report_data:
+        # Crear archivo vacío
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws['A1'] = 'No hay datos disponibles para el período seleccionado'
+        wb.save(file_path)
+        return "0 KB", 0
+    
+    # Crear workbook y worksheet
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Reporte"
+    
+    # Obtener columnas del primer registro
+    columns = list(report_data[0].keys())
+    
+    # Escribir encabezados
+    for col, header in enumerate(columns, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        cell.alignment = Alignment(horizontal="center")
+    
+    # Escribir datos
+    for row, data_row in enumerate(report_data, 2):
+        for col, header in enumerate(columns, 1):
+            ws.cell(row=row, column=col, value=data_row.get(header, ''))
+    
+    # Ajustar ancho de columnas
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    wb.save(file_path)
+    
+    # Calcular tamaño del archivo
+    file_size = os.path.getsize(file_path)
+    file_size_str = format_file_size(file_size)
+    
+    return file_size_str, len(report_data)
+
+
+def generate_pdf_file(report_data, file_path, report_type):
+    """
+    Genera archivo PDF
+    """
+    try:
+        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
+    except ImportError:
+        # Fallback a CSV si no hay reportlab
+        logger.warning("reportlab no disponible, generando CSV en su lugar")
+        return generate_csv_file(report_data, file_path.replace('.pdf', '.csv'))
+    
+    # Crear documento PDF
+    doc = SimpleDocTemplate(file_path, pagesize=A4)
+    story = []
+    
+    # Estilos
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        spaceAfter=30,
+        alignment=1  # Centrado
+    )
+    
+    # Título del reporte
+    story.append(Paragraph(f"Reporte: {report_type}", title_style))
+    story.append(Spacer(1, 20))
+    
+    if not report_data:
+        story.append(Paragraph("No hay datos disponibles para el período seleccionado", styles['Normal']))
+        doc.build(story)
+        
+        # Calcular tamaño del archivo
+        file_size = os.path.getsize(file_path)
+        file_size_str = format_file_size(file_size)
+        
+        return file_size_str, 0
+    
+    # Obtener columnas del primer registro
+    columns = list(report_data[0].keys())
+    
+    # Crear tabla de datos
+    table_data = [columns]  # Encabezados
+    
+    for data_row in report_data:
+        row = [str(data_row.get(col, '')) for col in columns]
+        table_data.append(row)
+    
+    # Crear tabla
+    table = Table(table_data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    story.append(table)
+    doc.build(story)
+    
+    # Calcular tamaño del archivo
+    file_size = os.path.getsize(file_path)
+    file_size_str = format_file_size(file_size)
+    
+    return file_size_str, len(report_data)
+
+
+def format_file_size(size_bytes):
+    """
+    Formatea el tamaño del archivo en formato legible
+    """
+    if size_bytes == 0:
+        return "0 B"
+    
+    size_names = ["B", "KB", "MB", "GB"]
+    i = 0
+    while size_bytes >= 1024 and i < len(size_names) - 1:
+        size_bytes /= 1024.0
+        i += 1
+    
+    return f"{size_bytes:.1f} {size_names[i]}"
+
+
+def get_report_status(task_id):
+    """
+    Obtiene el estado de un reporte
+    """
+    try:
+        
+        report = GeneratedReport.objects.get(task_id=task_id)
+        
+        status_info = {
+            'task_id': report.task_id,
+            'status': report.status,
+            'progress': 0,
+            'download_url': None,
+            'error': None
+        }
+        
+        if report.status == 'pending':
+            status_info['progress'] = 0
+        elif report.status == 'processing':
+            status_info['progress'] = 50
+        elif report.status == 'completed':
+            status_info['progress'] = 100
+            status_info['download_url'] = f"/api/reports/download/?task_id={task_id}"
+        elif report.status == 'failed':
+            status_info['progress'] = 0
+            status_info['error'] = report.error_message
+        
+        return status_info
+        
+    except GeneratedReport.DoesNotExist:
+        return None
+
+
+def get_report_file(task_id):
+    """
+    Obtiene la información del archivo de un reporte
+    """
+    try:
+        
+        report = GeneratedReport.objects.get(task_id=task_id, status='completed')
+        
+        if not report.file_path or not os.path.exists(report.file_path):
+            return None
+        
+        return {
+            'file_path': report.file_path,
+            'file_size': report.file_size,
+            'record_count': report.record_count
+        }
+        
+    except GeneratedReport.DoesNotExist:
+        return None

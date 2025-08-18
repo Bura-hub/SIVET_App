@@ -155,45 +155,40 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
   const loadPreviousExports = async () => {
     setLoadingExports(true);
     try {
-      // Simular carga de reportes previos (en una implementación real, esto vendría de la API)
-      const mockExports = [
-        { 
-          id: 1, 
-          type: 'Resumen de Consumo', 
-          category: 'Medidores Eléctricos',
-          institution: 'Institución A',
-          date: '2024-01-15 10:30 AM', 
-          format: 'CSV', 
-          status: 'Completed',
-          fileSize: '2.5 MB',
-          recordCount: 1250
-        },
-        { 
-          id: 2, 
-          type: 'Análisis de Generación', 
-          category: 'Inversores',
-          institution: 'Institución B',
-          date: '2024-01-14 04:15 PM', 
-          format: 'PDF', 
-          status: 'Completed',
-          fileSize: '1.8 MB',
-          recordCount: 890
-        },
-        { 
-          id: 3, 
-          type: 'Resumen Climático', 
-          category: 'Estaciones Meteorológicas',
-          institution: 'Institución A',
-          date: '2024-01-13 09:00 AM', 
-          format: 'Excel', 
-          status: 'Completed',
-          fileSize: '3.2 MB',
-          recordCount: 2100
-        }
-      ];
-      setPreviousExports(mockExports);
+      // Llamada real a la API para obtener historial de reportes
+      const response = await fetch(buildApiUrl(ENDPOINTS.reports.history), {
+        ...getDefaultFetchOptions(authToken)
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar historial de reportes');
+      }
+
+      const data = await response.json();
+      
+      // Transformar datos de la API al formato esperado por el componente
+      const transformedExports = data.results.map(report => ({
+        id: report.id,
+        type: report.report_type,
+        category: report.category === 'electricMeter' ? 'Medidores Eléctricos' :
+                  report.category === 'inverter' ? 'Inversores' :
+                  report.category === 'weatherStation' ? 'Estaciones Meteorológicas' : report.category,
+        institution: report.institution_name,
+        date: new Date(report.created_at).toLocaleString('es-CO'),
+        format: report.format,
+        status: report.status === 'completed' ? 'Completed' :
+                report.status === 'failed' ? 'Failed' :
+                report.status === 'processing' ? 'Processing' : 'Pending',
+        fileSize: report.file_size || 'N/A',
+        recordCount: report.record_count || 0
+      }));
+      
+      setPreviousExports(transformedExports);
+      
     } catch (error) {
       console.error('Error cargando reportes previos:', error);
+      // En caso de error, mostrar lista vacía
+      setPreviousExports([]);
     } finally {
       setLoadingExports(false);
     }
@@ -237,49 +232,156 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
     setError(null);
 
     try {
-      // Simular progreso de exportación
-      const progressInterval = setInterval(() => {
-        setExportProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 200);
+      // Llamada real a la API para generar reporte
+      const response = await fetch(buildApiUrl(ENDPOINTS.reports.generate), {
+        method: 'POST',
+        ...getDefaultFetchOptions(authToken),
+        body: JSON.stringify({
+          institution_id: parseInt(selectedInstitution),
+          category: selectedCategory,
+          devices: selectedDevices,
+          report_type: reportType,
+          time_range: timeRange,
+          start_date: startDate,
+          end_date: endDate,
+          format: exportFormat
+        })
+      });
 
-      // Simular llamada a la API para generar reporte
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Error al generar el reporte');
+      }
 
-      clearInterval(progressInterval);
-      setExportProgress(100);
-
-      // Simular descarga del archivo
-      setTimeout(() => {
-        setLoading(false);
-        setExportProgress(0);
-        showTransitionAnimation('success', `Reporte "${reportType}" exportado exitosamente como ${exportFormat}!`, 3000);
+      const result = await response.json();
+      
+      if (result.success) {
+        // Mostrar mensaje de éxito
+        showTransitionAnimation('success', `Generación de reporte iniciada exitosamente!`, 3000);
+        
+        // Iniciar monitoreo del estado
+        monitorReportStatus(result.task_id);
         
         // Agregar a la lista de reportes previos
         const newExport = {
-          id: Date.now(),
+          id: result.task_id,
           type: reportType,
           category: availableCategories.find(cat => cat.id === selectedCategory)?.name,
           institution: institutions.find(inst => inst.id.toString() === selectedInstitution)?.name,
           date: new Date().toLocaleString('es-CO'),
           format: exportFormat,
-          status: 'Completed',
-          fileSize: `${(Math.random() * 5 + 1).toFixed(1)} MB`,
-          recordCount: Math.floor(Math.random() * 2000 + 500)
+          status: 'Pending',
+          fileSize: 'Generando...',
+          recordCount: 0
         };
         setPreviousExports(prev => [newExport, ...prev]);
-      }, 500);
+      } else {
+        throw new Error(result.message || 'Error desconocido');
+      }
 
     } catch (error) {
       console.error('Error en la exportación:', error);
-      setError('Error al generar el reporte');
+      setError(error.message || 'Error al generar el reporte');
       setLoading(false);
       setExportProgress(0);
+    }
+  };
+
+  // Monitorear el estado de generación del reporte
+  const monitorReportStatus = async (taskId) => {
+    const checkStatus = async () => {
+      try {
+        const response = await fetch(buildApiUrl(ENDPOINTS.reports.status, { task_id: taskId }), {
+          ...getDefaultFetchOptions(authToken)
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al consultar estado del reporte');
+        }
+
+        const statusInfo = await response.json();
+        
+        // Actualizar progreso
+        setExportProgress(statusInfo.progress);
+        
+        if (statusInfo.status === 'completed') {
+          // Reporte completado
+          setLoading(false);
+          setExportProgress(100);
+          
+          // Descargar archivo automáticamente
+          downloadReport(taskId);
+          
+          // Actualizar estado en la lista
+          setPreviousExports(prev => prev.map(exp => 
+            exp.id === taskId 
+              ? { ...exp, status: 'Completed', fileSize: 'Descargando...', recordCount: statusInfo.record_count || 0 }
+              : exp
+          ));
+          
+          showTransitionAnimation('success', `Reporte "${reportType}" generado exitosamente!`, 3000);
+          
+        } else if (statusInfo.status === 'failed') {
+          // Reporte falló
+          setLoading(false);
+          setExportProgress(0);
+          setError(`Error al generar reporte: ${statusInfo.error}`);
+          
+          // Actualizar estado en la lista
+          setPreviousExports(prev => prev.map(exp => 
+            exp.id === taskId 
+              ? { ...exp, status: 'Failed', fileSize: 'Error', recordCount: 0 }
+              : exp
+          ));
+          
+        } else if (statusInfo.status === 'processing') {
+          // Reporte en proceso, continuar monitoreando
+          setTimeout(checkStatus, 2000);
+        }
+        
+      } catch (error) {
+        console.error('Error monitoreando estado:', error);
+        // Reintentar en 5 segundos
+        setTimeout(checkStatus, 5000);
+      }
+    };
+
+    // Iniciar monitoreo
+    checkStatus();
+  };
+
+  // Descargar reporte generado
+  const downloadReport = async (taskId) => {
+    try {
+      const response = await fetch(buildApiUrl(ENDPOINTS.reports.download, { task_id: taskId }), {
+        ...getDefaultFetchOptions(authToken)
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al descargar el reporte');
+      }
+
+      // Crear blob y descargar
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reporte_${reportType.replace(/ /g, '_')}_${startDate}_${endDate}.${exportFormat.toLowerCase()}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      // Actualizar estado en la lista
+      setPreviousExports(prev => prev.map(exp => 
+        exp.id === taskId 
+          ? { ...exp, fileSize: `${(blob.size / 1024 / 1024).toFixed(1)} MB` }
+          : exp
+      ));
+      
+    } catch (error) {
+      console.error('Error descargando reporte:', error);
+      setError('Error al descargar el reporte generado');
     }
   };
 
@@ -326,6 +428,85 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
   // Obtener tipos de reporte disponibles según la categoría
   const getAvailableReportTypes = () => {
     return reportTypesByCategory[selectedCategory] || [];
+  };
+
+  // Regenerar reporte
+  const regenerateReport = async (exportItem) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(buildApiUrl(ENDPOINTS.reports.generate), {
+        method: 'POST',
+        ...getDefaultFetchOptions(authToken),
+        body: JSON.stringify({
+          institution_id: parseInt(selectedInstitution),
+          category: exportItem.category,
+          devices: selectedDevices, // Assuming selectedDevices is available or can be re-fetched
+          report_type: exportItem.type,
+          time_range: timeRange,
+          start_date: startDate,
+          end_date: endDate,
+          format: exportFormat
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Error al regenerar el reporte');
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        showTransitionAnimation('success', `Generación de reporte iniciada exitosamente!`, 3000);
+        monitorReportStatus(result.task_id);
+        const newExport = {
+          id: result.task_id,
+          type: exportItem.type,
+          category: exportItem.category,
+          institution: exportItem.institution,
+          date: new Date().toLocaleString('es-CO'),
+          format: exportFormat,
+          status: 'Pending',
+          fileSize: 'Generando...',
+          recordCount: 0
+        };
+        setPreviousExports(prev => [newExport, ...prev]);
+      } else {
+        throw new Error(result.message || 'Error desconocido');
+      }
+    } catch (error) {
+      console.error('Error al regenerar reporte:', error);
+      setError(error.message || 'Error al regenerar el reporte');
+      setLoading(false);
+    }
+  };
+
+  // Eliminar reporte
+  const deleteReport = async (taskId) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este reporte? Esta acción no se puede deshacer.')) {
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(buildApiUrl(ENDPOINTS.reports.delete, { task_id: taskId }), {
+        method: 'DELETE',
+        ...getDefaultFetchOptions(authToken)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Error al eliminar el reporte');
+      }
+
+      setPreviousExports(prev => prev.filter(exp => exp.id !== taskId));
+      showTransitionAnimation('success', 'Reporte eliminado exitosamente!');
+    } catch (error) {
+      console.error('Error al eliminar reporte:', error);
+      setError(error.message || 'Error al eliminar el reporte');
+      setLoading(false);
+    }
   };
 
   return (
@@ -706,6 +887,8 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
                         <button 
                           className="text-blue-600 hover:text-blue-900 transition-colors p-1 rounded hover:bg-blue-50"
                           title="Descargar"
+                          onClick={() => downloadReport(exportItem.id)}
+                          disabled={exportItem.status !== 'Completed'}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -714,6 +897,7 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
                         <button 
                           className="text-purple-600 hover:text-purple-900 transition-colors p-1 rounded hover:bg-purple-50"
                           title="Regenerar"
+                          onClick={() => regenerateReport(exportItem)}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -722,6 +906,7 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
                         <button 
                           className="text-red-600 hover:text-red-900 transition-colors p-1 rounded hover:bg-red-50"
                           title="Eliminar"
+                          onClick={() => deleteReport(exportItem.id)}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

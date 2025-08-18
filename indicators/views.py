@@ -2201,3 +2201,376 @@ class WeatherStationsListView(APIView):
                 {"detail": "Error interno del servidor"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+# =========================
+# VISTAS PARA GENERACIÓN DE REPORTES
+# =========================
+
+class GenerateReportView(APIView):
+    """
+    Vista para generar reportes en diferentes formatos
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Generar reporte",
+        description="Genera un reporte en el formato especificado basado en los parámetros proporcionados",
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "institution_id": {"type": "integer", "description": "ID de la institución"},
+                    "category": {"type": "string", "description": "Categoría de dispositivo (electricMeter, inverter, weatherStation)"},
+                    "devices": {"type": "array", "items": {"type": "string"}, "description": "IDs de dispositivos seleccionados"},
+                    "report_type": {"type": "string", "description": "Tipo de reporte a generar"},
+                    "time_range": {"type": "string", "description": "Rango de tiempo (daily, monthly)"},
+                    "start_date": {"type": "string", "format": "date", "description": "Fecha de inicio"},
+                    "end_date": {"type": "string", "format": "date", "description": "Fecha de fin"},
+                    "format": {"type": "string", "description": "Formato de exportación (CSV, PDF, Excel)"}
+                },
+                "required": ["institution_id", "category", "devices", "report_type", "time_range", "start_date", "end_date", "format"]
+            }
+        },
+        responses={
+            200: {"description": "Reporte generado exitosamente"},
+            400: {"description": "Parámetros inválidos"},
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Reportes"]
+    )
+    def post(self, request, *args, **kwargs):
+        """
+        POST /api/reports/generate/
+        
+        Genera un reporte en el formato especificado.
+        """
+        try:
+            # Validar datos de entrada
+            data = request.data
+            required_fields = ['institution_id', 'category', 'devices', 'report_type', 'time_range', 'start_date', 'end_date', 'format']
+            
+            for field in required_fields:
+                if field not in data:
+                    return Response(
+                        {"detail": f"Campo requerido: {field}"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # Validar formato de fecha
+            try:
+                start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+                end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date()
+            except ValueError:
+                return Response(
+                    {"detail": "Formato de fecha inválido. Use YYYY-MM-DD"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Validar que la fecha de inicio no sea posterior a la de fin
+            if start_date > end_date:
+                return Response(
+                    {"detail": "La fecha de inicio no puede ser posterior a la fecha de fin"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Validar formato de exportación
+            valid_formats = ['CSV', 'PDF', 'Excel']
+            if data['format'] not in valid_formats:
+                return Response(
+                    {"detail": f"Formato no válido. Formatos disponibles: {', '.join(valid_formats)}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Ejecutar tarea asíncrona para generar reporte
+            from .tasks import generate_report
+            
+            task = generate_report.delay(
+                institution_id=data['institution_id'],
+                category=data['category'],
+                devices=data['devices'],
+                report_type=data['report_type'],
+                time_range=data['time_range'],
+                start_date=data['start_date'],
+                end_date=data['end_date'],
+                format=data['format'],
+                user_id=request.user.id
+            )
+            
+            return Response({
+                'success': True,
+                'message': 'Generación de reporte iniciada exitosamente',
+                'task_id': task.id,
+                'estimated_completion_time': '2-5 minutos'
+            })
+
+        except Exception as e:
+            logger.error(f"Error iniciando generación de reporte: {str(e)}")
+            return Response(
+                {"detail": "Error interno del servidor"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class ReportStatusView(APIView):
+    """
+    Vista para consultar el estado de generación de reportes
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Consultar estado de reporte",
+        description="Consulta el estado de generación de un reporte específico",
+        parameters=[
+            OpenApiParameter(name='task_id', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, 
+                           description='ID de la tarea de generación', required=True),
+        ],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "task_id": {"type": "string"},
+                    "status": {"type": "string"},
+                    "progress": {"type": "integer"},
+                    "download_url": {"type": "string", "nullable": True},
+                    "error": {"type": "string", "nullable": True}
+                }
+            },
+            404: {"description": "Tarea no encontrada"},
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Reportes"]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/reports/status/
+        
+        Consulta el estado de generación de un reporte.
+        """
+        try:
+            task_id = request.query_params.get('task_id')
+            if not task_id:
+                return Response(
+                    {"detail": "task_id es requerido"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Consultar estado de la tarea
+            from .tasks import get_report_status
+            status_info = get_report_status(task_id)
+            
+            if not status_info:
+                return Response(
+                    {"detail": "Tarea no encontrada"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            return Response(status_info)
+
+        except Exception as e:
+            logger.error(f"Error consultando estado de reporte: {str(e)}")
+            return Response(
+                {"detail": "Error interno del servidor"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class DownloadReportView(APIView):
+    """
+    Vista para descargar reportes generados
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Descargar reporte",
+        description="Descarga un reporte generado previamente",
+        parameters=[
+            OpenApiParameter(name='task_id', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, 
+                           description='ID de la tarea de generación', required=True),
+        ],
+        responses={
+            200: {"description": "Archivo del reporte"},
+            404: {"description": "Reporte no encontrado"},
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Reportes"]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/reports/download/
+        
+        Descarga un reporte generado.
+        """
+        try:
+            task_id = request.query_params.get('task_id')
+            if not task_id:
+                return Response(
+                    {"detail": "task_id es requerido"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Obtener información del reporte
+            from .tasks import get_report_file
+            report_file = get_report_file(task_id)
+            
+            if not report_file:
+                return Response(
+                    {"detail": "Reporte no encontrado o no completado"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Retornar archivo para descarga
+            from django.http import FileResponse
+            import os
+            
+            file_path = report_file['file_path']
+            if not os.path.exists(file_path):
+                return Response(
+                    {"detail": "Archivo no encontrado en el servidor"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Determinar tipo MIME
+            import mimetypes
+            mime_type, _ = mimetypes.guess_type(file_path)
+            if not mime_type:
+                mime_type = 'application/octet-stream'
+
+            # Crear respuesta de archivo
+            response = FileResponse(
+                open(file_path, 'rb'),
+                content_type=mime_type
+            )
+            
+            # Configurar headers para descarga
+            filename = os.path.basename(file_path)
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            
+            return response
+
+        except Exception as e:
+            logger.error(f"Error descargando reporte: {str(e)}")
+            return Response(
+                {"detail": "Error interno del servidor"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class ReportHistoryView(APIView):
+    """
+    Vista para obtener el historial de reportes generados
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Historial de reportes",
+        description="Obtiene el historial de reportes generados por el usuario",
+        parameters=[
+            OpenApiParameter(name='institution_id', type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, 
+                           description='ID de la institución para filtrar', required=False),
+            OpenApiParameter(name='category', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, 
+                           description='Categoría de dispositivo para filtrar', required=False),
+            OpenApiParameter(name='page', type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, 
+                           description='Número de página', required=False),
+            OpenApiParameter(name='page_size', type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, 
+                           description='Tamaño de página', required=False),
+        ],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "count": {"type": "integer"},
+                    "next": {"type": "string", "nullable": True},
+                    "previous": {"type": "string", "nullable": True},
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "string"},
+                                "report_type": {"type": "string"},
+                                "category": {"type": "string"},
+                                "institution_name": {"type": "string"},
+                                "devices_count": {"type": "integer"},
+                                "time_range": {"type": "string"},
+                                "start_date": {"type": "string"},
+                                "end_date": {"type": "string"},
+                                "format": {"type": "string"},
+                                "status": {"type": "string"},
+                                "file_size": {"type": "string"},
+                                "record_count": {"type": "integer"},
+                                "created_at": {"type": "string"},
+                                "download_url": {"type": "string", "nullable": True}
+                            }
+                        }
+                    }
+                }
+            },
+            500: {"description": "Error interno del servidor"},
+        },
+        tags=["Reportes"]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/reports/history/
+        
+        Obtiene el historial de reportes generados.
+        """
+        try:
+            # Obtener parámetros de consulta
+            institution_id = request.query_params.get('institution_id')
+            category = request.query_params.get('category')
+            page = int(request.query_params.get('page', 1))
+            page_size = int(request.query_params.get('page_size', 20))
+
+            # Construir filtros
+            filters = Q(user_id=request.user.id)
+            
+            if institution_id:
+                filters &= Q(institution_id=institution_id)
+            
+            if category:
+                filters &= Q(category=category)
+
+            # Obtener reportes del usuario
+            from .models import GeneratedReport
+            
+            reports = GeneratedReport.objects.filter(filters).order_by('-created_at')
+            
+            # Paginación
+            from django.core.paginator import Paginator
+            paginator = Paginator(reports, page_size)
+            page_obj = paginator.get_page(page)
+            
+            # Serializar resultados
+            results = []
+            for report in page_obj:
+                results.append({
+                    'id': report.task_id,
+                    'report_type': report.report_type,
+                    'category': report.category,
+                    'institution_name': report.institution_name,
+                    'devices_count': len(report.devices) if report.devices else 0,
+                    'time_range': report.time_range,
+                    'start_date': report.start_date.isoformat(),
+                    'end_date': report.end_date.isoformat(),
+                    'format': report.format,
+                    'status': report.status,
+                    'file_size': report.file_size,
+                    'record_count': report.record_count,
+                    'created_at': report.created_at.isoformat(),
+                    'download_url': f"/api/reports/download/?task_id={report.task_id}" if report.status == 'completed' else None
+                })
+            
+            return Response({
+                'count': paginator.count,
+                'next': page_obj.next_page_number() if page_obj.has_next() else None,
+                'previous': page_obj.previous_page_number() if page_obj.has_previous() else None,
+                'results': results
+            })
+
+        except Exception as e:
+            logger.error(f"Error obteniendo historial de reportes: {str(e)}")
+            return Response(
+                {"detail": "Error interno del servidor"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

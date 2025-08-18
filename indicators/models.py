@@ -424,3 +424,89 @@ class WeatherStationChartData(models.Model):
     
     def __str__(self):
         return f"{self.device.name} - {self.date}"
+
+
+class GeneratedReport(models.Model):
+    """
+    Modelo para almacenar información sobre reportes generados
+    """
+    task_id = models.CharField(max_length=255, unique=True, help_text="ID de la tarea de Celery")
+    user_id = models.IntegerField(help_text="ID del usuario que solicitó el reporte")
+    
+    # Información del reporte
+    report_type = models.CharField(max_length=100, help_text="Tipo de reporte generado")
+    category = models.CharField(max_length=50, help_text="Categoría de dispositivo")
+    institution_id = models.IntegerField(help_text="ID de la institución")
+    institution_name = models.CharField(max_length=255, help_text="Nombre de la institución")
+    devices = models.JSONField(default=list, help_text="Lista de IDs de dispositivos")
+    
+    # Configuración del reporte
+    time_range = models.CharField(max_length=20, choices=[
+        ('daily', 'Diario'),
+        ('monthly', 'Mensual')
+    ], help_text="Rango de tiempo del reporte")
+    start_date = models.DateField(help_text="Fecha de inicio del reporte")
+    end_date = models.DateField(help_text="Fecha de fin del reporte")
+    format = models.CharField(max_length=10, choices=[
+        ('CSV', 'CSV'),
+        ('PDF', 'PDF'),
+        ('Excel', 'Excel')
+    ], help_text="Formato del reporte")
+    
+    # Estado y resultados
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pendiente'),
+        ('processing', 'Procesando'),
+        ('completed', 'Completado'),
+        ('failed', 'Fallido')
+    ], default='pending', help_text="Estado de generación del reporte")
+    
+    # Información del archivo generado
+    file_path = models.CharField(max_length=500, null=True, blank=True, help_text="Ruta del archivo generado")
+    file_size = models.CharField(max_length=20, null=True, blank=True, help_text="Tamaño del archivo (ej: '2.5 MB')")
+    record_count = models.IntegerField(default=0, help_text="Número de registros en el reporte")
+    
+    # Metadatos
+    error_message = models.TextField(null=True, blank=True, help_text="Mensaje de error si falló la generación")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Fecha de creación de la solicitud")
+    updated_at = models.DateTimeField(auto_now=True, help_text="Fecha de última actualización")
+    completed_at = models.DateTimeField(null=True, blank=True, help_text="Fecha de finalización")
+    
+    class Meta:
+        verbose_name = "Reporte Generado"
+        verbose_name_plural = "Reportes Generados"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user_id', 'status']),
+            models.Index(fields=['institution_id', 'category']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['task_id']),
+        ]
+    
+    def __str__(self):
+        return f"Reporte {self.report_type} - {self.institution_name} ({self.get_status_display()})"
+    
+    def get_file_size_display(self):
+        """Retorna el tamaño del archivo en formato legible"""
+        if not self.file_size:
+            return "N/A"
+        return self.file_size
+    
+    def get_record_count_display(self):
+        """Retorna el número de registros en formato legible"""
+        if self.record_count == 0:
+            return "N/A"
+        return f"{self.record_count:,}"
+    
+    def get_duration_display(self):
+        """Retorna la duración de generación en formato legible"""
+        if not self.completed_at:
+            return "En proceso"
+        
+        duration = self.completed_at - self.created_at
+        if duration.total_seconds() < 60:
+            return f"{int(duration.total_seconds())}s"
+        elif duration.total_seconds() < 3600:
+            return f"{int(duration.total_seconds() / 60)}m"
+        else:
+            return f"{int(duration.total_seconds() / 3600)}h {int((duration.total_seconds() % 3600) / 60)}m"

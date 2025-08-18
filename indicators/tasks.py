@@ -2678,7 +2678,20 @@ def generate_report_file(report_data, report_type, format, task_id):
         
     elif format == 'PDF':
         file_path = os.path.join(reports_dir, f"{filename}.pdf")
-        file_size, record_count = generate_pdf_file(report_data, file_path, report_type)
+        # Determinar si es un reporte ejecutivo basado en el tipo
+        if 'executive' in report_type.lower() or 'ejecutivo' in report_type.lower():
+            # Extraer información adicional si está disponible
+            institution_name = ""
+            period_info = ""
+            if hasattr(report_data, 'get') and isinstance(report_data, dict):
+                institution_name = report_data.get('institution_name', '')
+                period_info = report_data.get('period_info', '')
+            
+            file_size, record_count = generate_executive_pdf_file(
+                report_data, file_path, report_type, institution_name, period_info
+            )
+        else:
+            file_size, record_count = generate_pdf_file(report_data, file_path, report_type)
         
     else:
         raise ValueError(f"Formato no soportado: {format}")
@@ -2777,39 +2790,96 @@ def generate_excel_file(report_data, file_path):
 
 def generate_pdf_file(report_data, file_path, report_type):
     """
-    Genera archivo PDF
+    Genera archivo PDF con formato mejorado y más detalle
     """
     try:
         from reportlab.lib.pagesizes import letter, A4
-        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak, Image
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.lib import colors
-        from reportlab.lib.units import inch
-    except ImportError:
-        # Fallback a CSV si no hay reportlab
-        logger.warning("reportlab no disponible, generando CSV en su lugar")
+        from reportlab.lib.units import inch, cm
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+        from datetime import datetime
+        import io
+        import numpy as np
+    except ImportError as e:
+        # Fallback a CSV si no hay reportlab o matplotlib
+        logger.warning(f"Librerías no disponibles: {e}, generando CSV en su lugar")
         return generate_csv_file(report_data, file_path.replace('.pdf', '.csv'))
     
     # Crear documento PDF
-    doc = SimpleDocTemplate(file_path, pagesize=A4)
+    doc = SimpleDocTemplate(file_path, pagesize=A4, 
+                          rightMargin=2*cm, leftMargin=2*cm, 
+                          topMargin=2*cm, bottomMargin=2*cm)
     story = []
     
-    # Estilos
+    # Estilos mejorados
     styles = getSampleStyleSheet()
+    
+    # Estilo para título principal
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
-        fontSize=16,
+        fontSize=20,
         spaceAfter=30,
-        alignment=1  # Centrado
+        alignment=TA_CENTER,
+        textColor=colors.HexColor('#1f2937'),
+        fontName='Helvetica-Bold'
     )
     
-    # Título del reporte
-    story.append(Paragraph(f"Reporte: {report_type}", title_style))
+    # Estilo para subtítulos
+    subtitle_style = ParagraphStyle(
+        'CustomSubtitle',
+        parent=styles['Heading2'],
+        fontSize=16,
+        spaceAfter=20,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor('#374151'),
+        fontName='Helvetica-Bold',
+        spaceBefore=25
+    )
+    
+    # Estilo para texto normal
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=11,
+        spaceAfter=12,
+        alignment=TA_JUSTIFY,
+        textColor=colors.HexColor('#4b5563'),
+        fontName='Helvetica'
+    )
+    
+    # Estilo para información destacada
+    highlight_style = ParagraphStyle(
+        'Highlight',
+        parent=styles['Normal'],
+        fontSize=12,
+        spaceAfter=15,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor('#059669'),
+        fontName='Helvetica-Bold',
+        backColor=colors.HexColor('#ecfdf5'),
+        borderPadding=10,
+        borderWidth=1,
+        borderColor=colors.HexColor('#10b981')
+    )
+    
+    # Encabezado del reporte
+    story.append(Paragraph(f"REPORTE DETALLADO: {report_type.upper()}", title_style))
+    story.append(Spacer(1, 20))
+    
+    # Información del reporte
+    current_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    story.append(Paragraph(f"<b>Fecha de generación:</b> {current_time}", normal_style))
+    story.append(Paragraph(f"<b>Total de registros:</b> {len(report_data)}", normal_style))
     story.append(Spacer(1, 20))
     
     if not report_data:
-        story.append(Paragraph("No hay datos disponibles para el período seleccionado", styles['Normal']))
+        story.append(Paragraph("No hay datos disponibles para el período seleccionado", highlight_style))
         doc.build(story)
         
         # Calcular tamaño del archivo
@@ -2818,32 +2888,462 @@ def generate_pdf_file(report_data, file_path, report_type):
         
         return file_size_str, 0
     
+    # Resumen ejecutivo
+    story.append(Paragraph("RESUMEN EJECUTIVO", subtitle_style))
+    story.append(Paragraph("Este reporte presenta un análisis detallado de los datos recopilados durante el período especificado, incluyendo métricas clave, tendencias y análisis estadísticos relevantes.", normal_style))
+    story.append(Spacer(1, 20))
+    
+    # Análisis estadístico básico
+    if len(report_data) > 0:
+        story.append(Paragraph("ANÁLISIS ESTADÍSTICO", subtitle_style))
+        
+        # Obtener columnas numéricas para análisis
+        numeric_columns = []
+        for col in report_data[0].keys():
+            try:
+                # Intentar convertir a número
+                sample_value = report_data[0][col]
+                if isinstance(sample_value, (int, float)) or (isinstance(sample_value, str) and sample_value.replace('.', '').replace('-', '').isdigit()):
+                    numeric_columns.append(col)
+            except:
+                continue
+        
+        if numeric_columns:
+            # Crear tabla de estadísticas
+            stats_data = [['Métrica', 'Valor']]
+            
+            for col in numeric_columns[:5]:  # Limitar a 5 columnas para no sobrecargar
+                try:
+                    values = []
+                    for row in report_data:
+                        val = row.get(col, 0)
+                        if isinstance(val, str):
+                            val = float(val) if val.replace('.', '').replace('-', '').isdigit() else 0
+                        if isinstance(val, (int, float)):
+                            values.append(val)
+                    
+                    if values:
+                        stats_data.append([f'Promedio {col}', f'{np.mean(values):.2f}'])
+                        stats_data.append([f'Máximo {col}', f'{np.max(values):.2f}'])
+                        stats_data.append([f'Mínimo {col}', f'{np.min(values):.2f}'])
+                except:
+                    continue
+            
+            if len(stats_data) > 1:
+                stats_table = Table(stats_data, colWidths=[4*cm, 3*cm])
+                stats_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f2937')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 11),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f9fafb')),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db')),
+                    ('FONTSIZE', (0, 1), (-1, -1), 10),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f9fafb'), colors.white]),
+                ]))
+                story.append(stats_table)
+                story.append(Spacer(1, 20))
+    
+    # Generar gráficos si hay datos numéricos
+    if len(report_data) > 1 and numeric_columns:
+        story.append(Paragraph("GRÁFICOS Y VISUALIZACIONES", subtitle_style))
+        
+        # Gráfico de línea temporal para la primera columna numérica
+        try:
+            time_col = None
+            for col in report_data[0].keys():
+                if 'fecha' in col.lower() or 'date' in col.lower() or 'time' in col.lower():
+                    time_col = col
+                    break
+            
+            if time_col:
+                # Crear gráfico de línea
+                fig, ax = plt.subplots(figsize=(10, 6))
+                
+                # Preparar datos para el gráfico
+                x_values = []
+                y_values = []
+                
+                for row in report_data[:50]:  # Limitar a 50 puntos para el gráfico
+                    try:
+                        time_val = row.get(time_col, '')
+                        if isinstance(time_val, str):
+                            # Intentar parsear fecha
+                            try:
+                                parsed_time = datetime.strptime(time_val, '%Y-%m-%d %H:%M:%S')
+                                x_values.append(parsed_time)
+                            except:
+                                x_values.append(len(x_values))
+                        else:
+                            x_values.append(len(x_values))
+                        
+                        # Valor numérico para Y
+                        for num_col in numeric_columns[:1]:  # Solo primera columna numérica
+                            val = row.get(num_col, 0)
+                            if isinstance(val, str):
+                                val = float(val) if val.replace('.', '').replace('-', '').isdigit() else 0
+                            y_values.append(val if isinstance(val, (int, float)) else 0)
+                            break
+                    except:
+                        continue
+                
+                if len(x_values) > 1 and len(y_values) > 1:
+                    ax.plot(x_values, y_values, marker='o', linewidth=2, markersize=4)
+                    ax.set_title(f'Tendencia de {numeric_columns[0]}', fontsize=14, fontweight='bold')
+                    ax.set_xlabel('Tiempo', fontsize=12)
+                    ax.set_ylabel(numeric_columns[0], fontsize=12)
+                    ax.grid(True, alpha=0.3)
+                    
+                    # Formatear eje X si son fechas
+                    if isinstance(x_values[0], datetime):
+                        ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m'))
+                        ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(x_values)//10)))
+                        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+                    
+                    plt.tight_layout()
+                    
+                    # Guardar gráfico en memoria
+                    img_buffer = io.BytesIO()
+                    plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight')
+                    img_buffer.seek(0)
+                    
+                    # Agregar imagen al PDF
+                    story.append(Image(img_buffer, width=12*cm, height=7*cm))
+                    story.append(Spacer(1, 20))
+                    
+                    plt.close()
+        except Exception as e:
+            logger.warning(f"Error generando gráfico: {e}")
+    
+    # Datos detallados
+    story.append(Paragraph("DATOS DETALLADOS", subtitle_style))
+    story.append(Paragraph("A continuación se presentan los datos completos del reporte en formato tabular:", normal_style))
+    story.append(Spacer(1, 15))
+    
     # Obtener columnas del primer registro
     columns = list(report_data[0].keys())
     
-    # Crear tabla de datos
+    # Limitar columnas si son demasiadas para el PDF
+    if len(columns) > 8:
+        story.append(Paragraph(f"<i>Nota: Se muestran las primeras 8 columnas de {len(columns)} totales para optimizar la visualización.</i>", normal_style))
+        story.append(Spacer(1, 10))
+        columns = columns[:8]
+    
+    # Crear tabla de datos con formato mejorado
     table_data = [columns]  # Encabezados
     
-    for data_row in report_data:
-        row = [str(data_row.get(col, '')) for col in columns]
+    # Agregar datos (limitar filas para no sobrecargar el PDF)
+    max_rows = min(50, len(report_data))  # Máximo 50 filas
+    for i, data_row in enumerate(report_data[:max_rows]):
+        row = []
+        for col in columns:
+            value = data_row.get(col, '')
+            # Truncar valores muy largos
+            if isinstance(value, str) and len(value) > 30:
+                value = value[:27] + '...'
+            row.append(str(value))
         table_data.append(row)
     
-    # Crear tabla
-    table = Table(table_data)
+    if len(report_data) > max_rows:
+        story.append(Paragraph(f"<i>Nota: Se muestran las primeras {max_rows} filas de {len(report_data)} totales.</i>", normal_style))
+        story.append(Spacer(1, 10))
+    
+    # Crear tabla con estilo mejorado
+    table = Table(table_data, colWidths=[2.5*cm] * len(columns))
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        # Encabezados
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f2937')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, 0), 12),
+        
+        # Datos
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f9fafb')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#d1d5db')),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f9fafb'), colors.white]),
+        ('TOPPADDING', (0, 1), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
     ]))
     
     story.append(table)
+    story.append(Spacer(1, 20))
+    
+    # Pie de página con información adicional
+    story.append(Paragraph("INFORMACIÓN ADICIONAL", subtitle_style))
+    story.append(Paragraph("• Este reporte fue generado automáticamente por el sistema MTE Lumen", normal_style))
+    story.append(Paragraph("• Los datos están sujetos a validación y pueden ser actualizados", normal_style))
+    story.append(Paragraph("• Para consultas adicionales, contacte al administrador del sistema", normal_style))
+    
+    # Construir el PDF
+    doc.build(story)
+    
+    # Calcular tamaño del archivo
+    file_size = os.path.getsize(file_path)
+    file_size_str = format_file_size(file_size)
+    
+    return file_size_str, len(report_data)
+
+
+def generate_executive_pdf_file(report_data, file_path, report_type, institution_name="", period_info=""):
+    """
+    Genera un PDF ejecutivo con formato profesional y resumido
+    """
+    try:
+        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak, Image
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch, cm
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+        from datetime import datetime
+        import io
+        import numpy as np
+    except ImportError as e:
+        logger.warning(f"Librerías no disponibles: {e}, usando función básica")
+        return generate_pdf_file(report_data, file_path, report_type)
+    
+    # Crear documento PDF
+    doc = SimpleDocTemplate(file_path, pagesize=A4, 
+                          rightMargin=1.5*cm, leftMargin=1.5*cm, 
+                          topMargin=1.5*cm, bottomMargin=1.5*cm)
+    story = []
+    
+    # Estilos ejecutivos
+    styles = getSampleStyleSheet()
+    
+    # Estilo para título principal ejecutivo
+    executive_title_style = ParagraphStyle(
+        'ExecutiveTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=25,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor('#1e40af'),
+        fontName='Helvetica-Bold'
+    )
+    
+    # Estilo para subtítulos ejecutivos
+    executive_subtitle_style = ParagraphStyle(
+        'ExecutiveSubtitle',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceAfter=15,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor('#1e293b'),
+        fontName='Helvetica-Bold',
+        spaceBefore=20
+    )
+    
+    # Estilo para texto ejecutivo
+    executive_text_style = ParagraphStyle(
+        'ExecutiveText',
+        parent=styles['Normal'],
+        fontSize=11,
+        spaceAfter=10,
+        alignment=TA_JUSTIFY,
+        textColor=colors.HexColor('#334155'),
+        fontName='Helvetica'
+    )
+    
+    # Estilo para métricas destacadas
+    metric_style = ParagraphStyle(
+        'Metric',
+        parent=styles['Normal'],
+        fontSize=13,
+        spaceAfter=8,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor('#059669'),
+        fontName='Helvetica-Bold',
+        backColor=colors.HexColor('#f0fdf4'),
+        borderPadding=8,
+        borderWidth=1,
+        borderColor=colors.HexColor('#22c55e')
+    )
+    
+    # Encabezado ejecutivo
+    story.append(Paragraph("MTE LUMEN", executive_title_style))
+    story.append(Paragraph("SISTEMA DE MONITOREO INTEGRAL", executive_title_style))
+    story.append(Spacer(1, 15))
+    
+    # Información del reporte ejecutivo
+    story.append(Paragraph(f"<b>REPORTE EJECUTIVO:</b> {report_type.upper()}", executive_subtitle_style))
+    if institution_name:
+        story.append(Paragraph(f"<b>Institución:</b> {institution_name}", executive_text_style))
+    if period_info:
+        story.append(Paragraph(f"<b>Período:</b> {period_info}", executive_text_style))
+    
+    current_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    story.append(Paragraph(f"<b>Generado:</b> {current_time}", executive_text_style))
+    story.append(Paragraph(f"<b>Total de registros:</b> {len(report_data)}", executive_text_style))
+    story.append(Spacer(1, 20))
+    
+    if not report_data:
+        story.append(Paragraph("No hay datos disponibles para el período seleccionado", metric_style))
+        doc.build(story)
+        file_size = os.path.getsize(file_path)
+        file_size_str = format_file_size(file_size)
+        return file_size_str, 0
+    
+    # Resumen ejecutivo
+    story.append(Paragraph("RESUMEN EJECUTIVO", executive_subtitle_style))
+    story.append(Paragraph("Este reporte presenta un análisis ejecutivo de los datos recopilados, destacando las métricas clave y tendencias más relevantes para la toma de decisiones estratégicas.", executive_text_style))
+    story.append(Spacer(1, 15))
+    
+    # KPIs principales
+    if len(report_data) > 0:
+        story.append(Paragraph("INDICADORES CLAVE (KPIs)", executive_subtitle_style))
+        
+        # Obtener columnas numéricas para análisis
+        numeric_columns = []
+        for col in report_data[0].keys():
+            try:
+                sample_value = report_data[0][col]
+                if isinstance(sample_value, (int, float)) or (isinstance(sample_value, str) and sample_value.replace('.', '').replace('-', '').isdigit()):
+                    numeric_columns.append(col)
+            except:
+                continue
+        
+        if numeric_columns:
+            # Crear tabla de KPIs ejecutivos
+            kpi_data = [['Indicador', 'Valor', 'Tendencia']]
+            
+            for col in numeric_columns[:3]:  # Solo 3 KPIs principales
+                try:
+                    values = []
+                    for row in report_data:
+                        val = row.get(col, 0)
+                        if isinstance(val, str):
+                            val = float(val) if val.replace('.', '').replace('-', '').isdigit() else 0
+                        if isinstance(val, (int, float)):
+                            values.append(val)
+                    
+                    if values:
+                        avg_val = np.mean(values)
+                        max_val = np.max(values)
+                        min_val = np.min(values)
+                        
+                        # Determinar tendencia
+                        if len(values) > 1:
+                            trend = "↗️" if values[-1] > values[0] else "↘️" if values[-1] < values[0] else "➡️"
+                        else:
+                            trend = "➡️"
+                        
+                        kpi_data.append([f'{col}', f'{avg_val:.2f}', trend])
+                except:
+                    continue
+            
+            if len(kpi_data) > 1:
+                kpi_table = Table(kpi_data, colWidths=[5*cm, 3*cm, 2*cm])
+                kpi_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 12),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 15),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8fafc')),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e1')),
+                    ('FONTSIZE', (0, 1), (-1, -1), 11),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f8fafc'), colors.white]),
+                ]))
+                story.append(kpi_table)
+                story.append(Spacer(1, 20))
+    
+    # Gráfico ejecutivo simplificado
+    if len(report_data) > 1 and numeric_columns:
+        story.append(Paragraph("VISUALIZACIÓN EJECUTIVA", executive_subtitle_style))
+        
+        try:
+            time_col = None
+            for col in report_data[0].keys():
+                if 'fecha' in col.lower() or 'date' in col.lower() or 'time' in col.lower():
+                    time_col = col
+                    break
+            
+            if time_col:
+                # Crear gráfico ejecutivo
+                fig, ax = plt.subplots(figsize=(8, 5))
+                
+                x_values = []
+                y_values = []
+                
+                for row in report_data[:30]:  # Solo 30 puntos para gráfico ejecutivo
+                    try:
+                        time_val = row.get(time_col, '')
+                        if isinstance(time_val, str):
+                            try:
+                                parsed_time = datetime.strptime(time_val, '%Y-%m-%d %H:%M:%S')
+                                x_values.append(parsed_time)
+                            except:
+                                x_values.append(len(x_values))
+                        else:
+                            x_values.append(len(x_values))
+                        
+                        for num_col in numeric_columns[:1]:
+                            val = row.get(num_col, 0)
+                            if isinstance(val, str):
+                                val = float(val) if val.replace('.', '').replace('-', '').isdigit() else 0
+                            y_values.append(val if isinstance(val, (int, float)) else 0)
+                            break
+                    except:
+                        continue
+                
+                if len(x_values) > 1 and len(y_values) > 1:
+                    ax.plot(x_values, y_values, linewidth=3, color='#1e40af', alpha=0.8)
+                    ax.fill_between(x_values, y_values, alpha=0.3, color='#1e40af')
+                    ax.set_title(f'Tendencia de {numeric_columns[0]}', fontsize=14, fontweight='bold', color='#1e293b')
+                    ax.set_xlabel('Tiempo', fontsize=11, color='#475569')
+                    ax.set_ylabel(numeric_columns[0], fontsize=11, color='#475569')
+                    ax.grid(True, alpha=0.2)
+                    ax.spines['top'].set_visible(False)
+                    ax.spines['right'].set_visible(False)
+                    
+                    if isinstance(x_values[0], datetime):
+                        ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m'))
+                        ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(x_values)//8)))
+                        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, fontsize=9)
+                    
+                    plt.tight_layout()
+                    
+                    img_buffer = io.BytesIO()
+                    plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight', 
+                              facecolor='white', edgecolor='none')
+                    img_buffer.seek(0)
+                    
+                    story.append(Image(img_buffer, width=10*cm, height=6*cm))
+                    story.append(Spacer(1, 20))
+                    
+                    plt.close()
+        except Exception as e:
+            logger.warning(f"Error generando gráfico ejecutivo: {e}")
+    
+    # Conclusiones ejecutivas
+    story.append(Paragraph("CONCLUSIONES EJECUTIVAS", executive_subtitle_style))
+    story.append(Paragraph("• Los datos analizados muestran patrones consistentes en el período evaluado", executive_text_style))
+    story.append(Paragraph("• Se identifican oportunidades de optimización basadas en las métricas clave", executive_text_style))
+    story.append(Paragraph("• Se recomienda continuar el monitoreo para validar tendencias", executive_text_style))
+    story.append(Spacer(1, 20))
+    
+    # Pie de página ejecutivo
+    story.append(Paragraph("INFORMACIÓN DEL SISTEMA", executive_subtitle_style))
+    story.append(Paragraph("• Sistema MTE Lumen - Monitoreo Integral de Energía", executive_text_style))
+    story.append(Paragraph("• Reporte generado automáticamente para análisis ejecutivo", executive_text_style))
+    story.append(Paragraph("• Contacto: administrador@mtelumen.com", executive_text_style))
+    
+    # Construir el PDF
     doc.build(story)
     
     # Calcular tamaño del archivo

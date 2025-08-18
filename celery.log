@@ -1,301 +1,76 @@
-INFO 2025-08-18 12:00:00,023 connection 9540 9852 Connected to redis://localhost:6379/0
-INFO 2025-08-18 12:00:00,026 mingle 9540 9852 mingle: searching for neighbors
-INFO 2025-08-18 12:00:01,048 mingle 9540 9852 mingle: all alone
-INFO 2025-08-18 12:00:05,435 strategy 9540 9852 Task scada_proxy.tasks.sync_scada_metadata[aad83f6c-ad3b-493e-bd0e-d8be290a6162] received
-INFO 2025-08-18 12:00:05,603 tasks 9540 9852 Sincronizadas 5 instituciones.
-INFO 2025-08-18 12:00:05,686 tasks 9540 9852 Sincronizadas 3 categorías de dispositivos.
-INFO 2025-08-18 12:00:05,795 tasks 9540 9852 Desactivados 2 dispositivos que ya no se encuentran en la API SCADA.
-INFO 2025-08-18 12:00:05,797 strategy 9540 9852 Task scada_proxy.tasks.fetch_historical_measurements_for_all_devices[ad6daa46-eec8-47d9-8364-419191cd00c6] received
-INFO 2025-08-18 12:00:05,798 tasks 9540 9852 Iniciando la obtención de mediciones históricas para los últimos 2:00:00. Rango: 2025-08-18 10:00:05.798845-05:00 -> 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:05,825 tasks 9540 9852 Tarea creada para dispositivo Medidor 2 - Cesmag (3ccb420f-e6a0-4461-8dc6-e8568bd699f0) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,826 tasks 9540 9852 Tarea creada para dispositivo Medidor 3 - Cesmag (348b47aa-b285-4948-a9fb-a57bc38cedf1) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,827 tasks 9540 9852 Tarea creada para dispositivo Medidor 4 - Cesmag (6ebd34d4-4883-4682-aab3-f3243544a67a) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,828 tasks 9540 9852 Tarea creada para dispositivo Medidor 1 - Cesmag (4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,828 tasks 9540 9852 Tarea creada para dispositivo Inverter 1 - Cesmag (e96986a9-a127-4139-975d-1a711ae25327) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,829 tasks 9540 9852 Tarea creada para dispositivo estación (46094855-4fe6-4c10-afe3-444a101719e2) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,829 tasks 9540 9852 Tarea creada para dispositivo Estación San Damian - CESMAG (819dfc27-fe61-42e6-9413-0f8820bea03e) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,830 tasks 9540 9852 Tarea creada para dispositivo Medidor 4 - HUDN (ad749299-a3a4-4270-b80d-6251389eabcb) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,831 tasks 9540 9852 Tarea creada para dispositivo Medidor 1 - HUDN (628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,831 tasks 9540 9852 Tarea creada para dispositivo Medidor 2 - HUDN (6ecb37db-ab95-4640-b8ce-c7f8bb91f611) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,832 tasks 9540 9852 Tarea creada para dispositivo Medidor 3 - HUDN (673f11ce-77da-4839-8498-a5948d984d8c) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,833 tasks 9540 9852 Tarea creada para dispositivo Inversor 1 - HUDN (f6893ba9-7175-44ea-8624-a47bf55158c9) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,833 tasks 9540 9852 Tarea creada para dispositivo Estación - HUDN (49435c0b-ada3-4ced-ad15-9418013a30d1) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,834 tasks 9540 9852 Tarea creada para dispositivo Medidor 1 - Alvernia (b06d770e-ec25-49a0-949d-60c9e169f2bb) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,835 tasks 9540 9852 Tarea creada para dispositivo Medidor 3 - Alvernia (4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,835 tasks 9540 9852 Tarea creada para dispositivo Medidor 4 - Alvernia (0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,836 tasks 9540 9852 Tarea creada para dispositivo Medidor 2 - Alvernia (5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,836 tasks 9540 9852 Tarea creada para dispositivo Fronius - Alvernia (0f962572-fab3-4c09-bffc-465b56a22d8d) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,837 tasks 9540 9852 Tarea creada para dispositivo Estación Alvernia (1fb6c4ae-2e7c-4758-80bf-156c7826fead) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,838 tasks 9540 9852 Tarea creada para dispositivo Medidor 3 - UCC (d6915dc0-4391-4514-b4c6-58a30f1988f3) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,838 tasks 9540 9852 Tarea creada para dispositivo Medidor 4 - UCC (7130f831-d8ca-4fd8-adb5-f02dbc7543b3) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,839 tasks 9540 9852 Tarea creada para dispositivo Medidor 2 - UCC (bc80e209-e290-4aaa-a6e8-931e9fb7b803) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,839 tasks 9540 9852 Tarea creada para dispositivo Medidor 1 - UCC (86b9c020-4645-4c39-891a-d1e8a7048c12) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,840 tasks 9540 9852 Tarea creada para dispositivo Fronius - UCC (29630827-0242-492f-9ed0-a48d120da2ac) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,840 tasks 9540 9852 Tarea creada para dispositivo Estación - UCC (74154481-3f6c-4827-a8d7-ea6fbae62fd9) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,841 tasks 9540 9852 Tarea creada para dispositivo Medidor 4 - Udenar (0f7648d7-7575-4419-8192-a4f80b55309b) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,841 tasks 9540 9852 Tarea creada para dispositivo Bloque Nuevo - Medidor 3 (19934344-9c79-482f-b74f-50dde3a6079c) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,842 tasks 9540 9852 Tarea creada para dispositivo Bloque Nuevo - Medidor 1 (7ba9fa00-7ef9-4246-8c30-85ea56088e0d) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,843 tasks 9540 9852 Tarea creada para dispositivo inverter1 (ada64a56-331c-4489-a02c-7aac55d54111) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,843 tasks 9540 9852 Tarea creada para dispositivo Prueba (3a5eca15-cd03-4a83-8981-b432d2217344) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,844 tasks 9540 9852 Tarea creada para dispositivo inverter2 (37f796af-7caa-459f-bc86-3e2f7936a879) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,844 tasks 9540 9852 Tarea creada para dispositivo Bloque Nuevo - Medidor 2 (1da46bc5-1655-4ba1-82c2-0b283370a97b) desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia).
-INFO 2025-08-18 12:00:05,844 tasks 9540 9852 Todas las subtareas para obtener mediciones han sido encoladas.
-INFO 2025-08-18 12:00:05,846 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[4d7d82dd-fa20-43c1-9318-3d97c3a90039] received
-INFO 2025-08-18 12:00:05,873 tasks 9540 9852 Obteniendo mediciones para dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:06,054 tasks 9540 9852 Dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:06,056 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[fab486a6-f58a-4056-b41b-1624ef4be480] received
-INFO 2025-08-18 12:00:06,080 tasks 9540 9852 Obteniendo mediciones para dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:06,253 tasks 9540 9852 Dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:06,256 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[7063ed47-199c-4843-b3b7-d91f8749ae1e] received
-INFO 2025-08-18 12:00:06,285 tasks 9540 9852 Obteniendo mediciones para dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:06,457 tasks 9540 9852 Dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:06,459 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[838ac936-9a46-4834-bf88-3625dc5f3069] received
-INFO 2025-08-18 12:00:06,583 tasks 9540 9852 Obteniendo mediciones para dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:06,764 tasks 9540 9852 Dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:06,767 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1d330a55-a261-4a19-86dd-a6b7a112ed95] received
-INFO 2025-08-18 12:00:06,789 tasks 9540 9852 Obteniendo mediciones para dispositivo e96986a9-a127-4139-975d-1a711ae25327 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:06,930 tasks 9540 9852 Dispositivo e96986a9-a127-4139-975d-1a711ae25327: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:06,933 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b529f177-3b6f-4fdd-84d6-fe8dc8565457] received
-INFO 2025-08-18 12:00:06,956 tasks 9540 9852 Obteniendo mediciones para dispositivo 46094855-4fe6-4c10-afe3-444a101719e2 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:07,141 tasks 9540 9852 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 33 nuevas, 76 actualizadas
-INFO 2025-08-18 12:00:07,143 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[1d69359e-849e-45c5-a6cb-73fcc22d9a81] received
-INFO 2025-08-18 12:00:07,166 tasks 9540 9852 Obteniendo mediciones para dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:07,273 tasks 9540 9852 Dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e: 17 nuevas, 39 actualizadas
-INFO 2025-08-18 12:00:07,276 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5bedf7eb-0af0-49de-8bd4-e5501ccfe46a] received
-INFO 2025-08-18 12:00:07,305 tasks 9540 9852 Obteniendo mediciones para dispositivo ad749299-a3a4-4270-b80d-6251389eabcb desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:07,498 tasks 9540 9852 Dispositivo ad749299-a3a4-4270-b80d-6251389eabcb: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:07,501 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[102485d5-ff56-43ee-9b4e-f20f07dc762f] received
-INFO 2025-08-18 12:00:07,524 tasks 9540 9852 Obteniendo mediciones para dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:07,721 tasks 9540 9852 Dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:07,724 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c52f6cb6-8d95-4604-8572-4b5481173f8e] received
-INFO 2025-08-18 12:00:07,745 tasks 9540 9852 Obteniendo mediciones para dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:07,914 tasks 9540 9852 Dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:07,916 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a5e29afe-42da-483e-9189-e6dee028042a] received
-INFO 2025-08-18 12:00:08,054 tasks 9540 9852 Obteniendo mediciones para dispositivo 673f11ce-77da-4839-8498-a5948d984d8c desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:08,260 tasks 9540 9852 Dispositivo 673f11ce-77da-4839-8498-a5948d984d8c: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:08,262 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[21fd8fd2-9fee-4e4a-9396-8c6d29e22431] received
-INFO 2025-08-18 12:00:08,284 tasks 9540 9852 Obteniendo mediciones para dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:08,441 tasks 9540 9852 Dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:08,443 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2ff0a734-e6f8-41c2-878f-89f81bc4e5c3] received
-INFO 2025-08-18 12:00:08,469 tasks 9540 9852 Obteniendo mediciones para dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:08,524 tasks 9540 9852 Dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1: 0 nuevas, 0 actualizadas
-INFO 2025-08-18 12:00:08,528 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[e453e877-9b2f-49e7-8b76-a012f1ee5e7f] received
-INFO 2025-08-18 12:00:08,555 tasks 9540 9852 Obteniendo mediciones para dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:08,751 tasks 9540 9852 Dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:08,753 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[4d750852-bd99-4672-b616-cb2292459699] received
-INFO 2025-08-18 12:00:08,776 tasks 9540 9852 Obteniendo mediciones para dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:08,978 tasks 9540 9852 Dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:08,981 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5e0603e9-e252-4bb3-b5ee-7f47501cf7c4] received
-INFO 2025-08-18 12:00:09,003 tasks 9540 9852 Obteniendo mediciones para dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:09,180 tasks 9540 9852 Dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:09,182 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[4b7039b1-b53e-4828-b501-c2b06dd116ab] received
-INFO 2025-08-18 12:00:09,208 tasks 9540 9852 Obteniendo mediciones para dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:09,391 tasks 9540 9852 Dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:09,394 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[30668893-4232-41e3-9b5f-6630506ee031] received
-INFO 2025-08-18 12:00:09,423 tasks 9540 9852 Obteniendo mediciones para dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:09,568 tasks 9540 9852 Dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:09,571 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5e4650cf-4ac3-459c-8fa9-9174430f073e] received
-INFO 2025-08-18 12:00:09,592 tasks 9540 9852 Obteniendo mediciones para dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:09,704 tasks 9540 9852 Dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead: 18 nuevas, 42 actualizadas
-INFO 2025-08-18 12:00:09,707 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b68c65a0-3d39-4f4b-ad7b-7a82b9074db0] received
-INFO 2025-08-18 12:00:09,735 tasks 9540 9852 Obteniendo mediciones para dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:09,918 tasks 9540 9852 Dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:09,920 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[050f975b-8bef-44a0-96ad-a9aa5c5bbfb4] received
-INFO 2025-08-18 12:00:09,943 tasks 9540 9852 Obteniendo mediciones para dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:10,172 tasks 9540 9852 Dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:10,174 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3cd45e7c-b558-4355-96e1-f9e11290cab4] received
-INFO 2025-08-18 12:00:10,296 tasks 9540 9852 Obteniendo mediciones para dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:10,482 tasks 9540 9852 Dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:10,485 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[86301027-ab28-4d4f-a5a5-7274853502a9] received
-INFO 2025-08-18 12:00:10,508 tasks 9540 9852 Obteniendo mediciones para dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:10,713 tasks 9540 9852 Dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:10,717 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[ce4ec621-7a0a-4e20-a925-7f2f1edf444c] received
-INFO 2025-08-18 12:00:10,742 tasks 9540 9852 Obteniendo mediciones para dispositivo 29630827-0242-492f-9ed0-a48d120da2ac desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:10,889 tasks 9540 9852 Dispositivo 29630827-0242-492f-9ed0-a48d120da2ac: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:10,891 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[db4be8be-17ea-462b-944c-d5126e059c66] received
-INFO 2025-08-18 12:00:10,916 tasks 9540 9852 Obteniendo mediciones para dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:11,032 tasks 9540 9852 Dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9: 18 nuevas, 42 actualizadas
-INFO 2025-08-18 12:00:11,034 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[df0074ad-8832-4286-870f-84ed2ff88f17] received
-INFO 2025-08-18 12:00:11,057 tasks 9540 9852 Obteniendo mediciones para dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:11,239 tasks 9540 9852 Dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:11,241 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[6fcadccd-57de-4d9a-af61-52f2387e5ed0] received
-INFO 2025-08-18 12:00:11,270 tasks 9540 9852 Obteniendo mediciones para dispositivo 19934344-9c79-482f-b74f-50dde3a6079c desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:11,456 tasks 9540 9852 Dispositivo 19934344-9c79-482f-b74f-50dde3a6079c: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:11,458 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c5e3eb0e-9759-43c3-9860-b85fa3e1b1f3] received
-INFO 2025-08-18 12:00:11,483 tasks 9540 9852 Obteniendo mediciones para dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:11,672 tasks 9540 9852 Dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:11,674 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5d526f75-a4f9-4c49-bc05-016e6a24d489] received
-INFO 2025-08-18 12:00:11,700 tasks 9540 9852 Obteniendo mediciones para dispositivo ada64a56-331c-4489-a02c-7aac55d54111 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:11,849 tasks 9540 9852 Dispositivo ada64a56-331c-4489-a02c-7aac55d54111: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:11,851 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2d99f012-a837-48c0-b156-0a8e498190ab] received
-INFO 2025-08-18 12:00:11,878 tasks 9540 9852 Obteniendo mediciones para dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:11,969 tasks 9540 9852 Dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344: 0 nuevas, 0 actualizadas
-INFO 2025-08-18 12:00:11,971 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[99dbec5a-8184-4516-b9cc-76a8d494e716] received
-INFO 2025-08-18 12:00:11,994 tasks 9540 9852 Obteniendo mediciones para dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879 desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:12,136 tasks 9540 9852 Dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:00:12,138 strategy 9540 9852 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[cd5a6968-ee9f-4957-80f2-da39b72af49b] received
-INFO 2025-08-18 12:00:12,164 tasks 9540 9852 Obteniendo mediciones para dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b desde 2025-08-18 10:00:05.798845-05:00 hasta 2025-08-18 12:00:05.798845-05:00 (hora Colombia)
-INFO 2025-08-18 12:00:12,359 tasks 9540 9852 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 19 nuevas, 41 actualizadas
-INFO 2025-08-18 12:01:35,891 strategy 9540 9852 Task indicators.tasks.generate_report[6a7f3ad3-bc33-4b66-82ba-ffbb53523f74] received
-INFO 2025-08-18 12:01:35,892 tasks 9540 9852 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:01:35,892 tasks 9540 9852 Tarea ID: 6a7f3ad3-bc33-4b66-82ba-ffbb53523f74
-INFO 2025-08-18 12:01:35,892 tasks 9540 9852 Parámetros: 4, inverter, Análisis de Rendimiento, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:01:35,922 tasks 9540 9852 Generando reporte de inversores: Análisis de Rendimiento
-WARNING 2025-08-18 12:01:35,932 tasks 9540 9852 reportlab no disponible, generando CSV en su lugar
-ERROR 2025-08-18 12:01:35,935 tasks 9540 9852 Error generando reporte: name 'os' is not defined
-INFO 2025-08-18 12:01:35,959 strategy 9540 9852 Task indicators.tasks.generate_report[6a7f3ad3-bc33-4b66-82ba-ffbb53523f74] received
-INFO 2025-08-18 12:02:35,958 tasks 9540 34088 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:02:35,958 tasks 9540 34088 Tarea ID: 6a7f3ad3-bc33-4b66-82ba-ffbb53523f74
-INFO 2025-08-18 12:02:35,958 tasks 9540 34088 Parámetros: 4, inverter, Análisis de Rendimiento, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:02:35,994 tasks 9540 34088 Generando reporte de inversores: Análisis de Rendimiento
-WARNING 2025-08-18 12:02:35,998 tasks 9540 34088 reportlab no disponible, generando CSV en su lugar
-ERROR 2025-08-18 12:02:35,999 tasks 9540 34088 Error generando reporte: name 'os' is not defined
-INFO 2025-08-18 12:02:36,003 strategy 9540 9852 Task indicators.tasks.generate_report[6a7f3ad3-bc33-4b66-82ba-ffbb53523f74] received
-INFO 2025-08-18 12:03:36,004 tasks 9540 34088 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:03:36,005 tasks 9540 34088 Tarea ID: 6a7f3ad3-bc33-4b66-82ba-ffbb53523f74
-INFO 2025-08-18 12:03:36,005 tasks 9540 34088 Parámetros: 4, inverter, Análisis de Rendimiento, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:03:36,035 tasks 9540 34088 Generando reporte de inversores: Análisis de Rendimiento
-WARNING 2025-08-18 12:03:36,039 tasks 9540 34088 reportlab no disponible, generando CSV en su lugar
-ERROR 2025-08-18 12:03:36,040 tasks 9540 34088 Error generando reporte: name 'os' is not defined
-INFO 2025-08-18 12:03:36,043 strategy 9540 9852 Task indicators.tasks.generate_report[6a7f3ad3-bc33-4b66-82ba-ffbb53523f74] received
-INFO 2025-08-18 12:04:36,045 tasks 9540 34088 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:04:36,045 tasks 9540 34088 Tarea ID: 6a7f3ad3-bc33-4b66-82ba-ffbb53523f74
-INFO 2025-08-18 12:04:36,045 tasks 9540 34088 Parámetros: 4, inverter, Análisis de Rendimiento, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:04:36,079 tasks 9540 34088 Generando reporte de inversores: Análisis de Rendimiento
-WARNING 2025-08-18 12:04:36,087 tasks 9540 34088 reportlab no disponible, generando CSV en su lugar
-ERROR 2025-08-18 12:04:36,087 tasks 9540 34088 Error generando reporte: name 'os' is not defined
-INFO 2025-08-18 12:05:57,171 strategy 9540 9852 Task indicators.tasks.generate_report[d56ae957-48cc-40b6-9dfa-b603865cf12a] received
-INFO 2025-08-18 12:05:57,172 tasks 9540 9852 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:05:57,173 tasks 9540 9852 Tarea ID: d56ae957-48cc-40b6-9dfa-b603865cf12a
-INFO 2025-08-18 12:05:57,173 tasks 9540 9852 Parámetros: 4, electricMeter, Reporte Integral, daily, 2025-08-01 - 2025-08-18, CSV
-INFO 2025-08-18 12:05:57,203 tasks 9540 9852 Generando reporte de medidores eléctricos: Reporte Integral
-ERROR 2025-08-18 12:05:57,204 tasks 9540 9852 Error generando reporte: name 'ElectricMeterIndicators' is not defined
-INFO 2025-08-18 12:05:57,211 strategy 9540 9852 Task indicators.tasks.generate_report[d56ae957-48cc-40b6-9dfa-b603865cf12a] received
-INFO 2025-08-18 12:06:57,209 tasks 9540 34088 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:06:57,209 tasks 9540 34088 Tarea ID: d56ae957-48cc-40b6-9dfa-b603865cf12a
-INFO 2025-08-18 12:06:57,209 tasks 9540 34088 Parámetros: 4, electricMeter, Reporte Integral, daily, 2025-08-01 - 2025-08-18, CSV
-INFO 2025-08-18 12:06:57,235 tasks 9540 34088 Generando reporte de medidores eléctricos: Reporte Integral
-ERROR 2025-08-18 12:06:57,235 tasks 9540 34088 Error generando reporte: name 'ElectricMeterIndicators' is not defined
-INFO 2025-08-18 12:06:57,239 strategy 9540 9852 Task indicators.tasks.generate_report[d56ae957-48cc-40b6-9dfa-b603865cf12a] received
-INFO 2025-08-18 12:07:57,240 tasks 9540 34088 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:07:57,240 tasks 9540 34088 Tarea ID: d56ae957-48cc-40b6-9dfa-b603865cf12a
-INFO 2025-08-18 12:07:57,240 tasks 9540 34088 Parámetros: 4, electricMeter, Reporte Integral, daily, 2025-08-01 - 2025-08-18, CSV
-INFO 2025-08-18 12:07:57,269 tasks 9540 34088 Generando reporte de medidores eléctricos: Reporte Integral
-ERROR 2025-08-18 12:07:57,269 tasks 9540 34088 Error generando reporte: name 'ElectricMeterIndicators' is not defined
-INFO 2025-08-18 12:07:57,273 strategy 9540 9852 Task indicators.tasks.generate_report[d56ae957-48cc-40b6-9dfa-b603865cf12a] received
-INFO 2025-08-18 12:08:57,274 tasks 9540 34088 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:08:57,274 tasks 9540 34088 Tarea ID: d56ae957-48cc-40b6-9dfa-b603865cf12a
-INFO 2025-08-18 12:08:57,274 tasks 9540 34088 Parámetros: 4, electricMeter, Reporte Integral, daily, 2025-08-01 - 2025-08-18, CSV
-INFO 2025-08-18 12:08:57,304 tasks 9540 34088 Generando reporte de medidores eléctricos: Reporte Integral
-ERROR 2025-08-18 12:08:57,305 tasks 9540 34088 Error generando reporte: name 'ElectricMeterIndicators' is not defined
-INFO 2025-08-18 12:17:15,820 tasks 28952 23436 Generando reporte de medidores eléctricos: Resumen de Consumo
-INFO 2025-08-18 12:17:34,349 tasks 22716 25208 Generando reporte de medidores eléctricos: Reporte Integral
-INFO 2025-08-18 12:18:24,837 tasks 6600 25348 Generando reporte de medidores eléctricos: Reporte Integral
-INFO 2025-08-18 12:18:31,099 tasks 17884 34068 Generando reporte de medidores eléctricos: Reporte Integral
-INFO 2025-08-18 12:18:36,588 tasks 28440 34300 Generando reporte de medidores eléctricos: Reporte Integral
-WARNING 2025-08-18 12:18:36,730 tasks 28440 34300 openpyxl no disponible, generando CSV en su lugar
-INFO 2025-08-18 12:18:43,886 tasks 30572 14952 Generando reporte de medidores eléctricos: Reporte Integral
-WARNING 2025-08-18 12:18:43,928 tasks 30572 14952 reportlab no disponible, generando CSV en su lugar
-INFO 2025-08-18 12:20:27,632 connection 34724 34688 Connected to redis://localhost:6379/0
-INFO 2025-08-18 12:20:27,638 mingle 34724 34688 mingle: searching for neighbors
-INFO 2025-08-18 12:20:28,648 mingle 34724 34688 mingle: all alone
-INFO 2025-08-18 12:21:39,778 strategy 34724 34688 Task indicators.tasks.generate_report[c70dd128-b1fb-4e9b-818d-c20982f7d4b3] received
-INFO 2025-08-18 12:21:39,786 tasks 34724 34688 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:21:39,786 tasks 34724 34688 Tarea ID: c70dd128-b1fb-4e9b-818d-c20982f7d4b3
-INFO 2025-08-18 12:21:39,787 tasks 34724 34688 Parámetros: 2, electricMeter, Resumen de Consumo, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:21:39,831 tasks 34724 34688 Generando reporte de medidores eléctricos: Resumen de Consumo
-ERROR 2025-08-18 12:21:39,833 tasks 34724 34688 Error generando reporte: Field 'id' expected a number but got '348b47aa-b285-4948-a9fb-a57bc38cedf1'.
-INFO 2025-08-18 12:21:39,913 strategy 34724 34688 Task indicators.tasks.generate_report[c70dd128-b1fb-4e9b-818d-c20982f7d4b3] received
-INFO 2025-08-18 12:22:39,870 tasks 34724 17600 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:22:39,870 tasks 34724 17600 Tarea ID: c70dd128-b1fb-4e9b-818d-c20982f7d4b3
-INFO 2025-08-18 12:22:39,870 tasks 34724 17600 Parámetros: 2, electricMeter, Resumen de Consumo, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:22:39,906 tasks 34724 17600 Generando reporte de medidores eléctricos: Resumen de Consumo
-ERROR 2025-08-18 12:22:39,906 tasks 34724 17600 Error generando reporte: Field 'id' expected a number but got '348b47aa-b285-4948-a9fb-a57bc38cedf1'.
-INFO 2025-08-18 12:22:39,910 strategy 34724 34688 Task indicators.tasks.generate_report[c70dd128-b1fb-4e9b-818d-c20982f7d4b3] received
-INFO 2025-08-18 12:23:14,566 tasks 31736 24548 Generando reporte de medidores eléctricos: Reporte Integral
-INFO 2025-08-18 12:23:14,566 tasks 31736 24548 Parámetros: institution_id=4, devices=[], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
-INFO 2025-08-18 12:23:14,567 tasks 31736 24548 No se aplicó filtro de dispositivos - parámetro vacío o inválido
-INFO 2025-08-18 12:23:20,629 tasks 34612 2576 Generando reporte de medidores eléctricos: Reporte Integral
-INFO 2025-08-18 12:23:20,629 tasks 34612 2576 Parámetros: institution_id=4, devices=[1, 2], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
-INFO 2025-08-18 12:23:20,631 tasks 34612 2576 Filtro de dispositivos aplicado: [1, 2]
-INFO 2025-08-18 12:23:31,902 tasks 20772 15868 Generando reporte de medidores eléctricos: Reporte Integral
-INFO 2025-08-18 12:23:31,902 tasks 20772 15868 Parámetros: institution_id=4, devices=[19, 20], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
-INFO 2025-08-18 12:23:31,903 tasks 20772 15868 Filtro de dispositivos aplicado: [19, 20]
-INFO 2025-08-18 12:23:39,910 tasks 34724 17600 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:23:39,910 tasks 34724 17600 Tarea ID: c70dd128-b1fb-4e9b-818d-c20982f7d4b3
-INFO 2025-08-18 12:23:39,910 tasks 34724 17600 Parámetros: 2, electricMeter, Resumen de Consumo, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:23:39,944 tasks 34724 17600 Generando reporte de medidores eléctricos: Resumen de Consumo
-ERROR 2025-08-18 12:23:39,945 tasks 34724 17600 Error generando reporte: Field 'id' expected a number but got '348b47aa-b285-4948-a9fb-a57bc38cedf1'.
-INFO 2025-08-18 12:23:39,948 strategy 34724 34688 Task indicators.tasks.generate_report[c70dd128-b1fb-4e9b-818d-c20982f7d4b3] received
-INFO 2025-08-18 12:23:40,333 strategy 34724 34688 Task indicators.tasks.generate_report[2f8dba21-aa64-42c8-b1cb-7b3831bf67b2] received
-INFO 2025-08-18 12:23:40,334 tasks 34724 34688 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:23:40,334 tasks 34724 34688 Tarea ID: 2f8dba21-aa64-42c8-b1cb-7b3831bf67b2
-INFO 2025-08-18 12:23:40,334 tasks 34724 34688 Parámetros: 4, electricMeter, Reporte Integral, daily, 2025-08-01 - 2025-08-18, CSV
-INFO 2025-08-18 12:23:40,476 tasks 34724 34688 Generando reporte de medidores eléctricos: Reporte Integral
-INFO 2025-08-18 12:23:40,482 tasks 34724 34688 Reporte generado exitosamente: reports\reporte_Reporte_Integral_20250818_122340_2f8dba21.csv
-INFO 2025-08-18 12:24:39,951 tasks 34724 17600 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:24:39,952 tasks 34724 17600 Tarea ID: c70dd128-b1fb-4e9b-818d-c20982f7d4b3
-INFO 2025-08-18 12:24:39,953 tasks 34724 17600 Parámetros: 2, electricMeter, Resumen de Consumo, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:24:39,991 tasks 34724 17600 Generando reporte de medidores eléctricos: Resumen de Consumo
-ERROR 2025-08-18 12:24:39,992 tasks 34724 17600 Error generando reporte: Field 'id' expected a number but got '348b47aa-b285-4948-a9fb-a57bc38cedf1'.
-INFO 2025-08-18 12:27:03,325 connection 15216 27608 Connected to redis://localhost:6379/0
-INFO 2025-08-18 12:27:03,327 mingle 15216 27608 mingle: searching for neighbors
-INFO 2025-08-18 12:27:04,348 mingle 15216 27608 mingle: all alone
-INFO 2025-08-18 12:28:21,128 strategy 15216 27608 Task indicators.tasks.generate_report[82f1666c-e936-4bbb-8072-8358e0d9dc54] received
-INFO 2025-08-18 12:28:21,134 tasks 15216 27608 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:28:21,134 tasks 15216 27608 Tarea ID: 82f1666c-e936-4bbb-8072-8358e0d9dc54
-INFO 2025-08-18 12:28:21,134 tasks 15216 27608 Parámetros: 1, electricMeter, Resumen de Consumo, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:28:21,178 tasks 15216 27608 Generando reporte de medidores eléctricos: Resumen de Consumo
-INFO 2025-08-18 12:28:21,179 tasks 15216 27608 Parámetros: institution_id=1, devices=['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d'], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
-WARNING 2025-08-18 12:28:21,182 tasks 15216 27608 Error convirtiendo IDs de dispositivos: invalid literal for int() with base 10: '19934344-9c79-482f-b74f-50dde3a6079c'. Dispositivos: ['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d']
-WARNING 2025-08-18 12:28:21,187 tasks 15216 27608 reportlab no disponible, generando CSV en su lugar
-INFO 2025-08-18 12:28:21,190 tasks 15216 27608 Reporte generado exitosamente: reports\reporte_Resumen_de_Consumo_20250818_122821_82f1666c.pdf
-INFO 2025-08-18 12:31:28,696 tasks 14432 8820 Generando reporte de medidores eléctricos: Reporte Integral
-INFO 2025-08-18 12:31:28,696 tasks 14432 8820 Parámetros: institution_id=4, devices=[19, 20], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
-INFO 2025-08-18 12:31:28,697 tasks 14432 8820 Filtro de dispositivos aplicado: [19, 20]
-INFO 2025-08-18 12:31:35,804 tasks 11840 34932 Generando reporte de medidores eléctricos: Reporte Integral
-INFO 2025-08-18 12:31:35,804 tasks 11840 34932 Parámetros: institution_id=4, devices=[19, 20], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
-INFO 2025-08-18 12:31:35,805 tasks 11840 34932 Filtro de dispositivos aplicado: [19, 20]
-INFO 2025-08-18 12:34:00,739 connection 23364 33444 Connected to redis://localhost:6379/0
-INFO 2025-08-18 12:34:00,741 mingle 23364 33444 mingle: searching for neighbors
-INFO 2025-08-18 12:34:01,765 mingle 23364 33444 mingle: all alone
-INFO 2025-08-18 12:34:37,507 strategy 23364 33444 Task indicators.tasks.generate_report[e5fcaac3-1f60-4439-b9e2-88f30795a556] received
-INFO 2025-08-18 12:34:37,517 tasks 23364 33444 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:34:37,517 tasks 23364 33444 Tarea ID: e5fcaac3-1f60-4439-b9e2-88f30795a556
-INFO 2025-08-18 12:34:37,517 tasks 23364 33444 Parámetros: 1, electricMeter, Resumen de Consumo, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:34:37,563 tasks 23364 33444 Generando reporte de medidores eléctricos: Resumen de Consumo
-INFO 2025-08-18 12:34:37,563 tasks 23364 33444 Parámetros: institution_id=1, devices=['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d'], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
-WARNING 2025-08-18 12:34:37,566 tasks 23364 33444 Error convirtiendo IDs de dispositivos: invalid literal for int() with base 10: '19934344-9c79-482f-b74f-50dde3a6079c'. Dispositivos: ['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d']
-INFO 2025-08-18 12:34:37,723 tasks 23364 33444 Reporte generado exitosamente: reports\reporte_Resumen_de_Consumo_20250818_123437_e5fcaac3.pdf
-INFO 2025-08-18 12:35:00,710 strategy 23364 33444 Task indicators.tasks.generate_report[8bcd8b80-52a3-47d1-b35c-50ac5e0b40ce] received
-INFO 2025-08-18 12:35:00,712 tasks 23364 33444 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:35:00,712 tasks 23364 33444 Tarea ID: 8bcd8b80-52a3-47d1-b35c-50ac5e0b40ce
-INFO 2025-08-18 12:35:00,712 tasks 23364 33444 Parámetros: 1, electricMeter, Resumen de Consumo, daily, 2025-08-01 - 2025-08-18, CSV
-INFO 2025-08-18 12:35:00,752 tasks 23364 33444 Generando reporte de medidores eléctricos: Resumen de Consumo
-INFO 2025-08-18 12:35:00,752 tasks 23364 33444 Parámetros: institution_id=1, devices=['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d'], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
-WARNING 2025-08-18 12:35:00,753 tasks 23364 33444 Error convirtiendo IDs de dispositivos: invalid literal for int() with base 10: '19934344-9c79-482f-b74f-50dde3a6079c'. Dispositivos: ['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d']
-INFO 2025-08-18 12:35:00,760 tasks 23364 33444 Reporte generado exitosamente: reports\reporte_Resumen_de_Consumo_20250818_123500_8bcd8b80.csv
-INFO 2025-08-18 12:35:23,310 strategy 23364 33444 Task indicators.tasks.generate_report[601cfc25-15b6-4f0e-962f-a2982c902251] received
-INFO 2025-08-18 12:35:23,312 tasks 23364 33444 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:35:23,312 tasks 23364 33444 Tarea ID: 601cfc25-15b6-4f0e-962f-a2982c902251
-INFO 2025-08-18 12:35:23,312 tasks 23364 33444 Parámetros: 1, electricMeter, Análisis de Demanda, daily, 2025-08-01 - 2025-08-18, CSV
-INFO 2025-08-18 12:35:23,350 tasks 23364 33444 Generando reporte de medidores eléctricos: Análisis de Demanda
-INFO 2025-08-18 12:35:23,351 tasks 23364 33444 Parámetros: institution_id=1, devices=['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d'], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
-WARNING 2025-08-18 12:35:23,351 tasks 23364 33444 Error convirtiendo IDs de dispositivos: invalid literal for int() with base 10: '19934344-9c79-482f-b74f-50dde3a6079c'. Dispositivos: ['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d']
-INFO 2025-08-18 12:35:23,359 tasks 23364 33444 Reporte generado exitosamente: reports\reporte_Análisis_de_Demanda_20250818_123523_601cfc25.csv
-INFO 2025-08-18 12:35:37,278 strategy 23364 33444 Task indicators.tasks.generate_report[1163da58-801d-478d-8648-de02890bcf11] received
-INFO 2025-08-18 12:35:37,280 tasks 23364 33444 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:35:37,280 tasks 23364 33444 Tarea ID: 1163da58-801d-478d-8648-de02890bcf11
-INFO 2025-08-18 12:35:37,280 tasks 23364 33444 Parámetros: 1, electricMeter, Análisis de Demanda, daily, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:35:37,318 tasks 23364 33444 Generando reporte de medidores eléctricos: Análisis de Demanda
-INFO 2025-08-18 12:35:37,318 tasks 23364 33444 Parámetros: institution_id=1, devices=['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d'], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
-WARNING 2025-08-18 12:35:37,319 tasks 23364 33444 Error convirtiendo IDs de dispositivos: invalid literal for int() with base 10: '19934344-9c79-482f-b74f-50dde3a6079c'. Dispositivos: ['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d']
-INFO 2025-08-18 12:35:37,336 tasks 23364 33444 Reporte generado exitosamente: reports\reporte_Análisis_de_Demanda_20250818_123537_1163da58.pdf
-INFO 2025-08-18 12:37:48,760 strategy 23364 33444 Task indicators.tasks.generate_report[e2d80966-e01e-4109-9ffb-400298adb05b] received
-INFO 2025-08-18 12:37:48,762 tasks 23364 33444 === INICIANDO GENERACIÓN DE REPORTE ===
-INFO 2025-08-18 12:37:48,762 tasks 23364 33444 Tarea ID: e2d80966-e01e-4109-9ffb-400298adb05b
-INFO 2025-08-18 12:37:48,763 tasks 23364 33444 Parámetros: 1, electricMeter, Reporte Integral, monthly, 2025-08-01 - 2025-08-18, PDF
-INFO 2025-08-18 12:37:48,795 tasks 23364 33444 Generando reporte de medidores eléctricos: Reporte Integral
-INFO 2025-08-18 12:37:48,795 tasks 23364 33444 Parámetros: institution_id=1, devices=['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d', '0f7648d7-7575-4419-8192-a4f80b55309b', '1da46bc5-1655-4ba1-82c2-0b283370a97b'], time_range=monthly, start_date=2025-08-01, end_date=2025-08-18
-WARNING 2025-08-18 12:37:48,795 tasks 23364 33444 Error convirtiendo IDs de dispositivos: invalid literal for int() with base 10: '19934344-9c79-482f-b74f-50dde3a6079c'. Dispositivos: ['19934344-9c79-482f-b74f-50dde3a6079c', '7ba9fa00-7ef9-4246-8c30-85ea56088e0d', '0f7648d7-7575-4419-8192-a4f80b55309b', '1da46bc5-1655-4ba1-82c2-0b283370a97b']
-INFO 2025-08-18 12:37:48,804 tasks 23364 33444 Reporte generado exitosamente: reports\reporte_Reporte_Integral_20250818_123748_e2d80966.pdf
+INFO 2025-08-18 15:23:11,129 tasks 23364 33444 Dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9: 11 nuevas, 1429 actualizadas
+INFO 2025-08-18 15:23:11,132 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b5c79ab3-33f0-433f-af81-636c3fab2b87] received
+INFO 2025-08-18 15:23:11,157 tasks 23364 33444 Obteniendo mediciones para dispositivo 673f11ce-77da-4839-8498-a5948d984d8c desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:12,948 tasks 23364 33444 Dispositivo 673f11ce-77da-4839-8498-a5948d984d8c: 11 nuevas, 1429 actualizadas
+INFO 2025-08-18 15:23:12,950 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[ab051654-62fc-4822-b749-6126b16da0aa] received
+INFO 2025-08-18 15:23:12,974 tasks 23364 33444 Obteniendo mediciones para dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9 desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:13,752 tasks 23364 33444 Dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9: 11 nuevas, 773 actualizadas
+INFO 2025-08-18 15:23:13,755 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[d6970b75-2ff7-4ba8-9475-6f6a8bed9674] received
+INFO 2025-08-18 15:23:13,777 tasks 23364 33444 Obteniendo mediciones para dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:15,481 tasks 23364 33444 Dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b: 11 nuevas, 1429 actualizadas
+INFO 2025-08-18 15:23:15,484 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a33f59cf-2da8-441e-a8aa-f6d5351eccf4] received
+INFO 2025-08-18 15:23:15,507 tasks 23364 33444 Obteniendo mediciones para dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1 desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:15,601 tasks 23364 33444 Dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1: 0 nuevas, 0 actualizadas
+INFO 2025-08-18 15:23:15,610 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[753c4fd8-fc4f-4916-98c8-f0c533d7b29e] received
+INFO 2025-08-18 15:23:15,634 tasks 23364 33444 Obteniendo mediciones para dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385 desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:17,357 tasks 23364 33444 Dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385: 11 nuevas, 1429 actualizadas
+INFO 2025-08-18 15:23:17,361 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[80e4989d-86c8-477a-a264-5b57b280e265] received
+INFO 2025-08-18 15:23:17,383 tasks 23364 33444 Obteniendo mediciones para dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:19,046 tasks 23364 33444 Dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a: 11 nuevas, 1429 actualizadas
+INFO 2025-08-18 15:23:19,048 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[be44bc3a-0779-4b13-9929-42ebb1f3b505] received
+INFO 2025-08-18 15:23:19,179 tasks 23364 33444 Obteniendo mediciones para dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:20,933 tasks 23364 33444 Dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c: 11 nuevas, 1428 actualizadas
+INFO 2025-08-18 15:23:20,936 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[f5b3e25f-5c93-47ce-b365-9760ed883ceb] received
+INFO 2025-08-18 15:23:20,962 tasks 23364 33444 Obteniendo mediciones para dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:22,626 tasks 23364 33444 Dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb: 11 nuevas, 1429 actualizadas
+INFO 2025-08-18 15:23:22,629 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[6c65814a-55d2-491f-87b3-77634f837e50] received
+INFO 2025-08-18 15:23:22,652 tasks 23364 33444 Obteniendo mediciones para dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:23,421 tasks 23364 33444 Dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d: 12 nuevas, 772 actualizadas
+INFO 2025-08-18 15:23:23,425 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b763d3b2-c052-4bf0-8c9f-0610bf310f27] received
+INFO 2025-08-18 15:23:23,448 tasks 23364 33444 Obteniendo mediciones para dispositivo ada64a56-331c-4489-a02c-7aac55d54111 desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:24,824 tasks 23364 33444 Dispositivo ada64a56-331c-4489-a02c-7aac55d54111: 12 nuevas, 1428 actualizadas
+INFO 2025-08-18 15:23:24,827 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[14ea3c55-1b4d-448b-aa6a-49dc3856eaa6] received
+INFO 2025-08-18 15:23:24,850 tasks 23364 33444 Obteniendo mediciones para dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:26,105 tasks 23364 33444 Dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead: 12 nuevas, 1352 actualizadas
+INFO 2025-08-18 15:23:26,109 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[dd422b81-ecc3-4407-a849-8422658b61df] received
+INFO 2025-08-18 15:23:26,131 tasks 23364 33444 Obteniendo mediciones para dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3 desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:27,920 tasks 23364 33444 Dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3: 11 nuevas, 1428 actualizadas
+INFO 2025-08-18 15:23:27,923 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2597c953-00b7-4f08-a86f-24bb9eeb10bb] received
+INFO 2025-08-18 15:23:27,945 tasks 23364 33444 Obteniendo mediciones para dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344 desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:28,009 tasks 23364 33444 Dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344: 0 nuevas, 0 actualizadas
+INFO 2025-08-18 15:23:28,015 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[66bc4a33-f817-4d20-8d3d-ac1c1329db47] received
+INFO 2025-08-18 15:23:28,044 tasks 23364 33444 Obteniendo mediciones para dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879 desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:29,440 tasks 23364 33444 Dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879: 12 nuevas, 1428 actualizadas
+INFO 2025-08-18 15:23:29,443 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[af95d0a2-6064-4c66-8f6e-e8e4375af95f] received
+INFO 2025-08-18 15:23:29,464 tasks 23364 33444 Obteniendo mediciones para dispositivo 46094855-4fe6-4c10-afe3-444a101719e2 desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:31,823 tasks 23364 33444 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 20 nuevas, 2693 actualizadas
+INFO 2025-08-18 15:23:31,826 strategy 23364 33444 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3684b130-cdee-41db-86cf-c407381b86e7] received
+INFO 2025-08-18 15:23:31,847 tasks 23364 33444 Obteniendo mediciones para dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b desde 2025-08-16 15:22:40.693450-05:00 hasta 2025-08-18 15:22:40.693450-05:00 (hora Colombia)
+INFO 2025-08-18 15:23:33,583 tasks 23364 33444 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 11 nuevas, 1429 actualizadas
+INFO 2025-08-18 15:33:34,663 connection 37880 37152 Connected to redis://localhost:6379/0
+INFO 2025-08-18 15:33:34,668 mingle 37880 37152 mingle: searching for neighbors
+INFO 2025-08-18 15:33:35,678 mingle 37880 37152 mingle: all alone
+INFO 2025-08-18 15:36:21,866 strategy 37880 37152 Task indicators.tasks.generate_report[0e5a3920-04da-4bcd-b195-d639a208c03a] received
+INFO 2025-08-18 15:36:21,869 tasks 37880 37152 === INICIANDO GENERACIÓN DE REPORTE ===
+INFO 2025-08-18 15:36:21,869 tasks 37880 37152 Tarea ID: 0e5a3920-04da-4bcd-b195-d639a208c03a
+INFO 2025-08-18 15:36:21,870 tasks 37880 37152 Parámetros: 1, electricMeter, Reporte Integral, daily, 2025-08-01 - 2025-08-18, PDF
+INFO 2025-08-18 15:36:21,908 tasks 37880 37152 Generando reporte de medidores eléctricos: Reporte Integral
+INFO 2025-08-18 15:36:21,908 tasks 37880 37152 Parámetros: institution_id=1, devices=['7ba9fa00-7ef9-4246-8c30-85ea56088e0d', '1da46bc5-1655-4ba1-82c2-0b283370a97b'], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
+WARNING 2025-08-18 15:36:21,910 tasks 37880 37152 Error convirtiendo IDs de dispositivos: invalid literal for int() with base 10: '7ba9fa00-7ef9-4246-8c30-85ea56088e0d'. Dispositivos: ['7ba9fa00-7ef9-4246-8c30-85ea56088e0d', '1da46bc5-1655-4ba1-82c2-0b283370a97b']
+INFO 2025-08-18 15:36:22,466 tasks 37880 37152 Reporte generado exitosamente: reports\reporte_Reporte_Integral_20250818_153621_0e5a3920.pdf
+INFO 2025-08-18 15:37:49,958 strategy 37880 37152 Task indicators.tasks.generate_report[7cd0d1a3-4aee-498a-af5c-d8e938984f38] received
+INFO 2025-08-18 15:37:49,959 tasks 37880 37152 === INICIANDO GENERACIÓN DE REPORTE ===
+INFO 2025-08-18 15:37:49,959 tasks 37880 37152 Tarea ID: 7cd0d1a3-4aee-498a-af5c-d8e938984f38
+INFO 2025-08-18 15:37:49,959 tasks 37880 37152 Parámetros: 1, electricMeter, Reporte Integral, daily, 2025-08-01 - 2025-08-18, PDF
+INFO 2025-08-18 15:37:49,986 tasks 37880 37152 Generando reporte de medidores eléctricos: Reporte Integral
+INFO 2025-08-18 15:37:49,986 tasks 37880 37152 Parámetros: institution_id=1, devices=['7ba9fa00-7ef9-4246-8c30-85ea56088e0d', '1da46bc5-1655-4ba1-82c2-0b283370a97b'], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
+WARNING 2025-08-18 15:37:49,986 tasks 37880 37152 Error convirtiendo IDs de dispositivos: invalid literal for int() with base 10: '7ba9fa00-7ef9-4246-8c30-85ea56088e0d'. Dispositivos: ['7ba9fa00-7ef9-4246-8c30-85ea56088e0d', '1da46bc5-1655-4ba1-82c2-0b283370a97b']
+INFO 2025-08-18 15:37:50,162 tasks 37880 37152 Reporte generado exitosamente: reports\reporte_Reporte_Integral_20250818_153749_7cd0d1a3.pdf
+INFO 2025-08-18 15:40:16,111 strategy 37880 37152 Task indicators.tasks.generate_report[89889bf2-7d4e-42d8-a2a6-a859212ef48d] received
+INFO 2025-08-18 15:40:16,112 tasks 37880 37152 === INICIANDO GENERACIÓN DE REPORTE ===
+INFO 2025-08-18 15:40:16,112 tasks 37880 37152 Tarea ID: 89889bf2-7d4e-42d8-a2a6-a859212ef48d
+INFO 2025-08-18 15:40:16,112 tasks 37880 37152 Parámetros: 5, inverter, Reporte de Anomalías, daily, 2025-08-01 - 2025-08-18, PDF
+INFO 2025-08-18 15:40:16,146 tasks 37880 37152 Generando reporte de inversores: Reporte de Anomalías
+INFO 2025-08-18 15:40:16,146 tasks 37880 37152 Parámetros: institution_id=5, devices=[11], time_range=daily, start_date=2025-08-01, end_date=2025-08-18
+INFO 2025-08-18 15:40:16,147 tasks 37880 37152 Filtro de dispositivos aplicado: [11]
+INFO 2025-08-18 15:40:16,310 tasks 37880 37152 Reporte generado exitosamente: reports\reporte_Reporte_de_Anomalías_20250818_154016_89889bf2.pdf

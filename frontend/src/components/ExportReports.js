@@ -8,6 +8,7 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [exportProgress, setExportProgress] = useState(0);
+  const [reportProgress, setReportProgress] = useState({}); // Progreso individual por reporte
  
   // Estados para datos de la API
   const [institutions, setInstitutions] = useState([]);
@@ -262,6 +263,12 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
     setLoading(true);
     setExportProgress(0);
     setError(null);
+    
+    // Mostrar progreso inicial rápido
+    setExportProgress(25);
+    setTimeout(() => setExportProgress(50), 100);
+    setTimeout(() => setExportProgress(75), 200);
+    setTimeout(() => setExportProgress(90), 300);
 
     try {
       // Llamada real a la API para generar reporte
@@ -289,9 +296,13 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
       
       if (result.success) {
         // Mostrar mensaje de éxito
-        showTransitionAnimation('success', `Generación de reporte iniciada exitosamente!`, 3000);
+        showTransitionAnimation('success', `Generación de reporte iniciada exitosamente! El reporte se generará en segundo plano.`, 4000);
         
-        // Iniciar monitoreo del estado
+        // Ocultar el loader inmediatamente después del éxito
+        setLoading(false);
+        setExportProgress(0);
+        
+        // Iniciar monitoreo del estado en segundo plano
         monitorReportStatus(result.task_id);
         
         // Agregar a la lista de reportes previos
@@ -333,13 +344,18 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
 
         const statusInfo = await response.json();
         
-        // Actualizar progreso
-        setExportProgress(statusInfo.progress);
+        // Actualizar progreso individual del reporte
+        setReportProgress(prev => ({
+          ...prev,
+          [taskId]: statusInfo.progress
+        }));
         
         if (statusInfo.status === 'completed') {
           // Reporte completado
-          setLoading(false);
-          setExportProgress(100);
+          setReportProgress(prev => ({
+            ...prev,
+            [taskId]: 100
+          }));
           
           // Descargar archivo automáticamente
           downloadReport(taskId);
@@ -355,8 +371,10 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
           
         } else if (statusInfo.status === 'failed') {
           // Reporte falló
-          setLoading(false);
-          setExportProgress(0);
+          setReportProgress(prev => ({
+            ...prev,
+            [taskId]: 0
+          }));
           setError(`Error al generar reporte: ${statusInfo.error}`);
           
           // Actualizar estado en la lista
@@ -831,11 +849,11 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
           </div>
         </div>
 
-        {/* Barra de progreso */}
-        {loading && (
+        {/* Barra de progreso - Solo se muestra brevemente durante la generación inicial */}
+        {loading && exportProgress > 0 && exportProgress < 100 && (
           <div className="mt-4 lg:mt-6">
             <div className="flex items-center justify-between text-xs lg:text-sm text-gray-600 mb-2">
-              <span>Generando reporte...</span>
+              <span>Iniciando generación de reporte...</span>
               <span>{exportProgress}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -843,6 +861,9 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${exportProgress}%` }}
               ></div>
+            </div>
+            <div className="text-xs text-gray-500 mt-2 text-center">
+              El reporte se generará en segundo plano. Puedes continuar trabajando mientras se procesa.
             </div>
           </div>
         )}
@@ -884,6 +905,19 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
           </svg>
           Reportes Generados
         </h2>
+        
+        {/* Mensaje informativo sobre el nuevo comportamiento */}
+        <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="text-sm text-blue-800">
+              <p className="font-medium">Generación en segundo plano</p>
+              <p className="text-xs mt-1">Los reportes se generan automáticamente en segundo plano. Puedes continuar trabajando mientras se procesan. El progreso se muestra en la columna "Estado".</p>
+            </div>
+          </div>
+        </div>
         
         {loadingExports ? (
           <div className="flex justify-center py-6 lg:py-8">
@@ -952,11 +986,23 @@ function ExportReports({ authToken, onLogout, username, isSuperuser, navigateTo,
                         </span>
                       </td>
                       <td className="px-3 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
-                        <span className={`px-2 lg:px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          exportItem.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
-                        }`}>
-                          {exportItem.status}
-                        </span>
+                        <div className="flex flex-col space-y-1">
+                          <span className={`px-2 lg:px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            exportItem.status === 'Completed' ? 'bg-green-100 text-green-800' : 
+                            exportItem.status === 'Failed' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'
+                          }`}>
+                            {exportItem.status}
+                          </span>
+                          {/* Mostrar barra de progreso para reportes en proceso */}
+                          {exportItem.status === 'Pending' && reportProgress[exportItem.id] !== undefined && (
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300 ease-out"
+                                style={{ width: `${reportProgress[exportItem.id]}%` }}
+                              ></div>
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-3 lg:px-6 py-3 lg:py-4 whitespace-nowrap text-xs lg:text-sm text-gray-500">
                         <div>{exportItem.fileSize}</div>

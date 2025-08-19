@@ -28,8 +28,7 @@ function App() {
     return savedSidebarState ? JSON.parse(savedSidebarState) : false;
   });
 
-  // Estado para controlar si se debe mostrar la animación de cierre de sesión
-  const [showLogoutAnimation, setShowLogoutAnimation] = useState(false);
+
 
   // Maneja el éxito en el login: guarda los datos en el estado y en localStorage
   const handleLoginSuccess = (token, user, superuser) => {
@@ -55,13 +54,9 @@ function App() {
     setCurrentPage('login'); // Redirige a la vista de login
   };
 
-  // Muestra una animación antes de cerrar sesión definitivamente
+  // Cierra sesión directamente
   const handleLogoutWithAnimation = () => {
-    setShowLogoutAnimation(true); // Activa el overlay animado
-    setTimeout(() => {
-      performLogout(); // Ejecuta el cierre real de sesión
-      setShowLogoutAnimation(false); // Desactiva el overlay (aunque ya cambia la vista)
-    }, 1500); // Duración de la animación (1.5 segundos)
+    performLogout(); // Ejecuta el cierre de sesión directamente
   };
 
   // Cambia de vista dentro de la aplicación
@@ -141,15 +136,7 @@ function App() {
         {renderPageContent()} {/* Renderiza el componente correspondiente */}
       </main>
 
-      {/* Overlay animado mostrado al cerrar sesión */}
-      {showLogoutAnimation && (
-          <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
-              <div className="flex flex-col items-center">
-                  <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-red-500"></div>
-                  <p className="mt-4 text-lg text-gray-700">Cerrando sesión...</p>
-              </div>
-          </div>
-      )}
+
     </div>
   );
 }

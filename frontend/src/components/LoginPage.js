@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import sivetLogo from './sivet-logo.svg';
 import background from './bg.png';
 import TransitionOverlay from './TransitionOverlay';
+import { fetchWithAuth, handleApiResponse } from '../utils/apiConfig';
 
 function LoginPage({ onLoginSuccess }) {
     const [username, setUsername] = useState('');
@@ -31,46 +32,48 @@ function LoginPage({ onLoginSuccess }) {
         setTransitionMessage('Iniciando sesión...');
 
         try {
-            const response = await fetch('/auth/login/', {
+            // Usar fetchWithAuth para manejo automático de errores
+            const data = await fetchWithAuth('/auth/login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ username, password }),
+            }, (authError) => {
+                // Callback para errores de autenticación
+                setMessage({ text: authError, type: 'error' });
+                setShowTransition(false);
             });
 
-            let data;
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                setMessage({ text: 'Error del servidor: Respuesta inesperada. (¿Está el backend funcionando?)', type: 'error' });
-                console.error('Error parsing JSON:', jsonError);
-                console.error('Server response:', await response.text());
-                setLoading(false);
+            // Si llegamos aquí, el login fue exitoso
+            console.log('Login exitoso, datos recibidos:', data);
+            setMessage({ text: 'Inicio exitoso. Redireccionando...', type: 'success' });
+            setTransitionType('success');
+            setTransitionMessage('Inicio exitoso. Redireccionando...');
+            
+            setTimeout(() => {
                 setShowTransition(false);
-                return;
-            }
+                console.log('Llamando a onLoginSuccess con:', data.access_token, data.username, data.is_superuser);
+                onLoginSuccess(data.access_token, data.username, data.is_superuser);
+            }, 1500);
 
-            if (response.ok) {
-                console.log('Login exitoso, datos recibidos:', data);
-                setMessage({ text: 'Inicio exitoso. Redireccionando...', type: 'success' });
-                setTransitionType('success');
-                setTransitionMessage('Inicio exitoso. Redireccionando...');
-                
-                setTimeout(() => {
-                    setShowTransition(false);
-                    console.log('Llamando a onLoginSuccess con:', data.access_token, data.username, data.is_superuser);
-                    onLoginSuccess(data.access_token, data.username, data.is_superuser);
-                }, 1500);
-            } else {
-                const errorMessage = data.non_field_errors ? data.non_field_errors[0] : 'Credenciales inválidas. Inténtalo de nuevo.';
-                setMessage({ text: errorMessage, type: 'error' });
-                setShowTransition(false);
-            }
         } catch (error) {
-            setMessage({ text: 'Error de red. Inténtalo de nuevo más tarde.', type: 'error' });
-            console.error('Error de login:', error);
+            // Manejar errores específicos del nuevo sistema de autenticación
+            let errorMessage = 'Error de red. Inténtalo de nuevo más tarde.';
+            
+            if (error.message.includes('Cuenta bloqueada')) {
+                errorMessage = 'Tu cuenta está temporalmente bloqueada. Intenta más tarde.';
+            } else if (error.message.includes('Cambio de contraseña requerido')) {
+                errorMessage = 'Debes cambiar tu contraseña antes de continuar.';
+            } else if (error.message.includes('Credenciales inválidas')) {
+                errorMessage = 'Usuario o contraseña incorrectos.';
+            } else if (error.message.includes('Usuario inactivo')) {
+                errorMessage = 'Tu cuenta ha sido desactivada. Contacta al administrador.';
+            }
+            
+            setMessage({ text: errorMessage, type: 'error' });
             setShowTransition(false);
+            console.error('Error de login:', error);
         } finally {
             setLoading(false);
         }

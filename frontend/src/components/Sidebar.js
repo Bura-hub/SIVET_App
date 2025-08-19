@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import sivetLogo from './sivet-logo.svg';
 import TransitionOverlay from './TransitionOverlay';
+import { fetchWithAuth } from '../utils/apiConfig';
 
 function Sidebar({
   username,
@@ -126,9 +127,53 @@ function Sidebar({
     },
   ];
 
-  const handleLogoutClick = () => {
-    // La animación se maneja en el componente padre
-    onLogout();
+  const handleLogoutClick = async () => {
+    try {
+      // Mostrar animación de logout
+      showTransitionAnimation('logout', 'Cerrando sesión...', 2000);
+      
+      // Obtener el token actual del localStorage
+      const authToken = localStorage.getItem('authToken');
+      
+      if (authToken) {
+        // Llamar al endpoint de logout del backend para revocar tokens
+        // Usar fetch normal para evitar la animación de carga de fetchWithAuth
+        const response = await fetch('/auth/logout/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${authToken}`,
+          },
+        });
+        
+        if (!response.ok) {
+          console.warn('Error en logout del backend:', response.status);
+        }
+      }
+      
+      // Esperar un momento para mostrar la animación
+      setTimeout(() => {
+        // Limpiar datos locales
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('username');
+        localStorage.removeItem('isSuperuser');
+        
+        // Llamar a la función de logout del componente padre
+        onLogout();
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error durante logout:', error);
+      // Continuar con logout local en caso de error
+      showTransitionAnimation('error', 'Error al cerrar sesión, pero se cerrará localmente', 2000);
+      
+      setTimeout(() => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('username');
+        localStorage.removeItem('isSuperuser');
+        onLogout();
+      }, 2000);
+    }
   };
 
   return (

@@ -17,14 +17,132 @@ function LoginPage({ onLoginSuccess }) {
     const [showTransition, setShowTransition] = useState(false);
     const [transitionType, setTransitionType] = useState('info');
     const [transitionMessage, setTransitionMessage] = useState('');
+    
+    // Estados para rate limiting y seguridad
+    const [failedAttempts, setFailedAttempts] = useState(0);
+    const [isBlocked, setIsBlocked] = useState(false);
+    const [blockUntil, setBlockUntil] = useState(null);
+    const [showCaptcha, setShowCaptcha] = useState(false);
+    const [captchaValue, setCaptchaValue] = useState('');
+    const [generatedCaptcha, setGeneratedCaptcha] = useState('');
 
     // Animación de entrada
     useEffect(() => {
         setIsVisible(true);
     }, []);
+    
+    // Efecto para rate limiting y bloqueo
+    useEffect(() => {
+        const savedAttempts = localStorage.getItem('loginFailedAttempts');
+        const savedBlockUntil = localStorage.getItem('loginBlockUntil');
+        
+        if (savedAttempts) {
+            setFailedAttempts(parseInt(savedAttempts));
+        }
+        
+        if (savedBlockUntil) {
+            const blockTime = new Date(savedBlockUntil);
+            if (blockTime > new Date()) {
+                setIsBlocked(true);
+                setBlockUntil(blockTime);
+            } else {
+                // Limpiar bloqueo expirado
+                localStorage.removeItem('loginFailedAttempts');
+                localStorage.removeItem('loginBlockUntil');
+                setFailedAttempts(0);
+                setIsBlocked(false);
+                setBlockUntil(null);
+            }
+        }
+    }, []);
+    
+    // Generar captcha cuando se necesite
+    useEffect(() => {
+        if (showCaptcha) {
+            generateCaptcha();
+        }
+    }, [showCaptcha]);
+    
+    // Función para generar captcha simple
+    const generateCaptcha = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < 6; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        setGeneratedCaptcha(result);
+    };
+    
+    // Función para verificar si debe mostrar captcha
+    const shouldShowCaptcha = () => {
+        return failedAttempts >= 3;
+    };
+    
+    // Función para bloquear temporalmente
+    const blockTemporarily = () => {
+        const blockDuration = Math.min(30 * Math.pow(2, failedAttempts - 5), 300); // Máximo 5 minutos
+        const blockUntil = new Date(Date.now() + blockDuration * 1000);
+        
+        setIsBlocked(true);
+        setBlockUntil(blockUntil);
+        localStorage.setItem('loginBlockUntil', blockUntil.toISOString());
+    };
 
+    // Función para validar contraseña
+    const validatePassword = (password) => {
+        const minLength = 8;
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasLowerCase = /[a-z]/.test(password);
+        const hasNumbers = /\d/.test(password);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        
+        if (password.length < minLength) {
+            return { isValid: false, message: `La contraseña debe tener al menos ${minLength} caracteres` };
+        }
+        if (!hasUpperCase) {
+            return { isValid: false, message: 'La contraseña debe contener al menos una mayúscula' };
+        }
+        if (!hasLowerCase) {
+            return { isValid: false, message: 'La contraseña debe contener al menos una minúscula' };
+        }
+        if (!hasNumbers) {
+            return { isValid: false, message: 'La contraseña debe contener al menos un número' };
+        }
+        if (!hasSpecialChar) {
+            return { isValid: false, message: 'La contraseña debe contener al menos un carácter especial' };
+        }
+        
+        return { isValid: true, message: 'Contraseña válida' };
+    };
+    
     const handleSubmit = async (event) => {
         event.preventDefault();
+        
+        // Verificar si está bloqueado
+        if (isBlocked) {
+            const remainingTime = Math.ceil((blockUntil - new Date()) / 1000);
+            setMessage({ 
+                text: `Demasiados intentos fallidos. Intenta de nuevo en ${Math.ceil(remainingTime / 60)} minutos`, 
+                type: 'error' 
+            });
+            return;
+        }
+        
+        // Validar contraseña
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
+            setMessage({ text: passwordValidation.message, type: 'error' });
+            return;
+        }
+        
+        // Verificar captcha si es necesario
+        if (showCaptcha && captchaValue !== generatedCaptcha) {
+            setMessage({ text: 'Código de verificación incorrecto', type: 'error' });
+            setCaptchaValue('');
+            generateCaptcha();
+            return;
+        }
+        
         setMessage({ text: '', type: '' });
         setLoading(true);
         setShowTransition(true);
@@ -32,48 +150,89 @@ function LoginPage({ onLoginSuccess }) {
         setTransitionMessage('Iniciando sesión...');
 
         try {
-            // Usar fetchWithAuth para manejo automático de errores
-            const data = await fetchWithAuth('/auth/login/', {
+            // Usar fetch directo para manejar errores de autenticación manualmente
+            const response = await fetch('/auth/login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ username, password }),
-            }, (authError) => {
-                // Callback para errores de autenticación
-                setMessage({ text: authError, type: 'error' });
-                setShowTransition(false);
             });
 
+            if (!response.ok) {
+                const errorData = await response.json();
+                // No logging por seguridad
+                throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
             // Si llegamos aquí, el login fue exitoso
-            console.log('Login exitoso, datos recibidos:', data);
+            // No logging por seguridad
+            
+            // Resetear intentos fallidos y bloqueos
+            setFailedAttempts(0);
+            setIsBlocked(false);
+            setBlockUntil(null);
+            setShowCaptcha(false);
+            setCaptchaValue('');
+            localStorage.removeItem('loginFailedAttempts');
+            localStorage.removeItem('loginBlockUntil');
+            
             setMessage({ text: 'Inicio exitoso. Redireccionando...', type: 'success' });
             setTransitionType('success');
             setTransitionMessage('Inicio exitoso. Redireccionando...');
             
             setTimeout(() => {
                 setShowTransition(false);
-                console.log('Llamando a onLoginSuccess con:', data.access_token, data.username, data.is_superuser);
+                // No logging por seguridad
                 onLoginSuccess(data.access_token, data.username, data.is_superuser);
             }, 1500);
 
         } catch (error) {
+            // No logging por seguridad
+            
             // Manejar errores específicos del nuevo sistema de autenticación
             let errorMessage = 'Error de red. Inténtalo de nuevo más tarde.';
+            let shouldIncrementAttempts = true;
             
             if (error.message.includes('Cuenta bloqueada')) {
                 errorMessage = 'Tu cuenta está temporalmente bloqueada. Intenta más tarde.';
+                shouldIncrementAttempts = false; // No incrementar si la cuenta ya está bloqueada
             } else if (error.message.includes('Cambio de contraseña requerido')) {
                 errorMessage = 'Debes cambiar tu contraseña antes de continuar.';
-            } else if (error.message.includes('Credenciales inválidas')) {
+                shouldIncrementAttempts = false; // No incrementar si requiere cambio de contraseña
+            } else if (error.message.includes('Credenciales inválidas') || error.message.includes('Usuario o contraseña incorrectos')) {
                 errorMessage = 'Usuario o contraseña incorrectos.';
+                shouldIncrementAttempts = true;
+            } else if (error.message.includes('Datos de entrada inválidos')) {
+                errorMessage = 'Usuario o contraseña incorrectos.';
+                shouldIncrementAttempts = true;
             } else if (error.message.includes('Usuario inactivo')) {
                 errorMessage = 'Tu cuenta ha sido desactivada. Contacta al administrador.';
+                shouldIncrementAttempts = false;
+            }
+            
+            // Incrementar intentos fallidos si corresponde
+            if (shouldIncrementAttempts) {
+                const newFailedAttempts = failedAttempts + 1;
+                setFailedAttempts(newFailedAttempts);
+                localStorage.setItem('loginFailedAttempts', newFailedAttempts.toString());
+                
+                // Mostrar captcha después de 3 intentos
+                if (newFailedAttempts >= 3 && !showCaptcha) {
+                    setShowCaptcha(true);
+                }
+                
+                // Bloquear después de 5 intentos
+                if (newFailedAttempts >= 5) {
+                    blockTemporarily();
+                }
             }
             
             setMessage({ text: errorMessage, type: 'error' });
             setShowTransition(false);
-            console.error('Error de login:', error);
+            // No logging por seguridad
         } finally {
             setLoading(false);
         }
@@ -189,6 +348,48 @@ function LoginPage({ onLoginSuccess }) {
                         </div>
                     </div>
 
+                    {/* Campo de captcha (se muestra después de 3 intentos fallidos) */}
+                    {showCaptcha && (
+                        <div className="input-group">
+                            <label htmlFor="captcha" className="input-label">
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Código de Verificación
+                            </label>
+                            <div className="captcha-container bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <div className="captcha-display flex items-center justify-between mb-3">
+                                    <div className="bg-white px-4 py-2 rounded-lg border-2 border-dashed border-gray-300">
+                                        <span className="captcha-text text-2xl font-mono font-bold text-gray-800 tracking-widest select-none">
+                                            {generatedCaptcha}
+                                        </span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={generateCaptcha}
+                                        className="captcha-refresh p-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors duration-200"
+                                        title="Generar nuevo código"
+                                    >
+                                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <input
+                                    type="text"
+                                    id="captcha"
+                                    name="captcha"
+                                    placeholder="Ingresa el código de arriba"
+                                    className="enhanced-input text-center text-lg font-mono tracking-widest"
+                                    value={captchaValue}
+                                    onChange={(e) => setCaptchaValue(e.target.value.toUpperCase())}
+                                    maxLength={6}
+                                    required
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {/* Botón de login mejorado */}
                     <button 
                         type="submit" 
@@ -215,6 +416,41 @@ function LoginPage({ onLoginSuccess }) {
                         </span>
                     </button>
                 </form>
+
+                {/* Indicadores de seguridad */}
+                {failedAttempts > 0 && (
+                    <div className="security-indicator bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-4 mb-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className={`w-3 h-3 rounded-full ${failedAttempts >= 5 ? 'bg-red-500' : failedAttempts >= 3 ? 'bg-orange-500' : 'bg-yellow-500'}`}></div>
+                                <span className="text-orange-700 font-medium">
+                                    <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                    Intentos fallidos: {failedAttempts}/5
+                                </span>
+                            </div>
+                            {failedAttempts >= 3 && (
+                                <span className="text-red-600 font-medium bg-red-100 px-3 py-1 rounded-full text-sm">
+                                    Captcha requerido
+                                </span>
+                            )}
+                            {failedAttempts >= 5 && (
+                                <span className="text-red-600 font-medium bg-red-100 px-3 py-1 rounded-full text-sm">
+                                    Cuenta bloqueada
+                                </span>
+                            )}
+                        </div>
+                        {isBlocked && blockUntil && (
+                            <div className="mt-2 text-sm text-red-600">
+                                <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Bloqueado hasta: {blockUntil.toLocaleTimeString()}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Mensaje de estado mejorado */}
                 {message.text && (

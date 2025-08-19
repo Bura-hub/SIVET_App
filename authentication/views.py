@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
+from rest_framework.exceptions import AuthenticationFailed
 
 # Rate limiting
 from django_ratelimit.decorators import ratelimit
@@ -27,9 +28,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
-# Logging
-import logging
-logger = logging.getLogger('security')
+# No logging por seguridad
 
 # Serializadores personalizados para login y logout
 from .serializers import (
@@ -45,7 +44,7 @@ from .serializers import (
 )
 
 # Modelos personalizados
-from .models import UserProfile, AuthToken, RefreshToken, LoginAttempt
+from .models import UserProfile, AuthToken, RefreshToken
 
 # Utilidades
 import ipaddress
@@ -83,13 +82,19 @@ class LoginView(ObtainAuthToken):
         client_ip = self._get_client_ip(request)
         username = request.data.get('username', '')
         
-        # Log del intento de login
-        logger.info(f"Login attempt from IP: {client_ip}, Username: {username}")
+        # No logging por seguridad
         
         try:
             # Serializa y valida los datos de entrada
             serializer = self.serializer_class(data=request.data, context={'request': request})
-            serializer.is_valid(raise_exception=True)
+            
+            # Validar datos sin lanzar excepción
+            if not serializer.is_valid():
+                            # No logging por seguridad
+                return Response({
+                    'error': 'Datos de entrada inválidos',
+                    'details': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
             
             # Autenticar usuario
             user = serializer.validated_data['user']
@@ -99,7 +104,6 @@ class LoginView(ObtainAuthToken):
             
             # Verificar si la cuenta está bloqueada
             if profile.is_locked():
-                self._log_login_attempt(username, client_ip, 'locked', 'Cuenta bloqueada temporalmente')
                 return Response({
                     'error': 'Cuenta bloqueada',
                     'message': f'Tu cuenta está bloqueada hasta {profile.locked_until.strftime("%H:%M")}',
@@ -125,9 +129,7 @@ class LoginView(ObtainAuthToken):
             profile.last_activity = timezone.now()
             profile.save(update_fields=['last_login_ip', 'last_activity'])
             
-            # Log de login exitoso
-            self._log_login_attempt(username, client_ip, 'success')
-            logger.info(f"Successful login for user: {username} from IP: {client_ip}")
+            # No logging por seguridad
             
             # Preparar respuesta
             response_data = {
@@ -149,15 +151,19 @@ class LoginView(ObtainAuthToken):
             return Response(response_data, status=status.HTTP_200_OK)
             
         except ValidationError as e:
-            # Log de error de validación
-            self._log_login_attempt(username, client_ip, 'failed', str(e))
+            # No logging por seguridad
             return Response({'error': 'Error de validación', 'details': e.detail}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
+        except AuthenticationFailed as e:
+            # No logging por seguridad
+            return Response({
+                'error': 'Credenciales inválidas',
+                'message': 'Usuario o contraseña incorrectos'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
         except Exception as e:
-            # Log de error general
-            logger.error(f"Login error for user {username}: {str(e)}")
-            self._log_login_attempt(username, client_ip, 'failed', str(e))
+            # No logging por seguridad
             return Response({'error': 'Error interno del servidor'}, 
                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
@@ -230,25 +236,7 @@ class LoginView(ObtainAuthToken):
         except UserProfile.DoesNotExist:
             return None
     
-    def _log_login_attempt(self, username, ip_address, status, failure_reason=''):
-        """
-        Registra el intento de login para auditoría
-        """
-        try:
-            user = None
-            if status == 'success':
-                user = User.objects.get(username=username)
-            
-            LoginAttempt.objects.create(
-                user=user,
-                username=username,
-                ip_address=ip_address,
-                status=status,
-                failure_reason=failure_reason,
-                user_agent=self.request.META.get('HTTP_USER_AGENT', '')
-            )
-        except Exception as e:
-            logger.error(f"Error logging login attempt: {str(e)}")
+
 
 
 @extend_schema(
@@ -276,8 +264,7 @@ class LogoutView(APIView):
             user = request.user
             client_ip = self._get_client_ip(request)
             
-            # Log del logout
-            logger.info(f"Logout for user: {user.username} from IP: {client_ip}")
+            # No logging por seguridad
             
             # Invalidar token actual
             if hasattr(request, 'auth') and request.auth:
@@ -298,7 +285,7 @@ class LogoutView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            logger.error(f"Logout error for user {request.user.username}: {str(e)}")
+            # No logging por seguridad
             return Response({
                 "error": "Error durante el logout"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -361,8 +348,7 @@ class RefreshTokenView(APIView):
                 days_valid=30
             )
             
-            # Log de renovación exitosa
-            logger.info(f"Token refreshed for user: {user.username}")
+            # No logging por seguridad
             
             return Response({
                 'access_token': new_access_token.key,
@@ -377,7 +363,7 @@ class RefreshTokenView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
-            logger.error(f"Token refresh error: {str(e)}")
+            # No logging por seguridad
             return Response({
                 'error': 'Error interno del servidor'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -427,8 +413,7 @@ class ChangePasswordView(APIView):
             AuthToken.objects.filter(user=user).update(is_active=False)
             RefreshToken.objects.filter(user=user).update(is_active=False)
             
-            # Log del cambio de contraseña
-            logger.info(f"Password changed for user: {user.username}")
+            # No logging por seguridad
             
             return Response({
                 'message': 'Contraseña cambiada exitosamente',
@@ -436,7 +421,7 @@ class ChangePasswordView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            logger.error(f"Password change error for user {request.user.username}: {str(e)}")
+            # No logging por seguridad
             return Response({
                 'error': 'Error al cambiar la contraseña'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -502,7 +487,7 @@ class SessionInfoView(APIView):
             serializer = SessionInfoSerializer(request.user, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            logger.error(f"Session info error: {str(e)}")
+            # No logging por seguridad
             return Response({
                 'error': 'Error al obtener información de la sesión'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -532,8 +517,7 @@ class UserRegistrationView(APIView):
             with transaction.atomic():
                 user = serializer.save()
                 
-                # Log del registro exitoso
-                logger.info(f"User registered: {user.username}")
+                            # No logging por seguridad
                 
                 return Response({
                     'message': 'Usuario registrado exitosamente',
@@ -543,7 +527,7 @@ class UserRegistrationView(APIView):
                 }, status=status.HTTP_201_CREATED)
                 
         except Exception as e:
-            logger.error(f"User registration error: {str(e)}")
+            # No logging por seguridad
             return Response({
                 'error': 'Error al registrar el usuario'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -572,7 +556,7 @@ class LogoutAllDevicesView(APIView):
             RefreshToken.objects.filter(user=user).update(is_active=False)
             
             # Log del logout masivo
-            logger.info(f"Logout all devices for user: {user.username}")
+            # No logging por seguridad
             
             return Response({
                 'message': 'Sesión cerrada en todos los dispositivos',
@@ -580,7 +564,7 @@ class LogoutAllDevicesView(APIView):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            logger.error(f"Logout all devices error: {str(e)}")
+            # No logging por seguridad
             return Response({
                 'error': 'Error al cerrar sesión en todos los dispositivos'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

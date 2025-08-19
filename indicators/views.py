@@ -2354,17 +2354,89 @@ class ReportStatusView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Consultar estado de la tarea
+            # Primero intentar consultar estado desde la base de datos
             from .tasks import get_report_status
             status_info = get_report_status(task_id)
             
-            if not status_info:
-                return Response(
-                    {"detail": "Tarea no encontrada"},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-
-            return Response(status_info)
+            if status_info:
+                return Response(status_info)
+            
+                        # Si no existe en la base de datos, consultar estado de Celery
+            try:
+                from celery.result import AsyncResult
+                from core.celery import app
+                
+                task_result = AsyncResult(task_id, app=app)
+                
+                # Log para debugging
+                logger.info(f"Estado de Celery para task_id {task_id}: {task_result.state}")
+                
+                if task_result.state == 'PENDING':
+                    return Response({
+                        'task_id': task_id,
+                        'status': 'pending',
+                        'progress': 0,
+                        'download_url': None,
+                        'error': None
+                    })
+                elif task_result.state == 'STARTED':
+                    return Response({
+                        'task_id': task_id,
+                        'status': 'processing',
+                        'progress': 10,
+                        'download_url': None,
+                        'error': None
+                    })
+                elif task_result.state == 'PROGRESS':
+                    meta = task_result.info or {}
+                    progress = meta.get('current', 0)
+                    logger.info(f"Progreso de tarea {task_id}: {progress}%")
+                    return Response({
+                        'task_id': task_id,
+                        'status': 'processing',
+                        'progress': progress,
+                        'download_url': None,
+                        'error': None
+                    })
+                elif task_result.state == 'SUCCESS':
+                    logger.info(f"Tarea {task_id} completada exitosamente")
+                    return Response({
+                        'task_id': task_id,
+                        'status': 'completed',
+                        'progress': 100,
+                        'download_url': f"/api/reports/download/?task_id={task_id}",
+                        'error': None
+                    })
+                elif task_result.state == 'FAILURE':
+                    error_msg = str(task_result.info) if task_result.info else "Error desconocido"
+                    logger.error(f"Tarea {task_id} falló: {error_msg}")
+                    return Response({
+                        'task_id': task_id,
+                        'status': 'failed',
+                        'progress': 0,
+                        'download_url': None,
+                        'error': error_msg
+                    })
+                else:
+                    logger.warning(f"Estado desconocido de Celery para tarea {task_id}: {task_result.state}")
+                    return Response({
+                        'task_id': task_id,
+                        'status': 'pending',
+                        'progress': 0,
+                        'download_url': None,
+                        'error': None
+                    })
+                    
+            except Exception as celery_error:
+                logger.error(f"Error consultando estado de Celery para tarea {task_id}: {str(celery_error)}")
+                # Si no se puede consultar Celery, devolver estado pendiente
+                return Response({
+                    'task_id': task_id,
+                    'status': 'pending',
+                    'progress': 0,
+                    'download_url': None,
+                    'error': None
+                })
 
         except Exception as e:
             logger.error(f"Error consultando estado de reporte: {str(e)}")

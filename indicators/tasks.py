@@ -2303,13 +2303,19 @@ def generate_report(self, institution_id, category, devices, report_type, time_r
             report_record.status = 'processing'
             report_record.save()
         
+        logger.info(f"Registro de reporte {'creado' if created else 'actualizado'} con ID: {report_record.id}")
+        
         # Actualizar progreso de la tarea
         self.update_state(
             state='PROGRESS',
             meta={'current': 0, 'total': 100, 'status': 'Iniciando generación de reporte'}
         )
         
+        logger.info(f"Estado de tarea actualizado a PROGRESS")
+        
         # Generar reporte según la categoría y tipo
+        logger.info(f"Generando reporte para categoría: {category}")
+        
         if category == 'electricMeter':
             report_data = generate_electric_meter_report(
                 institution_id, devices, report_type, time_range, start_date, end_date
@@ -2325,22 +2331,32 @@ def generate_report(self, institution_id, category, devices, report_type, time_r
         else:
             raise ValueError(f"Categoría no válida: {category}")
         
+        logger.info(f"Reporte generado exitosamente para categoría {category}")
+        
         # Actualizar progreso
         self.update_state(
             state='PROGRESS',
             meta={'current': 50, 'total': 100, 'status': 'Generando archivo'}
         )
         
+        logger.info(f"Estado de tarea actualizado a 50%")
+        
         # Generar archivo en el formato especificado
+        logger.info(f"Generando archivo en formato: {format}")
+        
         file_path, file_size, record_count = generate_report_file(
             report_data, report_type, format, self.request.id
         )
+        
+        logger.info(f"Archivo generado: {file_path}, tamaño: {file_size}, registros: {record_count}")
         
         # Actualizar progreso
         self.update_state(
             state='PROGRESS',
             meta={'current': 90, 'total': 100, 'status': 'Finalizando'}
         )
+        
+        logger.info(f"Estado de tarea actualizado a 90%")
         
         # Actualizar registro del reporte
         report_record.status = 'completed'
@@ -2350,6 +2366,7 @@ def generate_report(self, institution_id, category, devices, report_type, time_r
         report_record.completed_at = django_timezone.now()
         report_record.save()
         
+        logger.info(f"Registro de reporte actualizado a completado")
         logger.info(f"Reporte generado exitosamente: {file_path}")
         
         return {

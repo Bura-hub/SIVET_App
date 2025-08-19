@@ -239,6 +239,16 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
 
       const indicatorsData = await indicatorsResp.json();
 
+      // 🔍 AGREGAR LOGS PARA DEBUGGEAR FECHAS
+      console.log('�� DATOS RECIBIDOS DE LA API:');
+      console.log('Total registros:', indicatorsData.results?.length);
+      if (indicatorsData.results?.length > 0) {
+        console.log('Primera fecha (raw):', indicatorsData.results[0].date);
+        console.log('Última fecha (raw):', indicatorsData.results[indicatorsData.results.length - 1].date);
+        console.log('Primera fecha (convertida):', new Date(indicatorsData.results[0].date));
+        console.log('Última fecha (convertida):', new Date(indicatorsData.results[indicatorsData.results.length - 1].date));
+      }
+
       if (seq === requestSeqRef.current) {
         setMeterData(indicatorsData);
         
@@ -715,7 +725,20 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                       description="Consumo, exportación y balance energético en el tiempo"
                     type="line"
                     data={{
-                        labels: meterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                        labels: meterData.results.slice().reverse().map(item => {
+                          // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                          const rawDate = item.date;
+                          // Crear fecha en zona horaria local para evitar desfase UTC
+                          const localDate = new Date(rawDate + 'T00:00:00');
+                          const formattedDate = localDate.toLocaleDateString('es-ES');
+                          
+                          console.log('🔍 PROCESAMIENTO DE FECHA EN CHART PRINCIPAL:');
+                          console.log('  Fecha raw:', rawDate);
+                          console.log('  Fecha local:', localDate);
+                          console.log('  Fecha formateada:', formattedDate);
+                          
+                          return formattedDate;
+                        }),
                       datasets: [
                         {
                             label: 'Energía Importada (kWh)',
@@ -795,7 +818,15 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                       description="Demanda, factor de carga y eficiencia del sistema"
                     type="line"
                     data={{
-                        labels: meterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                        labels: meterData.results.slice().reverse().map(item => {
+                          // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                          const rawDate = item.date;
+                          // Crear fecha en zona horaria local para evitar desfase UTC
+                          const localDate = new Date(rawDate + 'T00:00:00');
+                          const formattedDate = localDate.toLocaleDateString('es-ES');
+                          
+                          return formattedDate;
+                        }),
                       datasets: [
                         {
                             label: 'Demanda Pico (kW)',
@@ -852,7 +883,15 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                       description="Desequilibrios y distorsiones armónicas"
                       type="line"
                       data={{
-                        labels: meterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                        labels: meterData.results.slice().reverse().map(item => {
+                          // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                          const rawDate = item.date;
+                          // Crear fecha en zona horaria local para evitar desfase UTC
+                          const localDate = new Date(rawDate + 'T00:00:00');
+                          const formattedDate = localDate.toLocaleDateString('es-ES');
+                          
+                          return formattedDate;
+                        }),
                         datasets: [
                           {
                             label: 'Desequilibrio de Voltaje (%)',
@@ -997,10 +1036,20 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                             <tr key={startIndex + index} className="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 border-b border-gray-50">
                               <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
                                 <div className="text-xs lg:text-sm font-medium text-gray-900">
-                                  {new Date(item.date).toLocaleDateString('es-ES')}
+                                  {(() => {
+                                    // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                                    const rawDate = item.date;
+                                    const localDate = new Date(rawDate + 'T00:00:00');
+                                    return localDate.toLocaleDateString('es-ES');
+                                  })()}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  {new Date(item.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                  {(() => {
+                                    // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                                    const rawDate = item.date;
+                                    const localDate = new Date(rawDate + 'T00:00:00');
+                                    return localDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                                  })()}
                                 </div>
                               </td>
                               <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">

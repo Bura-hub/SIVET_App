@@ -861,8 +861,8 @@ def calculate_electric_meter_indicators(device_id, date_str, time_range='daily')
     try:
         from datetime import datetime, timedelta
         from django.db.models import Max, Min, Avg
-        from scada_proxy.models import Device, Institution
-        from .models import ElectricMeterIndicators, Measurement
+        from scada_proxy.models import Device, Institution, Measurement
+        from .models import ElectricMeterIndicators
         
         # Parsear la fecha
         if isinstance(date_str, str):

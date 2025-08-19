@@ -1012,7 +1012,15 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                         description="Energía generada, eficiencia y rendimiento del sistema en el tiempo"
                         type="line"
                         data={{
-                          labels: inverterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                          labels: inverterData.results.slice().reverse().map(item => {
+                            // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                            const rawDate = item.date;
+                            // Crear fecha en zona horaria local para evitar desfase UTC
+                            const localDate = new Date(rawDate + 'T00:00:00');
+                            const formattedDate = localDate.toLocaleDateString('es-ES');
+                            
+                            return formattedDate;
+                          }),
                           datasets: [
                             {
                               label: 'Energía Total Generada (kWh)',
@@ -1092,7 +1100,15 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                         description="Factor de potencia, THD y estabilidad del sistema"
                         type="line"
                         data={{
-                          labels: inverterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                          labels: inverterData.results.slice().reverse().map(item => {
+                            // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                            const rawDate = item.date;
+                            // Crear fecha en zona horaria local para evitar desfase UTC
+                            const localDate = new Date(rawDate + 'T00:00:00');
+                            const formattedDate = localDate.toLocaleDateString('es-ES');
+                            
+                            return formattedDate;
+                          }),
                           datasets: [
                             {
                               label: 'Factor de Potencia Promedio',
@@ -1149,7 +1165,15 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                         description="Análisis de desbalance y frecuencia del sistema"
                         type="line"
                         data={{
-                          labels: inverterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                          labels: inverterData.results.slice().reverse().map(item => {
+                            // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                            const rawDate = item.date;
+                            // Crear fecha en zona horaria local para evitar desfase UTC
+                            const localDate = new Date(rawDate + 'T00:00:00');
+                            const formattedDate = localDate.toLocaleDateString('es-ES');
+                            
+                            return formattedDate;
+                          }),
                           datasets: [
                             {
                               label: 'Desbalance de Voltaje (%)',
@@ -1208,7 +1232,15 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                         description="Relación entre temperatura del inversor y eficiencia del sistema"
                         type="line"
                         data={{
-                          labels: inverterData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                          labels: inverterData.results.slice().reverse().map(item => {
+                            // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                            const rawDate = item.date;
+                            // Crear fecha en zona horaria local para evitar desfase UTC
+                            const localDate = new Date(rawDate + 'T00:00:00');
+                            const formattedDate = localDate.toLocaleDateString('es-ES');
+                            
+                            return formattedDate;
+                          }),
                           datasets: [
                             {
                               label: 'Temperatura Promedio (°C)',
@@ -1386,10 +1418,20 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                           <tr key={startIndex + index} className="hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-200 border-b border-gray-50">
                             <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
                               <div className="text-xs lg:text-sm font-medium text-gray-900">
-                                {new Date(item.date).toLocaleDateString('es-ES')}
+                                {(() => {
+                                  // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                                  const rawDate = item.date;
+                                  const localDate = new Date(rawDate + 'T00:00:00');
+                                  return localDate.toLocaleDateString('es-ES');
+                                })()}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {new Date(item.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                {(() => {
+                                  // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                                  const rawDate = item.date;
+                                  const localDate = new Date(rawDate + 'T00:00:00');
+                                  return localDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                                })()}
                               </div>
                             </td>
                             <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">

@@ -1028,7 +1028,15 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                 description="Irradiancia acumulada y horas solares pico en el tiempo"
                   type="line"
                 data={{
-                  labels: weatherData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                  labels: weatherData.results.slice().reverse().map(item => {
+                    // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                    const rawDate = item.date;
+                    // Crear fecha en zona horaria local para evitar desfase UTC
+                    const localDate = new Date(rawDate + 'T00:00:00');
+                    const formattedDate = localDate.toLocaleDateString('es-ES');
+                    
+                    return formattedDate;
+                  }),
                   datasets: [
                     {
                       label: 'Irradiancia Acumulada (kWh/m²)',
@@ -1096,7 +1104,15 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                 description="Temperatura y humedad relativa del ambiente"
                 type="line"
                 data={{
-                  labels: weatherData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                  labels: weatherData.results.slice().reverse().map(item => {
+                    // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                    const rawDate = item.date;
+                    // Crear fecha en zona horaria local para evitar desfase UTC
+                    const localDate = new Date(rawDate + 'T00:00:00');
+                    const formattedDate = localDate.toLocaleDateString('es-ES');
+                    
+                    return formattedDate;
+                  }),
                   datasets: [
                     {
                       label: 'Temperatura Promedio (°C)',
@@ -1142,7 +1158,15 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                 description="Velocidad del viento y precipitación"
                   type="line"
                 data={{
-                  labels: weatherData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')),
+                  labels: weatherData.results.slice().reverse().map(item => {
+                    // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                    const rawDate = item.date;
+                    // Crear fecha en zona horaria local para evitar desfase UTC
+                    const localDate = new Date(rawDate + 'T00:00:00');
+                    const formattedDate = localDate.toLocaleDateString('es-ES');
+                    
+                    return formattedDate;
+                  }),
                   datasets: [
                     {
                       label: 'Velocidad del Viento (km/h)',
@@ -1285,7 +1309,15 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                 description="Potencia teórica generada basada en irradiancia solar y condiciones ambientales"
                 type="line"
                 data={{
-                  labels: weatherData?.results ? weatherData.results.slice().reverse().map(item => new Date(item.date).toLocaleDateString('es-ES')) : [],
+                  labels: weatherData?.results ? weatherData.results.slice().reverse().map(item => {
+                    // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                    const rawDate = item.date;
+                    // Crear fecha en zona horaria local para evitar desfase UTC
+                    const localDate = new Date(rawDate + 'T00:00:00');
+                    const formattedDate = localDate.toLocaleDateString('es-ES');
+                    
+                    return formattedDate;
+                  }) : [],
                   datasets: [
                     {
                       label: 'Potencia Teórica (W)',
@@ -1468,10 +1500,20 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                           <tr key={`${currentPage}-${index}`} className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 transition-all duration-200 border-b border-gray-50">
                             <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">
                               <div className="text-xs lg:text-sm font-medium text-gray-900">
-                                {new Date(item.date).toLocaleDateString('es-ES')}
+                                {(() => {
+                                  // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                                  const rawDate = item.date;
+                                  const localDate = new Date(rawDate + 'T00:00:00');
+                                  return localDate.toLocaleDateString('es-ES');
+                                })()}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {new Date(item.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                {(() => {
+                                  // 🔍 CORREGIR PROCESAMIENTO DE FECHAS PARA EVITAR DESFASE
+                                  const rawDate = item.date;
+                                  const localDate = new Date(rawDate + 'T00:00:00');
+                                  return localDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                                })()}
                               </div>
                             </td>
                             <td className="px-2 lg:px-3 xl:px-4 py-2 lg:py-3 xl:py-4 whitespace-nowrap">

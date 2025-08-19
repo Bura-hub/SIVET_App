@@ -85,7 +85,7 @@ class LoginView(ObtainAuthToken):
         # No logging por seguridad
         
         try:
-            # Serializa y valida los datos de entrada
+        # Serializa y valida los datos de entrada
             serializer = self.serializer_class(data=request.data, context={'request': request})
             
             # Validar datos sin lanzar excepción
@@ -527,9 +527,12 @@ class UserRegistrationView(APIView):
                 }, status=status.HTTP_201_CREATED)
                 
         except Exception as e:
-            # No logging por seguridad
+            # Logging temporal para debugging
+            import traceback
+            print(f"Error en registro: {str(e)}")
+            print(f"Traceback: {traceback.format_exc()}")
             return Response({
-                'error': 'Error al registrar el usuario'
+                'error': f'Error al registrar el usuario: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

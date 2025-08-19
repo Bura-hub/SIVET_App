@@ -3,6 +3,7 @@ import sivetLogo from './sivet-logo.svg';
 import background from './bg.png';
 import TransitionOverlay from './TransitionOverlay';
 import { fetchWithAuth, handleApiResponse } from '../utils/apiConfig';
+import { buildApiUrl, getEndpoint } from '../config';
 
 function LoginPage({ onLoginSuccess }) {
     const [username, setUsername] = useState('');
@@ -25,6 +26,21 @@ function LoginPage({ onLoginSuccess }) {
     const [showCaptcha, setShowCaptcha] = useState(false);
     const [captchaValue, setCaptchaValue] = useState('');
     const [generatedCaptcha, setGeneratedCaptcha] = useState('');
+    
+    // Estados para el modal de registro
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [registerData, setRegisterData] = useState({
+        username: '',
+        email: '',
+        first_name: '',
+        last_name: '',
+        password: '',
+        confirm_password: ''
+    });
+    const [registerLoading, setRegisterLoading] = useState(false);
+    const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [registerSuccess, setRegisterSuccess] = useState(false);
 
     // Animación de entrada
     useEffect(() => {
@@ -115,6 +131,143 @@ function LoginPage({ onLoginSuccess }) {
         return { isValid: true, message: 'Contraseña válida' };
     };
     
+    // Función para validar datos de registro
+    const validateRegisterData = () => {
+        if (!registerData.username || registerData.username.length < 3) {
+            return { isValid: false, message: 'El nombre de usuario debe tener al menos 3 caracteres' };
+        }
+        if (!registerData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerData.email)) {
+            return { isValid: false, message: 'Ingrese un email válido' };
+        }
+        if (!registerData.first_name || registerData.first_name.trim().length < 2) {
+            return { isValid: false, message: 'El nombre debe tener al menos 2 caracteres' };
+        }
+        if (!registerData.last_name || registerData.last_name.trim().length < 2) {
+            return { isValid: false, message: 'El apellido debe tener al menos 2 caracteres' };
+        }
+        
+        const passwordValidation = validatePassword(registerData.password);
+        if (!passwordValidation.isValid) {
+            return passwordValidation;
+        }
+        
+        if (registerData.password !== registerData.confirm_password) {
+            return { isValid: false, message: 'Las contraseñas no coinciden' };
+        }
+        
+        return { isValid: true, message: 'Datos válidos' };
+    };
+    
+    // Función para manejar el registro
+    const handleRegister = async (event) => {
+        event.preventDefault();
+        
+        const validation = validateRegisterData();
+        if (!validation.isValid) {
+            setMessage({ text: validation.message, type: 'error' });
+            return;
+        }
+        
+        setRegisterLoading(true);
+        setMessage({ text: '', type: '' });
+        
+        try {
+            const response = await fetch(buildApiUrl(getEndpoint('REGISTER')), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: registerData.username,
+                    email: registerData.email,
+                    first_name: registerData.first_name,
+                    last_name: registerData.last_name,
+                    password: registerData.password,
+                    confirm_password: registerData.confirm_password
+                }),
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            // Mostrar estado de éxito
+            setRegisterSuccess(true);
+            setMessage({ text: 'Cuenta creada exitosamente. Ya puedes iniciar sesión.', type: 'success' });
+            
+            // Esperar 2 segundos para que el usuario vea el mensaje de éxito, luego cerrar
+            setTimeout(() => {
+                setShowRegisterModal(false);
+                setRegisterSuccess(false);
+            }, 2000);
+            setRegisterData({
+                username: '',
+                email: '',
+                first_name: '',
+                last_name: '',
+                password: '',
+                confirm_password: ''
+            });
+            
+            // Limpiar mensaje después de 3 segundos
+            setTimeout(() => {
+                setMessage({ text: '', type: '' });
+            }, 3000);
+            
+        } catch (error) {
+            // Mostrar error específico del backend o mensaje genérico
+            let errorMessage = 'Error al crear la cuenta';
+            
+            if (error.message.includes('username already exists')) {
+                errorMessage = 'El nombre de usuario ya existe. Intenta con otro.';
+            } else if (error.message.includes('email already exists')) {
+                errorMessage = 'El email ya está registrado. Intenta con otro.';
+            } else if (error.message.includes('password')) {
+                errorMessage = 'La contraseña no cumple con los requisitos de seguridad.';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            setMessage({ text: errorMessage, type: 'error' });
+        } finally {
+            setRegisterLoading(false);
+        }
+    };
+    
+    // Función para abrir modal de registro
+    const openRegisterModal = () => {
+        setShowRegisterModal(true);
+        setMessage({ text: '', type: '' });
+    };
+    
+    // Función para cerrar modal de registro
+    const closeRegisterModal = () => {
+        setShowRegisterModal(false);
+        setRegisterData({
+            username: '',
+            email: '',
+            first_name: '',
+            last_name: '',
+            password: '',
+            confirm_password: ''
+        });
+        setMessage({ text: '', type: '' });
+        setRegisterSuccess(false);
+    };
+    
+    // Función para contactar soporte (olvidó contraseña)
+    const contactSupport = () => {
+        const supportEmail = 'bura.vent@gmail.com';
+        const supportPhone = '+57 (312) 756-0677';
+        
+        const message = `Para recuperar tu contraseña, contacta a nuestro equipo de soporte:\n\n📧 Email: ${supportEmail}\n📞 Teléfono: ${supportPhone}\n\nHorario de atención: Lunes a Viernes 8:00 AM - 6:00 PM`;
+        
+        alert(message);
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         
@@ -151,7 +304,7 @@ function LoginPage({ onLoginSuccess }) {
 
         try {
             // Usar fetch directo para manejar errores de autenticación manualmente
-            const response = await fetch('/auth/login/', {
+            const response = await fetch(buildApiUrl(getEndpoint('LOGIN')), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -179,15 +332,15 @@ function LoginPage({ onLoginSuccess }) {
             localStorage.removeItem('loginFailedAttempts');
             localStorage.removeItem('loginBlockUntil');
             
-            setMessage({ text: 'Inicio exitoso. Redireccionando...', type: 'success' });
-            setTransitionType('success');
-            setTransitionMessage('Inicio exitoso. Redireccionando...');
-            
-            setTimeout(() => {
-                setShowTransition(false);
+                setMessage({ text: 'Inicio exitoso. Redireccionando...', type: 'success' });
+                setTransitionType('success');
+                setTransitionMessage('Inicio exitoso. Redireccionando...');
+                
+                setTimeout(() => {
+                    setShowTransition(false);
                 // No logging por seguridad
                 onLoginSuccess(data.access_token, data.username, data.is_superuser);
-            }, 1500);
+                }, 1500);
 
         } catch (error) {
             // No logging por seguridad
@@ -230,8 +383,8 @@ function LoginPage({ onLoginSuccess }) {
                 }
             }
             
-            setMessage({ text: errorMessage, type: 'error' });
-            setShowTransition(false);
+                setMessage({ text: errorMessage, type: 'error' });
+                setShowTransition(false);
             // No logging por seguridad
         } finally {
             setLoading(false);
@@ -472,20 +625,250 @@ function LoginPage({ onLoginSuccess }) {
 
                 {/* Enlaces secundarios mejorados */}
                 <div className="secondary-links">
-                    <a href="#" className="enhanced-secondary-link">
+                    <button 
+                        onClick={contactSupport}
+                        className="enhanced-secondary-link"
+                    >
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
                         </svg>
                         ¿Olvidó su contraseña?
-                    </a>
-                    <a href="#" className="enhanced-secondary-link">
+                    </button>
+                    <button 
+                        onClick={openRegisterModal}
+                        className="enhanced-secondary-link"
+                    >
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                         </svg>
                         Crear una cuenta
-                    </a>
+                    </button>
                 </div>
             </div>
+
+            {/* Modal de Registro */}
+            {showRegisterModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                        {/* Header del modal */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h2 className="text-xl font-bold text-gray-800">Crear Nueva Cuenta</h2>
+                            <button
+                                onClick={closeRegisterModal}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Mensaje de estado */}
+                        {message.text && (
+                            <div className={`mx-6 mb-4 p-4 rounded-lg ${
+                                message.type === 'success' 
+                                    ? 'bg-green-50 border border-green-200 text-green-800' 
+                                    : 'bg-red-50 border border-red-200 text-red-800'
+                            }`}>
+                                <div className="flex items-center">
+                                    {message.type === 'success' ? (
+                                        <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    )}
+                                    <span className="font-medium">{message.text}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Mensaje de éxito prominente */}
+                        {registerSuccess && (
+                            <div className="mx-6 mb-4 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl">
+                                <div className="text-center">
+                                    <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-lg font-bold text-green-800 mb-2">¡Cuenta Creada Exitosamente!</h3>
+                                    <p className="text-green-700">Ya puedes cerrar esta ventana e iniciar sesión con tu nueva cuenta.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Formulario de registro */}
+                        {!registerSuccess && (
+                            <form onSubmit={handleRegister} className="p-6 space-y-4">
+                            {/* Username */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Nombre de Usuario *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={registerData.username}
+                                    onChange={(e) => setRegisterData({...registerData, username: e.target.value})}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Ingresa tu nombre de usuario"
+                                    required
+                                />
+                            </div>
+
+                            {/* Email */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email *
+                                </label>
+                                <input
+                                    type="email"
+                                    value={registerData.email}
+                                    onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="tu@email.com"
+                                    required
+                                />
+                            </div>
+
+                            {/* Nombre y Apellido */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Nombre *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={registerData.first_name}
+                                        onChange={(e) => setRegisterData({...registerData, first_name: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Tu nombre"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Apellido *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={registerData.last_name}
+                                        onChange={(e) => setRegisterData({...registerData, last_name: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Tu apellido"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Contraseña */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Contraseña *
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showRegisterPassword ? "text" : "password"}
+                                        value={registerData.password}
+                                        onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                                        className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Mínimo 8 caracteres"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        {showRegisterPassword ? (
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Debe contener mayúsculas, minúsculas, números y caracteres especiales
+                                </p>
+                            </div>
+
+                            {/* Confirmar Contraseña */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Confirmar Contraseña *
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        value={registerData.confirm_password}
+                                        onChange={(e) => setRegisterData({...registerData, confirm_password: e.target.value})}
+                                        className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Repite tu contraseña"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        {showConfirmPassword ? (
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        )}
+                                    </button>
+                </div>
+            </div>
+
+                            {/* Botón de registro */}
+                            <button
+                                type="submit"
+                                disabled={registerLoading}
+                                className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                                    registerLoading 
+                                        ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                                        : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-200'
+                                }`}
+                            >
+                                {registerLoading ? (
+                                    <div className="flex items-center justify-center">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Creando cuenta...
+                                    </div>
+                                ) : (
+                                    'Crear Cuenta'
+                                )}
+                            </button>
+                            </form>
+                        )}
+
+                        {/* Footer del modal */}
+                        <div className="px-6 py-4 bg-gray-50 rounded-b-2xl">
+                            <p className="text-sm text-gray-600 text-center">
+                                Al crear una cuenta, aceptas nuestros{' '}
+                                <a href="#" className="text-blue-600 hover:underline">Términos de Servicio</a>
+                                {' '}y{' '}
+                                <a href="#" className="text-blue-600 hover:underline">Política de Privacidad</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Overlay de transición */}
             <TransitionOverlay 

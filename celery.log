@@ -1,0 +1,257 @@
+INFO 2025-08-19 00:54:26,134 connection 36104 13348 Connected to redis://localhost:6379/0
+INFO 2025-08-19 00:54:26,137 mingle 36104 13348 mingle: searching for neighbors
+INFO 2025-08-19 00:54:27,159 mingle 36104 13348 mingle: all alone
+INFO 2025-08-19 01:00:00,093 strategy 36104 13348 Task scada_proxy.tasks.fetch_historical_measurements_for_all_devices[606b6477-0ea9-4833-9e86-f187aa7fea16] received
+INFO 2025-08-19 01:00:00,097 tasks 36104 13348 Iniciando la obtención de mediciones históricas para los últimos 2:00:00. Rango: 2025-08-18 23:00:00.097410-05:00 -> 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:00,126 tasks 36104 13348 Tarea creada para dispositivo inverter1 (ada64a56-331c-4489-a02c-7aac55d54111) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,127 tasks 36104 13348 Tarea creada para dispositivo inverter2 (37f796af-7caa-459f-bc86-3e2f7936a879) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,127 tasks 36104 13348 Tarea creada para dispositivo Prueba (3a5eca15-cd03-4a83-8981-b432d2217344) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,128 tasks 36104 13348 Tarea creada para dispositivo estación (46094855-4fe6-4c10-afe3-444a101719e2) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,129 tasks 36104 13348 Tarea creada para dispositivo Medidor 2 - Cesmag (3ccb420f-e6a0-4461-8dc6-e8568bd699f0) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,129 tasks 36104 13348 Tarea creada para dispositivo Medidor 1 - Cesmag (4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,130 tasks 36104 13348 Tarea creada para dispositivo Medidor 4 - Cesmag (6ebd34d4-4883-4682-aab3-f3243544a67a) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,131 tasks 36104 13348 Tarea creada para dispositivo Medidor 3 - Cesmag (348b47aa-b285-4948-a9fb-a57bc38cedf1) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,131 tasks 36104 13348 Tarea creada para dispositivo Inverter 1 - Cesmag (e96986a9-a127-4139-975d-1a711ae25327) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,132 tasks 36104 13348 Tarea creada para dispositivo Estación San Damian - CESMAG (819dfc27-fe61-42e6-9413-0f8820bea03e) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,133 tasks 36104 13348 Tarea creada para dispositivo Medidor 4 - HUDN (ad749299-a3a4-4270-b80d-6251389eabcb) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,133 tasks 36104 13348 Tarea creada para dispositivo Medidor 2 - HUDN (6ecb37db-ab95-4640-b8ce-c7f8bb91f611) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,134 tasks 36104 13348 Tarea creada para dispositivo Medidor 1 - HUDN (628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,135 tasks 36104 13348 Tarea creada para dispositivo Medidor 3 - HUDN (673f11ce-77da-4839-8498-a5948d984d8c) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,135 tasks 36104 13348 Tarea creada para dispositivo Inversor 1 - HUDN (f6893ba9-7175-44ea-8624-a47bf55158c9) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,136 tasks 36104 13348 Tarea creada para dispositivo Estación - HUDN (49435c0b-ada3-4ced-ad15-9418013a30d1) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,137 tasks 36104 13348 Tarea creada para dispositivo Medidor 2 - Alvernia (5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,137 tasks 36104 13348 Tarea creada para dispositivo Medidor 3 - Alvernia (4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,138 tasks 36104 13348 Tarea creada para dispositivo Medidor 4 - Alvernia (0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,139 tasks 36104 13348 Tarea creada para dispositivo Medidor 1 - Alvernia (b06d770e-ec25-49a0-949d-60c9e169f2bb) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,139 tasks 36104 13348 Tarea creada para dispositivo Fronius - Alvernia (0f962572-fab3-4c09-bffc-465b56a22d8d) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,140 tasks 36104 13348 Tarea creada para dispositivo Estación Alvernia (1fb6c4ae-2e7c-4758-80bf-156c7826fead) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,141 tasks 36104 13348 Tarea creada para dispositivo Medidor 1 - UCC (86b9c020-4645-4c39-891a-d1e8a7048c12) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,141 tasks 36104 13348 Tarea creada para dispositivo Medidor 3 - UCC (d6915dc0-4391-4514-b4c6-58a30f1988f3) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,142 tasks 36104 13348 Tarea creada para dispositivo Medidor 4 - UCC (7130f831-d8ca-4fd8-adb5-f02dbc7543b3) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,143 tasks 36104 13348 Tarea creada para dispositivo Medidor 2 - UCC (bc80e209-e290-4aaa-a6e8-931e9fb7b803) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,143 tasks 36104 13348 Tarea creada para dispositivo Fronius - UCC (29630827-0242-492f-9ed0-a48d120da2ac) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,144 tasks 36104 13348 Tarea creada para dispositivo Estación - UCC (74154481-3f6c-4827-a8d7-ea6fbae62fd9) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,144 tasks 36104 13348 Tarea creada para dispositivo Bloque Nuevo - Medidor 3 (19934344-9c79-482f-b74f-50dde3a6079c) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,145 tasks 36104 13348 Tarea creada para dispositivo Bloque Nuevo - Medidor 1 (7ba9fa00-7ef9-4246-8c30-85ea56088e0d) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,145 tasks 36104 13348 Tarea creada para dispositivo Medidor 4 - Udenar (0f7648d7-7575-4419-8192-a4f80b55309b) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,146 tasks 36104 13348 Tarea creada para dispositivo Bloque Nuevo - Medidor 2 (1da46bc5-1655-4ba1-82c2-0b283370a97b) desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia).
+INFO 2025-08-19 01:00:00,146 tasks 36104 13348 Todas las subtareas para obtener mediciones han sido encoladas.
+INFO 2025-08-19 01:00:00,149 strategy 36104 13348 Task scada_proxy.tasks.sync_scada_metadata[56342c97-a06d-4570-b7bb-7f9b8c28f2db] received
+INFO 2025-08-19 01:00:00,322 tasks 36104 13348 Sincronizadas 5 instituciones.
+INFO 2025-08-19 01:00:00,412 tasks 36104 13348 Sincronizadas 3 categorías de dispositivos.
+INFO 2025-08-19 01:00:00,540 tasks 36104 13348 Desactivados 2 dispositivos que ya no se encuentran en la API SCADA.
+INFO 2025-08-19 01:00:00,544 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5b999060-892b-4d55-ae09-d80009c65858] received
+INFO 2025-08-19 01:00:00,567 tasks 36104 13348 Obteniendo mediciones para dispositivo ada64a56-331c-4489-a02c-7aac55d54111 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:00,711 tasks 36104 13348 Dispositivo ada64a56-331c-4489-a02c-7aac55d54111: 30 nuevas, 30 actualizadas
+INFO 2025-08-19 01:00:00,714 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[d98515aa-7e8f-412c-8280-a04b246c10c4] received
+INFO 2025-08-19 01:00:00,737 tasks 36104 13348 Obteniendo mediciones para dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:00,873 tasks 36104 13348 Dispositivo 37f796af-7caa-459f-bc86-3e2f7936a879: 30 nuevas, 30 actualizadas
+INFO 2025-08-19 01:00:00,875 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[2e3de525-0e82-467b-b355-f45fa9c87383] received
+INFO 2025-08-19 01:00:00,899 tasks 36104 13348 Obteniendo mediciones para dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:00,963 tasks 36104 13348 Dispositivo 3a5eca15-cd03-4a83-8981-b432d2217344: 0 nuevas, 0 actualizadas
+INFO 2025-08-19 01:00:00,967 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[78d7703d-e0b9-4557-837d-b96c606c0e41] received
+INFO 2025-08-19 01:00:00,990 tasks 36104 13348 Obteniendo mediciones para dispositivo 46094855-4fe6-4c10-afe3-444a101719e2 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:01,164 tasks 36104 13348 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 54 nuevas, 55 actualizadas
+INFO 2025-08-19 01:00:01,167 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5f1ca6d7-e8ed-4f58-9204-40c8eb20fb95] received
+INFO 2025-08-19 01:00:01,189 tasks 36104 13348 Obteniendo mediciones para dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:01,371 tasks 36104 13348 Dispositivo 3ccb420f-e6a0-4461-8dc6-e8568bd699f0: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:01,374 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[8ca59fed-7290-41da-a554-87dd35978c6f] received
+INFO 2025-08-19 01:00:01,399 tasks 36104 13348 Obteniendo mediciones para dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:01,593 tasks 36104 13348 Dispositivo 4c57e1a2-08e5-4ab4-b37a-c09f4b8d2c02: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:01,597 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[406569bb-bf7e-47bc-b72e-e899e8225f6a] received
+INFO 2025-08-19 01:00:01,621 tasks 36104 13348 Obteniendo mediciones para dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:01,810 tasks 36104 13348 Dispositivo 6ebd34d4-4883-4682-aab3-f3243544a67a: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:01,812 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c4a84231-59be-410f-8bec-19444f2be014] received
+INFO 2025-08-19 01:00:01,835 tasks 36104 13348 Obteniendo mediciones para dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:02,031 tasks 36104 13348 Dispositivo 348b47aa-b285-4948-a9fb-a57bc38cedf1: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:02,033 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b413a1a6-d6ed-4e7a-938a-46485059810b] received
+INFO 2025-08-19 01:00:02,065 tasks 36104 13348 Obteniendo mediciones para dispositivo e96986a9-a127-4139-975d-1a711ae25327 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:02,124 tasks 36104 13348 Dispositivo e96986a9-a127-4139-975d-1a711ae25327: 0 nuevas, 0 actualizadas
+INFO 2025-08-19 01:00:02,135 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[0e1e96a5-aea7-495b-89a3-f7746420cd5e] received
+INFO 2025-08-19 01:00:02,165 tasks 36104 13348 Obteniendo mediciones para dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:02,319 tasks 36104 13348 Dispositivo 819dfc27-fe61-42e6-9413-0f8820bea03e: 27 nuevas, 28 actualizadas
+INFO 2025-08-19 01:00:02,323 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[70549cec-2c79-4bb2-b6e3-7e500b898255] received
+INFO 2025-08-19 01:00:02,357 tasks 36104 13348 Obteniendo mediciones para dispositivo ad749299-a3a4-4270-b80d-6251389eabcb desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:02,537 tasks 36104 13348 Dispositivo ad749299-a3a4-4270-b80d-6251389eabcb: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:02,539 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[b0de1fd7-f30d-439d-b903-f14de42f422f] received
+INFO 2025-08-19 01:00:02,563 tasks 36104 13348 Obteniendo mediciones para dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:02,740 tasks 36104 13348 Dispositivo 6ecb37db-ab95-4640-b8ce-c7f8bb91f611: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:02,744 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[0fe76888-d6fd-496b-abf6-5c22436dad25] received
+INFO 2025-08-19 01:00:02,768 tasks 36104 13348 Obteniendo mediciones para dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:02,957 tasks 36104 13348 Dispositivo 628cf5fd-e92b-4f4b-b5eb-a62ccb1bdec9: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:02,961 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a8507597-d2ff-4dcb-9a19-8b34f6ab4357] received
+INFO 2025-08-19 01:00:02,984 tasks 36104 13348 Obteniendo mediciones para dispositivo 673f11ce-77da-4839-8498-a5948d984d8c desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:03,169 tasks 36104 13348 Dispositivo 673f11ce-77da-4839-8498-a5948d984d8c: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:03,172 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5d6e0a8a-6d29-4668-bc05-7bc70c56b6b3] received
+INFO 2025-08-19 01:00:03,198 tasks 36104 13348 Obteniendo mediciones para dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:03,262 tasks 36104 13348 Dispositivo f6893ba9-7175-44ea-8624-a47bf55158c9: 0 nuevas, 0 actualizadas
+INFO 2025-08-19 01:00:03,265 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a0207a42-f33a-4f92-8ba1-5c8c4946a281] received
+INFO 2025-08-19 01:00:03,288 tasks 36104 13348 Obteniendo mediciones para dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:03,351 tasks 36104 13348 Dispositivo 49435c0b-ada3-4ced-ad15-9418013a30d1: 0 nuevas, 0 actualizadas
+INFO 2025-08-19 01:00:03,355 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[26350265-4972-4728-a1cf-e0706dbf97fb] received
+INFO 2025-08-19 01:00:03,383 tasks 36104 13348 Obteniendo mediciones para dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:03,557 tasks 36104 13348 Dispositivo 5c1b09d3-667b-4fe0-94d4-7ee887c9ff5c: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:03,560 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[79d17210-6540-463c-8f78-a8133027b530] received
+INFO 2025-08-19 01:00:03,584 tasks 36104 13348 Obteniendo mediciones para dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:03,762 tasks 36104 13348 Dispositivo 4ad7d5ad-ed39-472a-99d1-cbe4866b6e0a: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:03,765 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[4c69c3a3-5cf4-49c1-8b65-8ea435a36e5c] received
+INFO 2025-08-19 01:00:03,787 tasks 36104 13348 Obteniendo mediciones para dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:03,970 tasks 36104 13348 Dispositivo 0c3d69cb-ff5b-4664-a14d-1ee8e0e8e385: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:03,973 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[ca299968-01cc-452b-b527-cbcde0dc0a55] received
+INFO 2025-08-19 01:00:03,999 tasks 36104 13348 Obteniendo mediciones para dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:04,187 tasks 36104 13348 Dispositivo b06d770e-ec25-49a0-949d-60c9e169f2bb: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:04,190 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[6351c0a4-8537-44ec-9492-05b52e863d3a] received
+INFO 2025-08-19 01:00:04,314 tasks 36104 13348 Obteniendo mediciones para dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:04,375 tasks 36104 13348 Dispositivo 0f962572-fab3-4c09-bffc-465b56a22d8d: 0 nuevas, 0 actualizadas
+INFO 2025-08-19 01:00:04,379 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[49721f9b-d277-416e-9338-5a0af80a92aa] received
+INFO 2025-08-19 01:00:04,401 tasks 36104 13348 Obteniendo mediciones para dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:04,519 tasks 36104 13348 Dispositivo 1fb6c4ae-2e7c-4758-80bf-156c7826fead: 27 nuevas, 28 actualizadas
+INFO 2025-08-19 01:00:04,522 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[d35d5ccc-bc68-4652-85b2-dd59fb02d439] received
+INFO 2025-08-19 01:00:04,551 tasks 36104 13348 Obteniendo mediciones para dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:04,774 tasks 36104 13348 Dispositivo 86b9c020-4645-4c39-891a-d1e8a7048c12: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:04,778 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[ff9dd175-a30d-4c79-b333-b425f81a323c] received
+INFO 2025-08-19 01:00:04,801 tasks 36104 13348 Obteniendo mediciones para dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:04,990 tasks 36104 13348 Dispositivo d6915dc0-4391-4514-b4c6-58a30f1988f3: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:04,994 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[a3f41e20-5aa8-4e7d-905a-296d6a878d8a] received
+INFO 2025-08-19 01:00:05,017 tasks 36104 13348 Obteniendo mediciones para dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:05,213 tasks 36104 13348 Dispositivo 7130f831-d8ca-4fd8-adb5-f02dbc7543b3: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:05,216 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[cd8a2061-7385-4390-b433-7561104bbfd9] received
+INFO 2025-08-19 01:00:05,239 tasks 36104 13348 Obteniendo mediciones para dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:05,438 tasks 36104 13348 Dispositivo bc80e209-e290-4aaa-a6e8-931e9fb7b803: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:05,441 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[c1fc1b16-d6f2-4f7f-add8-92bfc0819907] received
+INFO 2025-08-19 01:00:05,468 tasks 36104 13348 Obteniendo mediciones para dispositivo 29630827-0242-492f-9ed0-a48d120da2ac desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:05,528 tasks 36104 13348 Dispositivo 29630827-0242-492f-9ed0-a48d120da2ac: 0 nuevas, 0 actualizadas
+INFO 2025-08-19 01:00:05,533 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[5c33027d-a76e-472c-b023-e0e18a96c013] received
+INFO 2025-08-19 01:00:05,555 tasks 36104 13348 Obteniendo mediciones para dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9 desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:05,620 tasks 36104 13348 Dispositivo 74154481-3f6c-4827-a8d7-ea6fbae62fd9: 0 nuevas, 0 actualizadas
+INFO 2025-08-19 01:00:05,624 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[f2dd2821-eaac-41b0-9dc0-1e2dfa0234ea] received
+INFO 2025-08-19 01:00:05,648 tasks 36104 13348 Obteniendo mediciones para dispositivo 19934344-9c79-482f-b74f-50dde3a6079c desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:05,824 tasks 36104 13348 Dispositivo 19934344-9c79-482f-b74f-50dde3a6079c: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:05,827 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[56cc0070-15a3-4a7c-b4e2-6b394da72157] received
+INFO 2025-08-19 01:00:05,851 tasks 36104 13348 Obteniendo mediciones para dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:06,024 tasks 36104 13348 Dispositivo 7ba9fa00-7ef9-4246-8c30-85ea56088e0d: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:06,029 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[3283ff88-1ab4-43ea-8ca8-5849ab317979] received
+INFO 2025-08-19 01:00:06,052 tasks 36104 13348 Obteniendo mediciones para dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:06,246 tasks 36104 13348 Dispositivo 0f7648d7-7575-4419-8192-a4f80b55309b: 30 nuevas, 31 actualizadas
+INFO 2025-08-19 01:00:06,250 strategy 36104 13348 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[26b994cc-e8f4-4a4b-bfcb-f1621e2bb494] received
+INFO 2025-08-19 01:00:06,272 tasks 36104 13348 Obteniendo mediciones para dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b desde 2025-08-18 23:00:00.097410-05:00 hasta 2025-08-19 01:00:00.097410-05:00 (hora Colombia)
+INFO 2025-08-19 01:00:06,457 tasks 36104 13348 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 30 nuevas, 31 actualizadas
+ERROR 2025-08-19 01:36:55,440 signal 22460 34680 Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x000001C943DEF4D0>> raised: SyntaxError("expected 'except' or 'finally' block", ('C:\\Users\\burav\\Downloads\\Proyecto MTE\\MteLumen_App\\authentication\\views.py', 100, 9, "        user = serializer.validated_data['user']\n", 100, 13))
+Traceback (most recent call last):
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\celery\utils\dispatch\signal.py", line 280, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\celery\fixups\django.py", line 101, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\celery\fixups\django.py", line 141, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\core\checks\registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\core\checks\urls.py", line 44, in check_url_namespaces_unique
+    all_namespaces = _load_all_namespaces(resolver)
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\core\checks\urls.py", line 63, in _load_all_namespaces
+    url_patterns = getattr(resolver, "url_patterns", [])
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\urls\resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\urls\resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "C:\Users\burav\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\core\urls.py", line 49, in <module>
+    path('auth/', include('authentication.urls')),
+                  ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\urls\conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "C:\Users\burav\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\authentication\urls.py", line 5, in <module>
+    from .views import (
+    ...<8 lines>...
+    )
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\authentication\views.py", line 100
+    user = serializer.validated_data['user']
+    ^^^^
+SyntaxError: expected 'except' or 'finally' block
+ERROR 2025-08-19 01:37:03,906 signal 37736 35228 Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x00000230D0C3F4D0>> raised: SyntaxError("expected 'except' or 'finally' block", ('C:\\Users\\burav\\Downloads\\Proyecto MTE\\MteLumen_App\\authentication\\views.py', 100, 9, "        user = serializer.validated_data['user']\n", 100, 13))
+Traceback (most recent call last):
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\celery\utils\dispatch\signal.py", line 280, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\celery\fixups\django.py", line 101, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\celery\fixups\django.py", line 141, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\core\checks\registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\core\checks\urls.py", line 44, in check_url_namespaces_unique
+    all_namespaces = _load_all_namespaces(resolver)
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\core\checks\urls.py", line 63, in _load_all_namespaces
+    url_patterns = getattr(resolver, "url_patterns", [])
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\urls\resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\utils\functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\urls\resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "C:\Users\burav\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\core\urls.py", line 49, in <module>
+    path('auth/', include('authentication.urls')),
+                  ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\env_lumen\Lib\site-packages\django\urls\conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "C:\Users\burav\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\authentication\urls.py", line 5, in <module>
+    from .views import (
+    ...<8 lines>...
+    )
+  File "C:\Users\burav\Downloads\Proyecto MTE\MteLumen_App\authentication\views.py", line 100
+    user = serializer.validated_data['user']
+    ^^^^
+SyntaxError: expected 'except' or 'finally' block
+INFO 2025-08-19 01:39:44,095 connection 34764 19288 Connected to redis://localhost:6379/0
+INFO 2025-08-19 01:39:44,098 mingle 34764 19288 mingle: searching for neighbors
+INFO 2025-08-19 01:39:45,110 mingle 34764 19288 mingle: all alone

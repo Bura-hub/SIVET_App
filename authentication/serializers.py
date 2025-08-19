@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from .models import UserProfile, AuthToken, RefreshToken, LoginAttempt
 from .validators import CustomPasswordValidator
 import ipaddress
+import re
 
 # ========================= Serializador de Solicitud de Login =========================
 
@@ -226,7 +227,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         help_text="Nueva contraseña",
         write_only=True,
         style={'input_type': 'password'},
-        validators=[CustomPasswordValidator()]
+        validators=[]
     )
     
     # Confirmación de la nueva contraseña
@@ -288,7 +289,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
         style={'input_type': 'password'},
-        validators=[CustomPasswordValidator()]
+        validators=[]
     )
     confirm_password = serializers.CharField(
         write_only=True,
@@ -324,7 +325,39 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if User.objects.filter(email=email).exists():
             raise serializers.ValidationError("Este correo electrónico ya está registrado")
         
+        # Validación personalizada de contraseña
+        self._validate_password(password)
+        
         return attrs
+    
+    def _validate_password(self, password):
+        """
+        Valida la contraseña según los criterios de seguridad
+        """
+        errors = []
+        
+        # Verificar longitud mínima
+        if len(password) < 8:
+            errors.append("La contraseña debe tener al menos 8 caracteres")
+        
+        # Verificar mayúsculas
+        if not re.search(r'[A-Z]', password):
+            errors.append("La contraseña debe contener al menos una letra mayúscula")
+        
+        # Verificar minúsculas
+        if not re.search(r'[a-z]', password):
+            errors.append("La contraseña debe contener al menos una letra minúscula")
+        
+        # Verificar dígitos
+        if not re.search(r'\d', password):
+            errors.append("La contraseña debe contener al menos un número")
+        
+        # Verificar caracteres especiales
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            errors.append("La contraseña debe contener al menos un carácter especial (!@#$%^&*(),.?\":{}|<>)")
+        
+        if errors:
+            raise serializers.ValidationError(errors)
 
     def create(self, validated_data):
         """

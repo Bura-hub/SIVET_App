@@ -2,7 +2,8 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.utils import timezone
-from .models import User, UserProfile, AuthToken, RefreshToken, LoginAttempt
+from django.contrib.auth.models import User
+from .models import UserProfile, AuthToken, RefreshToken, LoginAttempt
 from .validators import CustomPasswordValidator
 import ipaddress
 
@@ -301,7 +302,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'username', 'email', 'first_name', 'last_name',
-            'password', 'confirm_password', 'phone_number', 'profile'
+            'password', 'confirm_password', 'profile'
         ]
         extra_kwargs = {
             'password': {'write_only': True},

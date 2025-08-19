@@ -93,7 +93,7 @@ class LoginView(ObtainAuthToken):
             
             # Autenticar usuario
             user = serializer.validated_data['user']
-            
+
             # Obtener o crear el perfil del usuario
             profile, created = UserProfile.objects.get_or_create(user=user)
             

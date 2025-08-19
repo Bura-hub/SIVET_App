@@ -13,6 +13,7 @@ const config = {
         USER_PROFILE: '/auth/profile/',
         SESSIONS: '/auth/sessions/',
         LOGOUT_ALL: '/auth/logout-all/',
+        REGISTER_USER: '/auth/register/',
     }
 };
 

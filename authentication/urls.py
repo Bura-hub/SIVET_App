@@ -46,6 +46,9 @@ urlpatterns = [
     # Ruta para obtener información de la sesión actual
     path('session/', SessionInfoView.as_view(), name='api_session_info'),
     
+    # Ruta para gestionar sesiones activas
+    path('sessions/', SessionInfoView.as_view(), name='api_sessions'),
+    
     # ========================= Endpoints de Seguridad =========================
     
     # Ruta para verificar estado de la cuenta

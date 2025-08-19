@@ -130,13 +130,21 @@ DATABASES = {
 if not all([os.getenv('name_db'), os.getenv('user_postgres'), os.getenv('password_user_postgres')]):
     raise EnvironmentError("Database configuration environment variables are not set.")
 
+# ========================= Configuración de Usuario Personalizado =========================
+
+# Mantener el modelo de usuario estándar de Django
+# AUTH_USER_MODEL = 'authentication.User'
+
 # ========================= Validación de Contraseñas =========================
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+     'OPTIONS': {'min_length': 12}},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {'NAME': 'authentication.validators.CustomPasswordValidator'},
+    {'NAME': 'authentication.validators.UserAttributeSimilarityValidator'},
 ]
 
 # ========================= Internacionalización =========================
@@ -158,13 +166,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',     # Autenticación por token
-        'rest_framework.authentication.SessionAuthentication',   # Para acceso al admin
+        'authentication.authentication.CustomTokenAuthentication',  # Autenticación personalizada
+        'rest_framework.authentication.SessionAuthentication',      # Para acceso al admin
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',            # Requiere login por defecto
+        'rest_framework.permissions.IsAuthenticated',               # Requiere login por defecto
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # Esquema OpenAPI
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+    },
 }
 
 # ========================= Caché en Memoria =========================
@@ -236,13 +252,14 @@ CELERY_BEAT_SCHEDULE = {
 # ========================= Documentación de la API (drf-spectacular) =========================
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'SIVET API',
+    'TITLE': 'MTE Lumen API',
     'DESCRIPTION': (
-        'API para integrar datos SCADA con sistemas de monitoreo y análisis, '
-        'permitiendo la consulta de dispositivos y mediciones, así como la ejecución '
-        'y seguimiento de tareas de procesamiento histórico en segundo plano.'
+        'API completa para el sistema MTE Lumen con autenticación avanzada, '
+        'monitoreo de sistemas eléctricos, estaciones meteorológicas e inversores. '
+        'Incluye funcionalidades de seguridad mejoradas, tokens de refresco, '
+        'y auditoría completa de acceso.'
     ),
-    'VERSION': '1.0.0',
+    'VERSION': '2.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SECURITY': [{"TokenAuth": []}],
     'COMPONENTS': {
@@ -251,10 +268,16 @@ SPECTACULAR_SETTINGS = {
                 'type': 'apiKey',
                 'in': 'header',
                 'name': 'Authorization',
-                'description': "Formato: **Token <tu_token>**"
+                'description': "Formato: **Token <access_token>**"
             }
         }
     },
+    'TAGS': [
+        {'name': 'Autenticación', 'description': 'Endpoints para autenticación y gestión de usuarios'},
+        {'name': 'Indicadores', 'description': 'KPIs y métricas del sistema'},
+        {'name': 'SCADA', 'description': 'Integración con sistemas SCADA'},
+        {'name': 'Reportes', 'description': 'Generación y gestión de reportes'},
+    ],
 }
 
 # ========================= Configuración de Logging =========================

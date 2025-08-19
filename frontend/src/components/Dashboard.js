@@ -16,6 +16,9 @@ import {
   parseISODateToColombia
 } from '../utils/dateUtils';
 
+// Importar funciones de manejo de errores de autenticación y utilidades de API
+import * as apiUtils from '../utils/apiConfig';
+
 // Importaciones desde Chart.js y el plugin de zoom
 import {
   Chart as ChartJS,
@@ -45,117 +48,9 @@ ChartJS.register(
   zoomPlugin
 );
 
-// Constantes para las unidades y sus conversiones
-export const unitConversions = {
-  power: {
-    W: 1,
-    kW: 1000,
-    MW: 1000000,
-    VAr: 1,
-    kVAR: 1000,
-    MVAR: 1000000,
-    VA: 1,
-    kVA: 1000,
-    MVA: 1000000
-  },
-  energy: {
-    Wh: 1,
-    kWh: 1000,
-    MWh: 1000000,
-    VArh: 1,
-    kVARh: 1000,
-    MVARh: 1000000,
-    VAh: 1,
-    kVAh: 1000,
-    MVAh: 1000000
-  },
-  temperature: {
-    '°C': 1,
-    '°F': 'special'
-  },
-  humidity: {
-    '%RH': 1
-  },
-  speed: {
-    'km/h': 1,
-    'm/s': 3.6
-  }
-};
 
-/**
- * Convierte un valor de una unidad a otra
- * @param {number} value - Valor a convertir
- * @param {string} fromUnit - Unidad original
- * @param {string} toUnit - Unidad destino
- * @param {string} type - Tipo de medida (power, energy, etc.)
- * @returns {number} - Valor convertido
- */
-export const convertUnit = (value, fromUnit, toUnit, type = 'power') => {
-  if (value === null || value === undefined) return 0;
-  if (fromUnit === toUnit) return value;
 
-  const conversions = unitConversions[type];
-  if (!conversions) throw new Error(`Tipo de unidad no soportado: ${type}`);
 
-  // Manejo especial para conversiones de temperatura
-  if (type === 'temperature') {
-    if (fromUnit === '°F' && toUnit === '°C') {
-      return (value - 32) * (5/9);
-    } else if (fromUnit === '°C' && toUnit === '°F') {
-      return (value * (9/5)) + 32;
-    }
-  }
-
-  return (value * conversions[fromUnit]) / conversions[toUnit];
-};
-
-/**
- * Formatea un valor numérico con su unidad
- * @param {number} value - Valor a formatear
- * @param {string} unit - Unidad del valor
- * @param {number} decimals - Número de decimales
- * @returns {string} - Valor formateado con unidad
- */
-export const formatWithUnit = (value, unit, decimals = 2) => {
-  if (value === null || value === undefined) return 'N/A';
-  return `${value.toFixed(decimals)} ${unit}`;
-};
-
-/**
- * Determina el estado de un valor basado en umbrales
- * @param {number} value - Valor a evaluar
- * @param {Object} thresholds - Umbrales para cada estado
- * @returns {string} - Estado del valor (success, warning, error, normal)
- */
-export const getValueStatus = (value, thresholds) => {
-  if (!thresholds) return 'normal';
-  
-  if (value >= thresholds.error) return 'error';
-  if (value >= thresholds.warning) return 'warning';
-  if (value >= thresholds.success) return 'success';
-  return 'normal';
-};
-
-/**
- * Objeto con las configuraciones de umbrales para diferentes medidas
- */
-export const defaultThresholds = {
-  temperature: {
-    success: 18,
-    warning: 25,
-    error: 30
-  },
-  humidity: {
-    success: 30,
-    warning: 60,
-    error: 80
-  },
-  powerFactor: {
-    success: 0.95,
-    warning: 0.85,
-    error: 0.8
-  }
-};
 
 // Configuración base de la API
 export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
@@ -190,48 +85,11 @@ export const ENDPOINTS = {
   }
 };
 
-/**
- * Función para construir URLs completas de la API
- * @param {string} endpoint - Endpoint de la API
- * @param {Object} params - Parámetros de consulta
- * @returns {string} - URL completa
- */
-export const buildApiUrl = (endpoint, params = {}) => {
-  const url = new URL(API_BASE_URL + endpoint, window.location.origin);
-  Object.keys(params).forEach(key => {
-    if (params[key] !== undefined && params[key] !== null) {
-      url.searchParams.append(key, params[key]);
-    }
-  });
-  return url.toString();
-};
 
-/**
- * Opciones por defecto para las peticiones fetch
- * @param {string} authToken - Token de autenticación
- * @returns {Object} - Opciones de configuración
- */
-export const getDefaultFetchOptions = (authToken) => ({
-        headers: { 
-          'Authorization': `Token ${authToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
 
-/**
- * Función para manejar errores de la API
- * @param {Response} response - Respuesta de fetch
- * @returns {Promise} - Promesa resuelta con los datos o rechazada con error
- */
-export const handleApiResponse = async (response) => {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({
-      detail: 'Error de red desconocido'
-    }));
-    throw new Error(error.detail || `Error ${response.status}: ${response.statusText}`);
-  }
-  return response.json();
-};
+
+
+
 
 // Estados posibles para las tareas
 export const TaskStatus = {
@@ -262,13 +120,18 @@ export class TaskManager {
 
     try {
       const endpoint = this._getEndpointForTask(taskType);
-      const response = await fetch(buildApiUrl(endpoint), {
-        method: 'POST',
-        ...getDefaultFetchOptions(this.authToken),
-        body: JSON.stringify(params)
-      });
-
-      const data = await handleApiResponse(response);
+      const data = await apiUtils.fetchWithAuth(
+        apiUtils.buildApiUrl(endpoint), 
+        {
+          method: 'POST',
+          ...apiUtils.getDefaultFetchOptions(this.authToken),
+          body: JSON.stringify(params)
+        },
+        (message) => {
+          console.warn(`Error de autenticación en tarea ${taskType}: ${message}`);
+        }
+      );
+      
       this._updateTaskStatus(taskType, TaskStatus.COMPLETED);
       return data;
     } catch (error) {
@@ -476,25 +339,35 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         }
       };
 
-      // Realizar todas las llamadas en paralelo
-      const [kpisResponse, currentMonthChartsResponse, prevMonthChartsResponse] = 
-        await Promise.all([
-          fetch(buildApiUrl(ENDPOINTS.dashboard.kpi), getDefaultFetchOptions(authToken)),
-          fetch(buildApiUrl(ENDPOINTS.dashboard.charts, {
+      // Función para manejar errores de autenticación
+      const handleAuthError = (message) => {
+        setError(message);
+        // El usuario será redirigido automáticamente por handleApiResponse
+      };
+
+      // Realizar todas las llamadas en paralelo usando fetchWithAuth
+      const [kpisData, currentMonthCharts, prevMonthCharts] = await Promise.all([
+        apiUtils.fetchWithAuth(
+          apiUtils.buildApiUrl(ENDPOINTS.dashboard.kpi), 
+          apiUtils.getDefaultFetchOptions(authToken),
+          handleAuthError
+        ),
+        apiUtils.fetchWithAuth(
+          apiUtils.buildApiUrl(ENDPOINTS.dashboard.charts, {
             start_date: formatDateForAPI(dates.currentMonth.start),
             end_date: formatDateForAPI(dates.currentMonth.end)
-          }), getDefaultFetchOptions(authToken)),
-          fetch(buildApiUrl(ENDPOINTS.dashboard.charts, {
+          }), 
+          apiUtils.getDefaultFetchOptions(authToken),
+          handleAuthError
+        ),
+        apiUtils.fetchWithAuth(
+          apiUtils.buildApiUrl(ENDPOINTS.dashboard.charts, {
             start_date: formatDateForAPI(dates.prevMonth.start),
             end_date: formatDateForAPI(dates.prevMonth.end)
-          }), getDefaultFetchOptions(authToken))
-        ]);
-
-      // Procesar las respuestas
-      const [kpisData, currentMonthCharts, prevMonthCharts] = await Promise.all([
-        handleApiResponse(kpisResponse),
-        handleApiResponse(currentMonthChartsResponse),
-        handleApiResponse(prevMonthChartsResponse)
+          }), 
+          apiUtils.getDefaultFetchOptions(authToken),
+          handleAuthError
+        )
       ]);
 
       // Actualizar KPIs con las unidades correctas

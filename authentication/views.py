@@ -1,5 +1,5 @@
 # Importaciones necesarias para documentación de API con drf_spectacular
-from drf_spectacular.utils import extend_schema, OpenApiExample
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiParameter
 
 # Vista base para obtener tokens de autenticación
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -10,73 +10,577 @@ from rest_framework.authtoken.models import Token
 # Clases y utilidades de respuesta y vistas de DRF
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.viewsets import ViewSet
+
+# Rate limiting
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
+
+# Utilidades de Django
+from django.utils import timezone
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.db import transaction
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
+
+# Logging
+import logging
+logger = logging.getLogger('security')
 
 # Serializadores personalizados para login y logout
 from .serializers import (
     LoginRequestSerializer,
     LoginResponseSerializer,
-    LogoutResponseSerializer
+    LogoutResponseSerializer,
+    RefreshTokenRequestSerializer,
+    RefreshTokenResponseSerializer,
+    ChangePasswordSerializer,
+    UserProfileSerializer,
+    UserRegistrationSerializer,
+    SessionInfoSerializer
 )
+
+# Modelos personalizados
+from .models import UserProfile, AuthToken, RefreshToken, LoginAttempt
+
+# Utilidades
+import ipaddress
+from datetime import timedelta
 
 # ========================= Vistas de Autenticación =========================
 
 @extend_schema(
-    tags=["Autenticación"],  # Categoría en la documentación
-    request=LoginRequestSerializer,  # Esquema de solicitud esperada
-    responses={200: LoginResponseSerializer},  # Esquema de respuesta exitosa
+    tags=["Autenticación"],
+    request=LoginRequestSerializer,
+    responses={200: LoginResponseSerializer, 400: "Bad Request", 429: "Too Many Requests"},
     examples=[
         OpenApiExample(
-            "Ejemplo de login",  # Nombre del ejemplo
-            value={"username": "admin", "password": "12345"}  # Ejemplo de datos de entrada
+            "Ejemplo de login exitoso",
+            value={
+                "username": "admin",
+                "password": "SecurePass123!",
+                "remember_device": True
+            }
         )
     ],
-    description="Obtiene un token de autenticación para el usuario especificado."  # Descripción general del endpoint
+    description="Obtiene tokens de acceso y refresco para el usuario especificado."
 )
+@method_decorator(ratelimit(key='ip', rate='5/m', method='POST'), name='post')
 class LoginView(ObtainAuthToken):
-    # Maneja la solicitud POST para iniciar sesión
+    """
+    Vista de login mejorada con rate limiting, logging de seguridad y tokens de refresco
+    """
+    
     def post(self, request, *args, **kwargs):
-        # Serializa y valida los datos de entrada
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-
-        # Obtiene o crea un token para el usuario autenticado
-        token, created = Token.objects.get_or_create(user=user)
-
-        # Devuelve el token junto con información básica del usuario
-        return Response({
-            'token': token.key,
-            'user_id': user.pk,
-            'username': user.username,
-            'is_superuser': user.is_superuser
-        })
+        """
+        Maneja la solicitud POST para iniciar sesión
+        """
+        # Obtener IP del cliente
+        client_ip = self._get_client_ip(request)
+        username = request.data.get('username', '')
+        
+        # Log del intento de login
+        logger.info(f"Login attempt from IP: {client_ip}, Username: {username}")
+        
+        try:
+            # Serializa y valida los datos de entrada
+            serializer = self.serializer_class(data=request.data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            
+            # Autenticar usuario
+            user = serializer.validated_data['user']
+            
+            # Obtener o crear el perfil del usuario
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            # Verificar si la cuenta está bloqueada
+            if profile.is_locked():
+                self._log_login_attempt(username, client_ip, 'locked', 'Cuenta bloqueada temporalmente')
+                return Response({
+                    'error': 'Cuenta bloqueada',
+                    'message': f'Tu cuenta está bloqueada hasta {profile.locked_until.strftime("%H:%M")}',
+                    'locked_until': profile.locked_until
+                }, status=status.HTTP_423_LOCKED)
+            
+            # Verificar si requiere cambio de contraseña
+            if profile.require_password_change:
+                return Response({
+                    'error': 'Cambio de contraseña requerido',
+                    'message': 'Debes cambiar tu contraseña antes de continuar',
+                    'require_password_change': True
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            # Crear tokens
+            access_token, refresh_token = self._create_tokens(user, request)
+            
+            # Resetear intentos fallidos
+            profile.reset_failed_attempts()
+            
+            # Actualizar información de login
+            profile.last_login_ip = client_ip
+            profile.last_activity = timezone.now()
+            profile.save(update_fields=['last_login_ip', 'last_activity'])
+            
+            # Log de login exitoso
+            self._log_login_attempt(username, client_ip, 'success')
+            logger.info(f"Successful login for user: {username} from IP: {client_ip}")
+            
+            # Preparar respuesta
+            response_data = {
+                'access_token': access_token.key,
+                'refresh_token': refresh_token.token,
+                'user_id': user.pk,
+                'username': user.username,
+                'email': user.email,
+                'is_superuser': user.is_superuser,
+                'expires_in': int((access_token.expires_at - timezone.now()).total_seconds()),
+                'profile': self._get_user_profile(user),
+                'settings': {
+                    'require_password_change': profile.require_password_change,
+                    'last_password_change': profile.password_changed_at,
+                    'created_at': profile.created_at,
+                }
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except ValidationError as e:
+            # Log de error de validación
+            self._log_login_attempt(username, client_ip, 'failed', str(e))
+            return Response({'error': 'Error de validación', 'details': e.detail}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+        
+        except Exception as e:
+            # Log de error general
+            logger.error(f"Login error for user {username}: {str(e)}")
+            self._log_login_attempt(username, client_ip, 'failed', str(e))
+            return Response({'error': 'Error interno del servidor'}, 
+                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def _create_tokens(self, user, request):
+        """
+        Crea tokens de acceso y refresco para el usuario
+        """
+        # Obtener información del dispositivo
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        client_ip = self._get_client_ip(request)
+        device_name = self._detect_device_name(user_agent)
+        
+        # Crear token de acceso (30 días)
+        access_token = AuthToken.create_token(
+            user=user,
+            name=device_name,
+            user_agent=user_agent,
+            ip_address=client_ip,
+            days_valid=30
+        )
+        
+        # Crear token de refresco (90 días)
+        refresh_token = RefreshToken.create_refresh_token(user, days_valid=90)
+        
+        return access_token, refresh_token
+    
+    def _get_client_ip(self, request):
+        """
+        Obtiene la IP real del cliente
+        """
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    
+    def _detect_device_name(self, user_agent):
+        """
+        Detecta el tipo de dispositivo basado en el User Agent
+        """
+        user_agent_lower = user_agent.lower()
+        
+        if 'mobile' in user_agent_lower or 'android' in user_agent_lower or 'iphone' in user_agent_lower:
+            return 'Dispositivo móvil'
+        elif 'tablet' in user_agent_lower or 'ipad' in user_agent_lower:
+            return 'Tablet'
+        elif 'windows' in user_agent_lower:
+            return 'PC Windows'
+        elif 'mac' in user_agent_lower:
+            return 'Mac'
+        elif 'linux' in user_agent_lower:
+            return 'Linux'
+        else:
+            return 'Navegador web'
+    
+    def _get_user_profile(self, user):
+        """
+        Obtiene información del perfil del usuario
+        """
+        try:
+            profile = user.profile
+            return {
+                'avatar': profile.avatar.url if profile.avatar else None,
+                'bio': profile.bio,
+                'two_factor_enabled': profile.two_factor_enabled,
+                'theme_preference': profile.theme_preference,
+                'language': profile.language,
+            }
+        except UserProfile.DoesNotExist:
+            return None
+    
+    def _log_login_attempt(self, username, ip_address, status, failure_reason=''):
+        """
+        Registra el intento de login para auditoría
+        """
+        try:
+            user = None
+            if status == 'success':
+                user = User.objects.get(username=username)
+            
+            LoginAttempt.objects.create(
+                user=user,
+                username=username,
+                ip_address=ip_address,
+                status=status,
+                failure_reason=failure_reason,
+                user_agent=self.request.META.get('HTTP_USER_AGENT', '')
+            )
+        except Exception as e:
+            logger.error(f"Error logging login attempt: {str(e)}")
 
 
 @extend_schema(
-    tags=["Autenticación"],  # Categoría en la documentación
-    responses={200: LogoutResponseSerializer},  # Esquema de respuesta exitosa
+    tags=["Autenticación"],
+    responses={200: LogoutResponseSerializer},
     examples=[
         OpenApiExample(
-            "Ejemplo de logout",  # Nombre del ejemplo
-            value={"detail": "Logout exitoso"}  # Ejemplo de respuesta esperada
+            "Ejemplo de logout exitoso",
+            value={"detail": "Logout exitoso", "logout_time": "2024-01-01T12:00:00Z"}
         )
     ],
-    description=(
-        "Invalida el token del usuario autenticado (cierra sesión). "
-        "Debe enviarse en el encabezado **Authorization: Token <token>**."  # Instrucciones para el uso correcto del endpoint
-    )
+    description="Invalida el token del usuario autenticado y cierra la sesión."
 )
 class LogoutView(APIView):
-    # Restringe el acceso a usuarios autenticados únicamente
+    """
+    Vista de logout mejorada con logging y limpieza de tokens
+    """
     permission_classes = [IsAuthenticated]
 
-    # Maneja la solicitud POST para cerrar sesión
     def post(self, request):
-        # Elimina el token del usuario actual, invalidando la sesión
-        request.user.auth_token.delete()
+        """
+        Maneja la solicitud POST para cerrar sesión
+        """
+        try:
+            user = request.user
+            client_ip = self._get_client_ip(request)
+            
+            # Log del logout
+            logger.info(f"Logout for user: {user.username} from IP: {client_ip}")
+            
+            # Invalidar token actual
+            if hasattr(request, 'auth') and request.auth:
+                token = request.auth
+                token.is_active = False
+                token.save(update_fields=['is_active'])
+                
+                # También invalidar token de refresco asociado
+                RefreshToken.objects.filter(
+                    user=user,
+                    created__gte=token.created
+                ).update(is_active=False)
+            
+            # Logout exitoso
+            return Response({
+                "detail": "Logout exitoso",
+                "logout_time": timezone.now()
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Logout error for user {request.user.username}: {str(e)}")
+            return Response({
+                "error": "Error durante el logout"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def _get_client_ip(self, request):
+        """
+        Obtiene la IP real del cliente
+        """
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
 
-        # Retorna una respuesta indicando que el logout fue exitoso
-        return Response({"detail": "Logout exitoso"}, status=status.HTTP_200_OK)
+
+@extend_schema(
+    tags=["Autenticación"],
+    request=RefreshTokenRequestSerializer,
+    responses={200: RefreshTokenResponseSerializer},
+    description="Renueva el token de acceso usando un token de refresco válido."
+)
+@method_decorator(ratelimit(key='ip', rate='10/m', method='POST'), name='post')
+class RefreshTokenView(APIView):
+    """
+    Vista para renovar tokens de acceso usando tokens de refresco
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        """
+        Renueva el token de acceso
+        """
+        try:
+            serializer = RefreshTokenRequestSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            
+            refresh_token_value = serializer.validated_data['refresh_token']
+            
+            # Obtener el token de refresco
+            refresh_token = RefreshToken.objects.get(
+                token=refresh_token_value,
+                is_active=True
+            )
+            
+            user = refresh_token.user
+            
+            # Verificar que el usuario esté activo
+            if not user.is_active:
+                return Response({
+                    'error': 'Usuario inactivo'
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            # Crear nuevo token de acceso
+            new_access_token = AuthToken.create_token(
+                user=user,
+                name='Renovado',
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                ip_address=self._get_client_ip(request),
+                days_valid=30
+            )
+            
+            # Log de renovación exitosa
+            logger.info(f"Token refreshed for user: {user.username}")
+            
+            return Response({
+                'access_token': new_access_token.key,
+                'refresh_token': refresh_token_value,  # Mantener el mismo refresh token
+                'expires_in': int((new_access_token.expires_at - timezone.now()).total_seconds()),
+                'token_type': 'Bearer'
+            }, status=status.HTTP_200_OK)
+            
+        except RefreshToken.DoesNotExist:
+            return Response({
+                'error': 'Token de refresco inválido'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        except Exception as e:
+            logger.error(f"Token refresh error: {str(e)}")
+            return Response({
+                'error': 'Error interno del servidor'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def _get_client_ip(self, request):
+        """
+        Obtiene la IP real del cliente
+        """
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+
+@extend_schema(
+    tags=["Autenticación"],
+    request=ChangePasswordSerializer,
+    responses={200: "Contraseña cambiada exitosamente"},
+    description="Permite al usuario cambiar su contraseña."
+)
+class ChangePasswordView(APIView):
+    """
+    Vista para cambiar contraseña
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        Cambia la contraseña del usuario
+        """
+        try:
+            serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            
+            user = request.user
+            new_password = serializer.validated_data['new_password']
+            
+            # Cambiar contraseña
+            user.set_password(new_password)
+            user.password_changed_at = timezone.now()
+            user.require_password_change = False
+            user.save(update_fields=['password', 'password_changed_at', 'require_password_change'])
+            
+            # Invalidar todos los tokens existentes
+            AuthToken.objects.filter(user=user).update(is_active=False)
+            RefreshToken.objects.filter(user=user).update(is_active=False)
+            
+            # Log del cambio de contraseña
+            logger.info(f"Password changed for user: {user.username}")
+            
+            return Response({
+                'message': 'Contraseña cambiada exitosamente',
+                'password_changed_at': user.password_changed_at
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Password change error for user {request.user.username}: {str(e)}")
+            return Response({
+                'error': 'Error al cambiar la contraseña'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@extend_schema(
+    tags=["Autenticación"],
+    responses={200: UserProfileSerializer},
+    description="Obtiene y actualiza el perfil del usuario autenticado."
+)
+class UserProfileView(APIView):
+    """
+    Vista para gestionar el perfil del usuario
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Obtiene el perfil del usuario
+        """
+        try:
+            profile = request.user.profile
+            serializer = UserProfileSerializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except UserProfile.DoesNotExist:
+            return Response({
+                'error': 'Perfil no encontrado'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request):
+        """
+        Actualiza el perfil del usuario
+        """
+        try:
+            profile = request.user.profile
+            serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except UserProfile.DoesNotExist:
+            return Response({
+                'error': 'Perfil no encontrado'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+@extend_schema(
+    tags=["Autenticación"],
+    responses={200: SessionInfoSerializer},
+    description="Obtiene información sobre la sesión actual y dispositivos activos."
+)
+class SessionInfoView(APIView):
+    """
+    Vista para obtener información de la sesión
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Obtiene información de la sesión actual
+        """
+        try:
+            serializer = SessionInfoSerializer(request.user, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Session info error: {str(e)}")
+            return Response({
+                'error': 'Error al obtener información de la sesión'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@extend_schema(
+    tags=["Autenticación"],
+    request=UserRegistrationSerializer,
+    responses={201: "Usuario registrado exitosamente"},
+    description="Registra un nuevo usuario en el sistema."
+)
+@method_decorator(ratelimit(key='ip', rate='3/h', method='POST'), name='post')
+class UserRegistrationView(APIView):
+    """
+    Vista para registro de usuarios
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        """
+        Registra un nuevo usuario
+        """
+        try:
+            serializer = UserRegistrationSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            
+            with transaction.atomic():
+                user = serializer.save()
+                
+                # Log del registro exitoso
+                logger.info(f"User registered: {user.username}")
+                
+                return Response({
+                    'message': 'Usuario registrado exitosamente',
+                    'user_id': user.pk,
+                    'username': user.username,
+                    'email': user.email
+                }, status=status.HTTP_201_CREATED)
+                
+        except Exception as e:
+            logger.error(f"User registration error: {str(e)}")
+            return Response({
+                'error': 'Error al registrar el usuario'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@extend_schema(
+    tags=["Autenticación"],
+    responses={200: "Sesión cerrada en todos los dispositivos"},
+    description="Cierra la sesión del usuario en todos los dispositivos."
+)
+class LogoutAllDevicesView(APIView):
+    """
+    Vista para cerrar sesión en todos los dispositivos
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        Cierra sesión en todos los dispositivos
+        """
+        try:
+            user = request.user
+            
+            # Invalidar todos los tokens del usuario
+            AuthToken.objects.filter(user=user).update(is_active=False)
+            RefreshToken.objects.filter(user=user).update(is_active=False)
+            
+            # Log del logout masivo
+            logger.info(f"Logout all devices for user: {user.username}")
+            
+            return Response({
+                'message': 'Sesión cerrada en todos los dispositivos',
+                'logout_time': timezone.now()
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Logout all devices error: {str(e)}")
+            return Response({
+                'error': 'Error al cerrar sesión en todos los dispositivos'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

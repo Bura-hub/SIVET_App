@@ -81,16 +81,53 @@ export const getDefaultFetchOptions = (authToken) => ({
 });
 
 /**
- * Función para manejar errores de la API
+ * Función para manejar errores de la API con manejo especial para autenticación
  * @param {Response} response - Respuesta de fetch
+ * @param {Function} onAuthError - Callback para errores de autenticación
  * @returns {Promise} - Promesa resuelta con los datos o rechazada con error
  */
-export const handleApiResponse = async (response) => {
+export const handleApiResponse = async (response, onAuthError = null) => {
   if (!response.ok) {
+    // Manejar errores de autenticación específicamente
+    if (response.status === 401) {
+      console.warn('Token expirado o inválido');
+      if (onAuthError) {
+        onAuthError('Token expirado. Por favor, inicie sesión nuevamente.');
+      }
+      // Limpiar token del localStorage
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('username');
+      localStorage.removeItem('isSuperuser');
+      // Redirigir al login
+      window.location.href = '/';
+      return;
+    }
+    
     const error = await response.json().catch(() => ({
       detail: 'Error de red desconocido'
     }));
     throw new Error(error.detail || `Error ${response.status}: ${response.statusText}`);
   }
   return response.json();
+};
+
+/**
+ * Función para hacer peticiones fetch con manejo automático de errores de autenticación
+ * @param {string} url - URL de la petición
+ * @param {Object} options - Opciones de fetch
+ * @param {Function} onAuthError - Callback para errores de autenticación
+ * @returns {Promise} - Promesa con el resultado
+ */
+export const fetchWithAuth = async (url, options = {}, onAuthError = null) => {
+  try {
+    const response = await fetch(url, options);
+    return await handleApiResponse(response, onAuthError);
+  } catch (error) {
+    if (error.message.includes('Token expirado')) {
+      if (onAuthError) {
+        onAuthError(error.message);
+      }
+    }
+    throw error;
+  }
 };

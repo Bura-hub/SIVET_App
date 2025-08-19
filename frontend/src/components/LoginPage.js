@@ -52,13 +52,15 @@ function LoginPage({ onLoginSuccess }) {
             }
 
             if (response.ok) {
+                console.log('Login exitoso, datos recibidos:', data);
                 setMessage({ text: 'Inicio exitoso. Redireccionando...', type: 'success' });
                 setTransitionType('success');
                 setTransitionMessage('Inicio exitoso. Redireccionando...');
                 
                 setTimeout(() => {
                     setShowTransition(false);
-                    onLoginSuccess(data.token, data.username, data.is_superuser);
+                    console.log('Llamando a onLoginSuccess con:', data.access_token, data.username, data.is_superuser);
+                    onLoginSuccess(data.access_token, data.username, data.is_superuser);
                 }, 1500);
             } else {
                 const errorMessage = data.non_field_errors ? data.non_field_errors[0] : 'Credenciales inválidas. Inténtalo de nuevo.';

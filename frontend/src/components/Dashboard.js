@@ -214,9 +214,7 @@ const Icons = {
   
   wind: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wind" aria-hidden="true"><path d="M5 8h10"></path><path d="M4 12h16"></path><path d="M8 16h8"></path></svg>,
   
-  irradiance: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><path d="M3 12h1"></path><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M20 12h1"></path><path d="M3 12h1"></path><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M20 12h1"></path></svg>,
-  
-  task: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play-circle" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polygon points="10,8 16,12 10,16"></polygon></svg>
+  irradiance: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><path d="M3 12h1"></path><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M20 12h1"></path><path d="M3 12h1"></path><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M20 12h1"></path></svg>
 };
 
 // Componente principal del dashboard
@@ -274,16 +272,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     avgDailyTemp: { title: "Temp. prom. diaria", value: "Cargando...", unit: "°C", description: "Rango normal", status: "normal", icon: Icons.temperature },
     relativeHumidity: { title: "Humedad relativa", value: "Cargando...", unit: "%", description: "", status: "normal", icon: Icons.humidity },
     windSpeed: { title: "Velocidad del viento", value: "Cargando...", unit: "km/h", description: "Moderado", status: "moderado", icon: Icons.wind },
-    irradiance: { title: "Irradiancia solar", value: "N/A", unit: "W/m²", description: "Datos no disponibles", status: "normal", icon: Icons.irradiance },
-        taskExecution: {
-      title: "Ejecutar Tareas", 
-      value: taskExecuting ? "Ejecutando..." : "Ejecutar", 
-      unit: "", 
-      description: taskStatus || "Sincronizar metadatos y datos SCADA", 
-      status: taskExecuting ? "loading" : "normal", 
-      icon: Icons.task,
-      onClick: null
-    }
+    irradiance: { title: "Irradiancia solar", value: "N/A", unit: "W/m²", description: "Datos no disponibles", status: "normal", icon: Icons.irradiance }
   });
 
   // Estado para mostrar información detallada de KPIs
@@ -482,15 +471,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         value: data.activeInverters ? parseInt(data.activeInverters.value) : 0, // Usar el valor tal como viene del backend
         icon: Icons.inverters,
         color: "text-indigo-600"
-      },
-          taskExecution: { 
-            ...prevKpiData.taskExecution,
-            onClick: executeAllTasks,
-            value: taskExecuting ? "Ejecutando..." : "Ejecutar",
-            description: taskStatus || "Sincronizar metadatos y datos SCADA",
-            status: taskExecuting ? "loading" : "normal",
-            color: "text-gray-600"
-          }
+      }
         }));
   };
 
@@ -1000,15 +981,79 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       {/* Header con banner profesional */}
       <header className="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg -mx-8 -mt-8">
         <div className="px-8 py-12">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-white/20 rounded-xl">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-              </svg>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-white/20 rounded-xl">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-white">Dashboard Principal</h1>
+                <p className="text-blue-100 mt-1">Visión general y análisis de indicadores del sistema</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl font-bold text-white">Dashboard Principal</h1>
-              <p className="text-blue-100 mt-1">Visión general y análisis de indicadores del sistema</p>
+            
+            {/* Botón de ejecutar tareas con diseño profesional */}
+            <div className="flex flex-col items-end space-y-2">
+              <button
+                onClick={executeAllTasks}
+                disabled={taskExecuting}
+                className={`
+                  group relative inline-flex items-center justify-center px-6 py-3 
+                  text-sm font-semibold text-white transition-all duration-300 
+                  rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 
+                  disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+                  ${taskExecuting 
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600' 
+                    : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
+                  }
+                  border border-white/20 backdrop-blur-sm
+                `}
+                title={taskExecuting ? "Ejecutando tareas..." : "Sincronizar datos y calcular KPIs"}
+              >
+                {/* Icono animado */}
+                <div className="flex items-center space-x-3">
+                  {taskExecuting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                      <span>Ejecutando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span>Ejecutar Tareas</span>
+                    </>
+                  )}
+                </div>
+                
+                {/* Indicador de estado */}
+                {taskExecuting && (
+                  <div className="absolute -top-2 -right-2">
+                    <div className="w-3 h-3 bg-red-400 rounded-full animate-pulse"></div>
+                  </div>
+                )}
+              </button>
+              
+              {/* Información adicional */}
+              <div className="text-right">
+                <p className="text-xs text-blue-200 font-medium">
+                  {taskExecuting ? "Sincronizando datos..." : "Última ejecución: "}
+                  {!taskExecuting && (
+                    <span className="text-blue-100">
+                      {taskStates.deviceSync?.timestamp 
+                        ? new Date(taskStates.deviceSync.timestamp).toLocaleTimeString('es-ES', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })
+                        : "Nunca"
+                      }
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -1133,30 +1178,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
               })}
             </div>
             
-            {/* KPI de ejecución de tareas - Se muestra por separado */}
-            <div className="mt-6">
-              <div 
-                className="bg-gray-50 p-6 rounded-xl shadow-md border border-gray-200 transform hover:scale-105 transition-all duration-300 hover:shadow-lg cursor-pointer relative"
-                onClick={kpiData.taskExecution.onClick || undefined}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 rounded-lg bg-gray-100 hover:scale-110 transition-transform duration-200 cursor-pointer">
-                    {kpiData.taskExecution.icon}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-medium text-gray-600">{kpiData.taskExecution.description}</p>
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">{kpiData.taskExecution.title}</h3>
-                <div className="flex items-baseline">
-                  <p className={`text-3xl font-bold ${kpiData.taskExecution.color}`}>{kpiData.taskExecution.value}</p>
-                  <span className="ml-2 text-lg text-gray-500">{kpiData.taskExecution.unit}</span>
-                </div>
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <p className="text-xs text-gray-500">{kpiData.taskExecution.description}</p>
-                </div>
-              </div>
-            </div>
+
             
             {/* Overlay de información detallada del KPI - Se superpone en toda la sección */}
             {showKpiInfo && getKpiDetailedInfo(showKpiInfo) && (

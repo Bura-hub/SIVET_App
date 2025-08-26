@@ -335,9 +335,29 @@ def calculate_and_save_daily_data(self, start_date_str: str = None, end_date_str
                 avg_daily_temp=Avg(Cast(F('data__temperature'), FloatField())) # CAMBIO: Se usa el campo 'temperature'
             )
             
+            # Agregación para la velocidad del viento promedio diaria
+            daily_wind_aggregation = Measurement.objects.filter(
+                date__date=single_date,
+                device__in=weather_station_ids,
+                data__windSpeed__isnull=False
+            ).aggregate(
+                avg_wind_speed=Avg(Cast(F('data__windSpeed'), FloatField()))
+            )
+            
+            # Agregación para la irradiancia solar promedio diaria
+            daily_irradiance_aggregation = Measurement.objects.filter(
+                date__date=single_date,
+                device__in=weather_station_ids,
+                data__irradiance__isnull=False
+            ).aggregate(
+                avg_irradiance=Avg(Cast(F('data__irradiance'), FloatField()))
+            )
+            
             daily_consumption_sum = daily_aggregation.get('daily_consumption') or 0.0
             daily_generation_sum = daily_aggregation.get('daily_generation') or 0.0
             daily_temp_avg = daily_temp_aggregation.get('avg_daily_temp') or 0.0
+            avg_wind_speed = daily_wind_aggregation.get('avg_wind_speed') or 0.0
+            avg_irradiance = daily_irradiance_aggregation.get('avg_irradiance') or 0.0
             
             # Convertir consumo de Wh a kWh
             daily_consumption_kwh = daily_consumption_sum / 1000.0
@@ -367,7 +387,9 @@ def calculate_and_save_daily_data(self, start_date_str: str = None, end_date_str
                     'daily_consumption': daily_consumption_kwh,  # Ahora en kWh
                     'daily_generation': daily_generation_kwh,    # Ahora en kWh
                     'daily_balance': daily_balance_sum,
-                    'avg_daily_temp': daily_temp_avg
+                    'avg_daily_temp': daily_temp_avg,
+                    'avg_wind_speed': avg_wind_speed,
+                    'avg_irradiance': avg_irradiance
                 }
             )
             
@@ -383,6 +405,8 @@ def calculate_and_save_daily_data(self, start_date_str: str = None, end_date_str
             logger.info(f"    - Generación: {daily_generation_kwh:.2f} kWh")
             logger.info(f"    - Balance: {daily_balance_sum:.2f} kWh")
             logger.info(f"    - Temperatura promedio: {daily_temp_avg:.2f} °C")
+            logger.info(f"    - Velocidad del viento promedio: {avg_wind_speed:.2f} km/h")
+            logger.info(f"    - Irradiancia promedio: {avg_irradiance:.2f} W/m²")
 
             current_date += timedelta(days=1)
             total_days_processed += 1

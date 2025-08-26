@@ -442,8 +442,8 @@ class ChartDataView(APIView):
             return f"{value_base_unit:.2f}", base_unit_name
 
     @extend_schema(
-        summary="Obtener datos diarios de consumo, generación, balance y temperatura",
-        description="Obtiene datos diarios de consumo, generación, balance y temperatura para gráficos.",
+        summary="Obtener datos diarios de consumo, generación, balance, temperatura, velocidad del viento e irradiancia",
+        description="Obtiene datos diarios de consumo, generación, balance, temperatura, velocidad del viento e irradiancia para gráficos.",
         parameters=[
             OpenApiParameter(
                 name='start_date',
@@ -471,6 +471,8 @@ class ChartDataView(APIView):
                         "daily_generation": {"type": "number"},
                         "daily_balance": {"type": "number"},
                         "avg_daily_temp": {"type": "number"},
+                        "avg_wind_speed": {"type": "number"},
+                        "avg_irradiance": {"type": "number"},
                     }
                 }
             },
@@ -482,7 +484,7 @@ class ChartDataView(APIView):
         """
         GET /api/dashboard/chart-data/
         
-        Obtiene datos diarios de consumo, generación, balance y temperatura para gráficos.
+        Obtiene datos diarios de consumo, generación, balance, temperatura, velocidad del viento e irradiancia para gráficos.
         Por defecto, retorna los datos de los últimos 60 días.
         """
         try:
@@ -505,7 +507,7 @@ class ChartDataView(APIView):
             # Consultar el modelo DailyChartData para obtener los datos precalculados
             chart_data = DailyChartData.objects.filter(
                 date__range=(start_date, end_date)
-            ).order_by('date').values('date', 'daily_consumption', 'daily_generation', 'daily_balance', 'avg_daily_temp')
+            ).order_by('date').values('date', 'daily_consumption', 'daily_generation', 'daily_balance', 'avg_daily_temp', 'avg_wind_speed', 'avg_irradiance')
 
             # Calcular unidades automáticas basadas en los valores
             consumption_values = [item['daily_consumption'] for item in chart_data if item['daily_consumption'] is not None]
@@ -562,11 +564,15 @@ class ChartDataView(APIView):
                     'daily_generation': item['daily_generation'] / generation_divider if item['daily_generation'] is not None else 0,
                     'daily_balance': item['daily_balance'] / balance_divider if item['daily_balance'] is not None else 0,
                     'avg_daily_temp': item['avg_daily_temp'],
+                    'avg_wind_speed': item['avg_wind_speed'] if item['avg_wind_speed'] is not None else 0,
+                    'avg_irradiance': item['avg_irradiance'] if item['avg_irradiance'] is not None else 0,
                     'units': {
                         'consumption': consumption_unit,
                         'generation': generation_unit,
                         'balance': balance_unit,
-                        'temperature': '°C'
+                        'temperature': '°C',
+                        'wind_speed': 'km/h',
+                        'irradiance': 'W/m²'
                     }
                 }
                 for item in chart_data

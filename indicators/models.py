@@ -44,6 +44,10 @@ class DailyChartData(models.Model):
     daily_generation = models.FloatField(default=0.0, help_text="Generación total diaria en kWh.")  # Cambiar a kWh
     daily_balance = models.FloatField(default=0.0, help_text="Balance energético diario en kWh.")
     avg_daily_temp = models.FloatField(default=0.0, help_text="Temperatura promedio diaria en °C.")
+    
+    # Nuevos campos para velocidad del viento e irradiancia
+    avg_wind_speed = models.FloatField(default=0.0, help_text="Velocidad del viento promedio diaria en km/h.")
+    avg_irradiance = models.FloatField(default=0.0, help_text="Irradiancia solar promedio diaria en W/m².")
 
     class Meta:
         verbose_name = "Datos Diarios de Gráfico"

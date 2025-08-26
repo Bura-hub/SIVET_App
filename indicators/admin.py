@@ -12,7 +12,7 @@ class MonthlyConsumptionKPIAdmin(admin.ModelAdmin):
 
 @admin.register(DailyChartData)
 class DailyChartDataAdmin(admin.ModelAdmin):
-    list_display = ['date', 'daily_consumption', 'daily_generation', 'daily_balance', 'avg_daily_temp']
+    list_display = ['date', 'daily_consumption', 'daily_generation', 'daily_balance', 'avg_daily_temp', 'avg_wind_speed', 'avg_irradiance']
     list_filter = ['date']
     search_fields = ['date']
     ordering = ['-date']

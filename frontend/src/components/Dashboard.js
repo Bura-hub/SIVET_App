@@ -292,6 +292,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
   const [inverterGenerationData, setInverterGenerationData] = useState(null);
   const [temperatureTrendsData, setTemperatureTrendsData] = useState(null);
   const [energyBalanceData, setEnergyBalanceData] = useState(null);
+  const [windSpeedData, setWindSpeedData] = useState(null);
+  const [irradianceData, setIrradianceData] = useState(null);
 
   // Función mejorada para ejecutar todas las tareas
   const executeAllTasks = async () => {
@@ -493,6 +495,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     updateGenerationChart(sortedCurrentData, sortedPrevData);
     updateBalanceChart(sortedCurrentData, sortedPrevData);
     updateTemperatureChart(sortedCurrentData, sortedPrevData);
+    updateWindSpeedChart(sortedCurrentData, sortedPrevData);
+    updateIrradianceChart(sortedCurrentData, sortedPrevData);
   };
 
   // Nueva función para actualizar KPIs con información del mes anterior
@@ -579,6 +583,14 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         units: "km/h (kilómetros por hora)",
         frequency: "Actualización cada hora, promedio mensual automático."
       },
+      irradiance: {
+        title: "Irradiancia Solar Promedio",
+        description: "Representa la intensidad promedio de radiación solar incidente en la superficie.",
+        calculation: "Se calcula como el promedio de las mediciones de irradiancia durante el período.",
+        dataSource: "Piranómetros en estaciones meteorológicas SCADA.",
+        units: "W/m² (vatios por metro cuadrado)",
+        frequency: "Actualización cada hora, promedio mensual automático."
+      },
       activeInverters: {
         title: "Inversores Activos",
         description: "Representa el número de inversores solares que están funcionando correctamente.",
@@ -610,8 +622,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         {
           label: `Anterior (${units})`,
           data: prevData.map(item => parseFloat(item.daily_consumption)),
-          borderColor: '#A1A1AA',
-          backgroundColor: 'rgba(161, 161, 170, 0.2)',
+          borderColor: '#6B7280',
+          backgroundColor: 'rgba(107, 114, 128, 0.2)',
           fill: true,
           tension: 0.4
         }
@@ -636,8 +648,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         {
           label: `Anterior (${units})`,
           data: prevData.map(item => parseFloat(item.daily_generation)),
-          backgroundColor: 'rgba(161, 161, 170, 0.6)',
-          borderColor: 'rgba(161, 161, 170, 1)',
+          backgroundColor: 'rgba(107, 114, 128, 0.6)',
+          borderColor: '#6B7280',
           borderWidth: 1,
           borderRadius: 5,
         }
@@ -671,8 +683,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         {
           label: `Anterior (${units})`,
           data: prevData.map(item => parseFloat(item.daily_balance)),
-          borderColor: 'rgba(161, 161, 170, 1)',
-          backgroundColor: 'rgba(161, 161, 170, 0.2)',
+          borderColor: '#6B7280',
+          backgroundColor: 'rgba(107, 114, 128, 0.2)',
           fill: true,
           tension: 0.4,
         }
@@ -695,10 +707,58 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
             {
               label: 'Anterior (°C)',
           data: prevData.map(item => parseFloat(item.avg_daily_temp)), // Usar valor tal como viene del backend
-              borderColor: 'rgb(75, 192, 192)',
-              backgroundColor: 'rgba(75, 192, 192, 0.5)',
+              borderColor: '#6B7280',
+              backgroundColor: 'rgba(107, 114, 128, 0.5)',
               tension: 0.4,
               fill: false,
+        }
+      ]
+    });
+  };
+
+  const updateWindSpeedChart = (currentData, prevData) => {
+    setWindSpeedData({
+      labels: currentData.map(item => formatAPIDateForDisplay(item.date)),
+      datasets: [
+        {
+          label: 'Actual (km/h)',
+          data: currentData.map(item => parseFloat(item.avg_wind_speed || 0)),
+          borderColor: 'rgb(20, 184, 166)',
+          backgroundColor: 'rgba(20, 184, 166, 0.5)',
+          tension: 0.4,
+          fill: false,
+        },
+        {
+          label: 'Anterior (km/h)',
+          data: prevData.map(item => parseFloat(item.avg_wind_speed || 0)),
+          borderColor: '#6B7280',
+          backgroundColor: 'rgba(107, 114, 128, 0.5)',
+          tension: 0.4,
+          fill: false,
+        }
+      ]
+    });
+  };
+
+  const updateIrradianceChart = (currentData, prevData) => {
+    setIrradianceData({
+      labels: currentData.map(item => formatAPIDateForDisplay(item.date)),
+      datasets: [
+        {
+          label: 'Actual (W/m²)',
+          data: currentData.map(item => parseFloat(item.avg_irradiance || 0)),
+          borderColor: 'rgb(245, 158, 11)',
+          backgroundColor: 'rgba(245, 158, 11, 0.5)',
+          tension: 0.4,
+          fill: false,
+        },
+        {
+          label: 'Anterior (W/m²)',
+          data: prevData.map(item => parseFloat(item.avg_irradiance || 0)),
+          borderColor: '#6B7280',
+          backgroundColor: 'rgba(107, 114, 128, 0.5)',
+          tension: 0.4,
+          fill: false,
         }
       ]
     });
@@ -1158,7 +1218,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               <ChartCard
                 title="Consumo de Electricidad"
                 description="Análisis del consumo energético diario comparando el mes actual con el anterior"
@@ -1194,6 +1254,24 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                 options={chartOptions}
                 height="260px"
                 fullscreenHeight="600px"
+              />
+              <ChartCard
+                title="Velocidad del Viento"
+                description="Monitoreo de la velocidad del viento y su variación diaria"
+                type="line"
+                data={windSpeedData}
+                options={chartOptions}
+                height="280px"
+                fullscreenHeight="650px"
+              />
+              <ChartCard
+                title="Irradiancia Solar"
+                description="Medición de la intensidad de radiación solar incidente"
+                type="line"
+                data={irradianceData}
+                options={chartOptions}
+                height="280px"
+                fullscreenHeight="650px"
               />
             </div>
           </div>

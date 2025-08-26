@@ -1,0 +1,4 @@
+INFO 2025-08-26 00:36:49,622 tasks 37456 19768 Dispositivo 46094855-4fe6-4c10-afe3-444a101719e2: 4 nuevas, 2710 actualizadas
+INFO 2025-08-26 00:36:49,625 strategy 37456 19768 Task scada_proxy.tasks.fetch_and_save_measurements_for_device[9a50092d-722e-4d4f-9753-308739b65244] received
+INFO 2025-08-26 00:36:49,654 tasks 37456 19768 Obteniendo mediciones para dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b desde 2025-08-24 00:35:58.555065-05:00 hasta 2025-08-26 00:35:58.555065-05:00 (hora Colombia)
+INFO 2025-08-26 00:36:51,420 tasks 37456 19768 Dispositivo 1da46bc5-1655-4ba1-82c2-0b283370a97b: 1 nuevas, 1438 actualizadas

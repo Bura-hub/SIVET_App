@@ -230,6 +230,25 @@ def calculate_monthly_consumption_kpi(self):
         )['avg_value'] or 0.0
         logger.info(f"Velocidad del viento promedio - Mes actual: {avg_wind_speed_current:.2f} km/h, Mes anterior: {avg_wind_speed_previous:.2f} km/h")
 
+        # --- Cálculo: Irradiancia Solar Promedio (Estaciones Meteorológicas) ---
+        logger.info("Calculando irradiancia solar promedio (estaciones meteorológicas)...")
+        avg_irradiance_current = Measurement.objects.filter(
+            device__in=weather_stations,
+            date__date__range=(start_current_month, end_current_month),
+            data__irradiance__isnull=False
+        ).aggregate(
+            avg_value=Avg(Cast(F('data__irradiance'), FloatField()))
+        )['avg_value'] or 0.0
+
+        avg_irradiance_previous = Measurement.objects.filter(
+            device__in=weather_stations,
+            date__date__range=(start_previous_month, end_previous_month),
+            data__irradiance__isnull=False
+        ).aggregate(
+            avg_value=Avg(Cast(F('data__irradiance'), FloatField()))
+        )['avg_value'] or 0.0
+        logger.info(f"Irradiancia solar promedio - Mes actual: {avg_irradiance_current:.2f} W/m², Mes anterior: {avg_irradiance_previous:.2f} W/m²")
+
         # Guardar en la base de datos
         logger.info("Guardando KPIs mensuales en la base de datos...")
         MonthlyConsumptionKPI.objects.update_or_create(
@@ -247,6 +266,8 @@ def calculate_monthly_consumption_kpi(self):
                 'avg_relative_humidity_previous_month': avg_relative_humidity_previous,
                 'avg_wind_speed_current_month': avg_wind_speed_current,
                 'avg_wind_speed_previous_month': avg_wind_speed_previous,
+                'avg_irradiance_current_month': avg_irradiance_current,
+                'avg_irradiance_previous_month': avg_irradiance_previous,
             }
         )
 

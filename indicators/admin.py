@@ -3,7 +3,7 @@ from .models import MonthlyConsumptionKPI, DailyChartData, ElectricMeterConsumpt
 
 @admin.register(MonthlyConsumptionKPI)
 class MonthlyConsumptionKPIAdmin(admin.ModelAdmin):
-    list_display = ['last_calculated']
+    list_display = ['last_calculated', 'avg_irradiance_current_month', 'avg_irradiance_previous_month']
     readonly_fields = ['last_calculated']
     
     def has_add_permission(self, request):

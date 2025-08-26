@@ -73,6 +73,7 @@ class ConsumptionSummaryView(APIView):
                     "avgDailyTemp": {"type": "object"},
                     "relativeHumidity": {"type": "object"},
                     "windSpeed": {"type": "object"},
+                    "irradiance": {"type": "object"},
                     "activeInverters": {"type": "object"},
                 }
             },
@@ -133,6 +134,11 @@ class ConsumptionSummaryView(APIView):
             avg_wind_speed_current = kpi_record.avg_wind_speed_current_month
             avg_wind_speed_previous = kpi_record.avg_wind_speed_previous_month
             logger.info(f"Avg Wind Speed: Current: {avg_wind_speed_current} km/h, Previous: {avg_wind_speed_previous} km/h")
+
+            # --- Irradiancia Solar Promedio ---
+            avg_irradiance_current = kpi_record.avg_irradiance_current_month
+            avg_irradiance_previous = kpi_record.avg_irradiance_previous_month
+            logger.info(f"Avg Irradiance: Current: {avg_irradiance_current} W/m², Previous: {avg_irradiance_previous} W/m²")
 
             # --- Inversores Activos (Real-time from SCADA API) ---
             active_inverters_count = 0
@@ -227,9 +233,11 @@ class ConsumptionSummaryView(APIView):
                     return f"{value_base_unit:.1f}", "%" 
                 elif base_unit_name == "km/h":
                     return f"{value_base_unit:.1f}", "km/h"
+                elif base_unit_name == "W/m²":
+                    return f"{value_base_unit:.1f}", "W/m²"
                 return f"{value_base_unit:.2f}", base_unit_name
 
-            def calculate_kpi_metrics(current_value, previous_value, title, base_unit_name, is_balance=False, is_average_power=False, is_temperature=False, is_humidity=False, is_wind_speed=False):
+            def calculate_kpi_metrics(current_value, previous_value, title, base_unit_name, is_balance=False, is_average_power=False, is_temperature=False, is_humidity=False, is_wind_speed=False, is_irradiance=False):
                 formatted_value, unit = format_energy_value(current_value, base_unit_name)
                 change_percentage = 0.0
                 status_text = "normal"
@@ -295,6 +303,21 @@ class ConsumptionSummaryView(APIView):
                     else:
                         description_text = "Alto"
                         status_text = "critico"
+
+                    if change_percentage > 0:
+                        description_text += f" (+{change_percentage:.1f}%)"
+                    elif change_percentage < 0:
+                        description_text += f" ({change_percentage:.1f}%)"
+                elif is_irradiance:
+                    if current_value < 200:
+                        description_text = "Baja"
+                        status_text = "normal"
+                    elif 200 <= current_value <= 800:
+                        description_text = "Moderada"
+                        status_text = "moderado"
+                    else:
+                        description_text = "Alta"
+                        status_text = "optimo"
 
                     if change_percentage > 0:
                         description_text += f" (+{change_percentage:.1f}%)"
@@ -385,6 +408,15 @@ class ConsumptionSummaryView(APIView):
                 is_wind_speed=True
             )
 
+            # KPI de Irradiancia Solar
+            avg_irradiance_kpi = calculate_kpi_metrics(
+                avg_irradiance_current,
+                avg_irradiance_previous,
+                "Irradiancia solar",
+                "W/m²",
+                is_irradiance=True
+            )
+
             # KPI de Inversores Activos
             active_inverters_kpi = {
                 "title": "Inversores activos",
@@ -402,6 +434,7 @@ class ConsumptionSummaryView(APIView):
                 "avgDailyTemp": avg_daily_temp_kpi, 
                 "relativeHumidity": avg_relative_humidity_kpi, 
                 "windSpeed": avg_wind_speed_kpi,
+                "irradiance": avg_irradiance_kpi,
                 "activeInverters": active_inverters_kpi,
             }
             return Response(kpi_data)

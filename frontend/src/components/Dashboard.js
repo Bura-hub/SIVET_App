@@ -214,6 +214,8 @@ const Icons = {
   
   wind: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-wind" aria-hidden="true"><path d="M5 8h10"></path><path d="M4 12h16"></path><path d="M8 16h8"></path></svg>,
   
+  irradiance: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><path d="M3 12h1"></path><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M20 12h1"></path><path d="M3 12h1"></path><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M20 12h1"></path></svg>,
+  
   task: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play-circle" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polygon points="10,8 16,12 10,16"></polygon></svg>
 };
 
@@ -272,6 +274,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     avgDailyTemp: { title: "Temp. prom. diaria", value: "Cargando...", unit: "°C", description: "Rango normal", status: "normal", icon: Icons.temperature },
     relativeHumidity: { title: "Humedad relativa", value: "Cargando...", unit: "%", description: "", status: "normal", icon: Icons.humidity },
     windSpeed: { title: "Velocidad del viento", value: "Cargando...", unit: "km/h", description: "Moderado", status: "moderado", icon: Icons.wind },
+    irradiance: { title: "Irradiancia solar", value: "N/A", unit: "W/m²", description: "Datos no disponibles", status: "normal", icon: Icons.irradiance },
         taskExecution: {
       title: "Ejecutar Tareas", 
       value: taskExecuting ? "Ejecutando..." : "Ejecutar", 
@@ -377,6 +380,10 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         )
       ]);
 
+      // Debug: mostrar los datos de KPIs antes de actualizar
+      console.log("KPIs recibidos del backend:", kpisData);
+      console.log("Estructura de datos:", Object.keys(kpisData));
+      
       // Actualizar KPIs con las unidades correctas
       updateKPIs(kpisData);
 
@@ -393,71 +400,86 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
 
   // Función para actualizar KPIs
   const updateKPIs = (data) => {
-        setKpiData(prevKpiData => ({
-          ...prevKpiData,
+    // Debug: mostrar qué datos están llegando del backend
+    console.log("Datos recibidos del backend:", data);
+    
+    setKpiData(prevKpiData => ({
+      ...prevKpiData,
       totalConsumption: {
-        ...data.totalConsumption,
-        value: parseFloat(data.totalConsumption.value), // Usar el valor tal como viene del backend
+        ...(data.totalConsumption || {}),
+        value: data.totalConsumption ? parseFloat(data.totalConsumption.value) : 0, // Usar el valor tal como viene del backend
         icon: Icons.consumption,
         color: "text-blue-600",
         // Usar el valor del mes anterior del backend
-        previousMonthValue: data.totalConsumption.previousMonthValue || data.totalConsumption.previousMonth,
-        change: data.totalConsumption.change || "Datos disponibles"
+        previousMonthValue: data.totalConsumption?.previousMonthValue || data.totalConsumption?.previousMonth || 0,
+        change: data.totalConsumption?.change || "Datos disponibles"
       },
       totalGeneration: {
-        ...data.totalGeneration,
-        value: parseFloat(data.totalGeneration.value), // Usar el valor tal como viene del backend
+        ...(data.totalGeneration || {}),
+        value: data.totalGeneration ? parseFloat(data.totalGeneration.value) : 0, // Usar el valor tal como viene del backend
         icon: Icons.generation,
         color: "text-green-600",
         // Usar el valor del mes anterior del backend
-        previousMonthValue: data.totalGeneration.previousMonthValue || data.totalGeneration.previousMonth,
-        change: data.totalGeneration.change || "Datos disponibles"
+        previousMonthValue: data.totalGeneration?.previousMonthValue || data.totalGeneration?.previousMonth || 0,
+        change: data.totalGeneration?.change || "Datos disponibles"
       },
       energyBalance: {
-        ...data.energyBalance,
-        value: parseFloat(data.energyBalance.value), // Usar el valor tal como viene del backend
+        ...(data.energyBalance || {}),
+        value: data.energyBalance ? parseFloat(data.energyBalance.value) : 0, // Usar el valor tal como viene del backend
         icon: Icons.balance,
         color: "text-purple-600"
       },
       averageInstantaneousPower: {
-        ...data.averageInstantaneousPower,
-        value: parseFloat(data.averageInstantaneousPower.value), // Usar el valor tal como viene del backend
+        ...(data.averageInstantaneousPower || {}),
+        value: data.averageInstantaneousPower ? parseFloat(data.averageInstantaneousPower.value) : 0, // Usar el valor tal como viene del backend
         icon: Icons.power,
         color: "text-orange-600",
         // Usar el valor del mes anterior del backend
-        previousMonthValue: data.averageInstantaneousPower.previousMonthValue || data.averageInstantaneousPower.previousMonth,
-        change: data.averageInstantaneousPower.change || "Datos disponibles"
+        previousMonthValue: data.averageInstantaneousPower?.previousMonthValue || data.averageInstantaneousPower?.previousMonth || 0,
+        change: data.averageInstantaneousPower?.change || "Datos disponibles"
       },
       avgDailyTemp: {
-        ...data.avgDailyTemp,
-        value: parseFloat(data.avgDailyTemp.value), // Usar el valor tal como viene del backend
+        ...(data.avgDailyTemp || {}),
+        value: data.avgDailyTemp ? parseFloat(data.avgDailyTemp.value) : 0, // Usar el valor tal como viene del backend
         icon: Icons.temperature,
         color: "text-red-600",
         // Usar el valor del mes anterior del backend
-        previousMonthValue: data.avgDailyTemp.previousMonthValue || data.avgDailyTemp.previousMonth,
-        change: data.avgDailyTemp.change || "Datos disponibles"
+        previousMonthValue: data.avgDailyTemp?.previousMonthValue || data.avgDailyTemp?.previousMonth || 0,
+        change: data.avgDailyTemp?.change || "Datos disponibles"
       },
       relativeHumidity: {
-        ...data.relativeHumidity,
-        value: parseFloat(data.relativeHumidity.value), // Usar el valor tal como viene del backend
+        ...(data.relativeHumidity || {}),
+        value: data.relativeHumidity ? parseFloat(data.relativeHumidity.value) : 0, // Usar el valor tal como viene del backend
         icon: Icons.humidity,
         color: "text-cyan-600",
         // Usar el valor del mes anterior del backend
-        previousMonthValue: data.relativeHumidity.previousMonthValue || data.relativeHumidity.previousMonth,
-        change: data.relativeHumidity.change || "Datos disponibles"
+        previousMonthValue: data.relativeHumidity?.previousMonthValue || data.relativeHumidity?.previousMonth || 0,
+        change: data.relativeHumidity?.change || "Datos disponibles"
       },
       windSpeed: {
-        ...data.windSpeed,
-        value: parseFloat(data.windSpeed.value), // Usar el valor tal como viene del backend
+        ...(data.windSpeed || {}),
+        value: data.windSpeed ? parseFloat(data.windSpeed.value) : 0, // Usar el valor tal como viene del backend
         icon: Icons.wind,
         color: "text-teal-600",
         // Usar el valor del mes anterior del backend
-        previousMonthValue: data.windSpeed.previousMonthValue || data.windSpeed.previousMonth,
-        change: data.windSpeed.change || "Datos disponibles"
+        previousMonthValue: data.windSpeed?.previousMonthValue || data.windSpeed?.previousMonth || 0,
+        change: data.windSpeed?.change || "Datos disponibles"
+      },
+      irradiance: {
+        // Para irradiancia, usar valores por defecto hasta que el backend lo proporcione
+        title: "Irradiancia solar",
+        value: data.irradiance ? parseFloat(data.irradiance.value) : "N/A",
+        unit: "W/m²",
+        description: "Rango normal",
+        status: "normal",
+        icon: Icons.irradiance,
+        color: "text-amber-600",
+        previousMonthValue: data.irradiance?.previousMonthValue || data.irradiance?.previousMonth || 0,
+        change: data.irradiance?.change || "Datos no disponibles"
       },
       activeInverters: {
-        ...data.activeInverters,
-        value: parseInt(data.activeInverters.value), // Usar el valor tal como viene del backend
+        ...(data.activeInverters || {}),
+        value: data.activeInverters ? parseInt(data.activeInverters.value) : 0, // Usar el valor tal como viene del backend
         icon: Icons.inverters,
         color: "text-indigo-600"
       },
@@ -999,9 +1021,13 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden relative">
           {/* Contenido de KPIs */}
           <div className="p-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {Object.keys(kpiData).map((key) => {
                 const item = kpiData[key];
+                
+                // Solo mostrar KPIs que no sean taskExecution (se maneja por separado)
+                if (key === 'taskExecution') return null;
+                
                 const description = item.description || (item.change ? item.change : "Datos disponibles");
                 
                 // Mapear colores del KPI a colores de estilo adaptado
@@ -1014,6 +1040,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                   'text-red-600': { bgColor: 'bg-red-50', borderColor: 'border-red-200' },
                   'text-cyan-600': { bgColor: 'bg-cyan-50', borderColor: 'border-cyan-200' },
                   'text-teal-600': { bgColor: 'bg-teal-50', borderColor: 'border-teal-200' },
+                  'text-amber-600': { bgColor: 'bg-amber-50', borderColor: 'border-amber-200' },
                   'text-gray-600': { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' }
                 };
                 const styleColors = colorMap[item.color] || { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
@@ -1056,7 +1083,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                       <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-100">
-                      {(key === 'totalConsumption' || key === 'totalGeneration' || key === 'averageInstantaneousPower' || key === 'avgDailyTemp' || key === 'relativeHumidity' || key === 'windSpeed') && item.previousMonthValue ? (
+                      {(key === 'totalConsumption' || key === 'totalGeneration' || key === 'averageInstantaneousPower' || key === 'avgDailyTemp' || key === 'relativeHumidity' || key === 'windSpeed' || key === 'irradiance') && item.previousMonthValue ? (
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
                             <span className="text-xs text-gray-500">Mes anterior:</span>
@@ -1066,7 +1093,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                               key === 'averageInstantaneousPower' ? 'text-orange-600' :
                               key === 'avgDailyTemp' ? 'text-red-600' :
                               key === 'relativeHumidity' ? 'text-cyan-600' :
-                              'text-teal-600'
+                              key === 'windSpeed' ? 'text-teal-600' :
+                              'text-amber-600'
                             }`}>
                               {key === 'averageInstantaneousPower' 
                                 ? `${(item.previousMonthValue / 1000).toFixed(2)} kW` 
@@ -1076,6 +1104,8 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                                 ? `${item.previousMonthValue.toFixed(1)} %`
                                 : key === 'windSpeed'
                                 ? `${item.previousMonthValue.toFixed(1)} km/h`
+                                : key === 'irradiance'
+                                ? `${item.previousMonthValue.toFixed(1)} W/m²`
                                 : `${(item.previousMonthValue / 1000).toFixed(2)} MWh`
                               }
                             </span>
@@ -1101,6 +1131,31 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                   </div>
                 );
               })}
+            </div>
+            
+            {/* KPI de ejecución de tareas - Se muestra por separado */}
+            <div className="mt-6">
+              <div 
+                className="bg-gray-50 p-6 rounded-xl shadow-md border border-gray-200 transform hover:scale-105 transition-all duration-300 hover:shadow-lg cursor-pointer relative"
+                onClick={kpiData.taskExecution.onClick || undefined}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 rounded-lg bg-gray-100 hover:scale-110 transition-transform duration-200 cursor-pointer">
+                    {kpiData.taskExecution.icon}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-medium text-gray-600">{kpiData.taskExecution.description}</p>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">{kpiData.taskExecution.title}</h3>
+                <div className="flex items-baseline">
+                  <p className={`text-3xl font-bold ${kpiData.taskExecution.color}`}>{kpiData.taskExecution.value}</p>
+                  <span className="ml-2 text-lg text-gray-500">{kpiData.taskExecution.unit}</span>
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">{kpiData.taskExecution.description}</p>
+                </div>
+              </div>
             </div>
             
             {/* Overlay de información detallada del KPI - Se superpone en toda la sección */}

@@ -24,6 +24,10 @@ class MonthlyConsumptionKPI(models.Model):
     avg_wind_speed_current_month = models.FloatField(default=0.0, help_text="Velocidad del viento promedio del mes actual en km/h.")
     avg_wind_speed_previous_month = models.FloatField(default=0.0, help_text="Velocidad del viento promedio del mes anterior en km/h.")
 
+    # Nuevos campos para la irradiancia solar promedio (en W/m²)
+    avg_irradiance_current_month = models.FloatField(default=0.0, help_text="Irradiancia solar promedio del mes actual en W/m².")
+    avg_irradiance_previous_month = models.FloatField(default=0.0, help_text="Irradiancia solar promedio del mes anterior en W/m².")
+
     last_calculated = models.DateTimeField(auto_now=True, help_text="Fecha y hora de la última vez que se calculó este KPI.")
 
     class Meta:

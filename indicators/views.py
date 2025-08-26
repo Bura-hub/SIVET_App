@@ -319,7 +319,9 @@ class ConsumptionSummaryView(APIView):
                     "unit": unit,
                     "change": change_text,
                     "description": description_text,
-                    "status": status_text
+                    "status": status_text,
+                    "previousMonthValue": previous_value,
+                    "previousMonthUnit": base_unit_name
                 }
 
             # KPI de Consumo Total

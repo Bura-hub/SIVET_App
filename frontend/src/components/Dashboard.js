@@ -268,7 +268,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     totalGeneration: { title: "Generación total", value: "Cargando...", unit: "", change: "", status: "normal", icon: Icons.generation },
     energyBalance: { title: "Equilibrio energético", value: "Cargando...", unit: "", description: "", status: "normal", icon: Icons.balance },
     activeInverters: { title: "Inversores activos", value: "Cargando...", unit: "", description: "", status: "normal", icon: Icons.inverters },
-    averageInstantaneousPower: { title: "Pot. instan. promedio", value: "Cargando...", unit: "W", description: "", status: "normal", icon: Icons.power },
+    averageInstantaneousPower: { title: "Pot. instan. promedio", value: "Cargando...", unit: "kW", description: "", status: "normal", icon: Icons.power },
     avgDailyTemp: { title: "Temp. prom. diaria", value: "Cargando...", unit: "°C", description: "Rango normal", status: "normal", icon: Icons.temperature },
     relativeHumidity: { title: "Humedad relativa", value: "Cargando...", unit: "%", description: "", status: "normal", icon: Icons.humidity },
     windSpeed: { title: "Velocidad del viento", value: "Cargando...", unit: "km/h", description: "Moderado", status: "moderado", icon: Icons.wind },
@@ -392,13 +392,19 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         ...data.totalConsumption,
         value: parseFloat(data.totalConsumption.value), // Usar el valor tal como viene del backend
         icon: Icons.consumption,
-        color: "text-blue-600"
+        color: "text-blue-600",
+        // Usar el valor del mes anterior del backend
+        previousMonthValue: data.totalConsumption.previousMonthValue || data.totalConsumption.previousMonth,
+        change: data.totalConsumption.change || "Datos disponibles"
       },
       totalGeneration: {
         ...data.totalGeneration,
         value: parseFloat(data.totalGeneration.value), // Usar el valor tal como viene del backend
         icon: Icons.generation,
-        color: "text-green-600"
+        color: "text-green-600",
+        // Usar el valor del mes anterior del backend
+        previousMonthValue: data.totalGeneration.previousMonthValue || data.totalGeneration.previousMonth,
+        change: data.totalGeneration.change || "Datos disponibles"
       },
       energyBalance: {
         ...data.energyBalance,
@@ -410,25 +416,37 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         ...data.averageInstantaneousPower,
         value: parseFloat(data.averageInstantaneousPower.value), // Usar el valor tal como viene del backend
         icon: Icons.power,
-        color: "text-orange-600"
+        color: "text-orange-600",
+        // Usar el valor del mes anterior del backend
+        previousMonthValue: data.averageInstantaneousPower.previousMonthValue || data.averageInstantaneousPower.previousMonth,
+        change: data.averageInstantaneousPower.change || "Datos disponibles"
       },
       avgDailyTemp: {
         ...data.avgDailyTemp,
         value: parseFloat(data.avgDailyTemp.value), // Usar el valor tal como viene del backend
         icon: Icons.temperature,
-        color: "text-red-600"
+        color: "text-red-600",
+        // Usar el valor del mes anterior del backend
+        previousMonthValue: data.avgDailyTemp.previousMonthValue || data.avgDailyTemp.previousMonth,
+        change: data.avgDailyTemp.change || "Datos disponibles"
       },
       relativeHumidity: {
         ...data.relativeHumidity,
         value: parseFloat(data.relativeHumidity.value), // Usar el valor tal como viene del backend
         icon: Icons.humidity,
-        color: "text-cyan-600"
+        color: "text-cyan-600",
+        // Usar el valor del mes anterior del backend
+        previousMonthValue: data.relativeHumidity.previousMonthValue || data.relativeHumidity.previousMonth,
+        change: data.relativeHumidity.change || "Datos disponibles"
       },
       windSpeed: {
         ...data.windSpeed,
         value: parseFloat(data.windSpeed.value), // Usar el valor tal como viene del backend
         icon: Icons.wind,
-        color: "text-teal-600"
+        color: "text-teal-600",
+        // Usar el valor del mes anterior del backend
+        previousMonthValue: data.windSpeed.previousMonthValue || data.windSpeed.previousMonth,
+        change: data.windSpeed.change || "Datos disponibles"
       },
       activeInverters: {
         ...data.activeInverters,
@@ -457,11 +475,33 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
       parseISODateToColombia(a.date) - parseISODateToColombia(b.date)
     );
 
+    // Calcular el consumo total del mes anterior
+    const previousMonthTotalConsumption = sortedPrevData.reduce((total, item) => {
+      return total + parseFloat(item.daily_consumption || 0);
+    }, 0);
+
+    // Actualizar KPIs con la información del mes anterior
+    updateKPIsWithPreviousMonth(previousMonthTotalConsumption);
+
     // Actualizar cada gráfico con los datos procesados
     updateConsumptionChart(sortedCurrentData, sortedPrevData);
     updateGenerationChart(sortedCurrentData, sortedPrevData);
     updateBalanceChart(sortedCurrentData, sortedPrevData);
     updateTemperatureChart(sortedCurrentData, sortedPrevData);
+  };
+
+  // Nueva función para actualizar KPIs con información del mes anterior
+  const updateKPIsWithPreviousMonth = (previousMonthTotalConsumption) => {
+    setKpiData(prevKpiData => {
+      return {
+        ...prevKpiData,
+        totalConsumption: {
+          ...prevKpiData.totalConsumption,
+          // No sobrescribir previousMonthValue, mantener el del backend
+          change: prevKpiData.totalConsumption?.change || "Datos disponibles"
+        }
+      };
+    });
   };
 
   // Modificar las funciones de actualización de gráficos para usar unidades dinámicas
@@ -850,7 +890,45 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                       <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-100">
-                      <p className="text-xs text-gray-500">{description}</p>
+                      {(key === 'totalConsumption' || key === 'totalGeneration' || key === 'averageInstantaneousPower' || key === 'avgDailyTemp' || key === 'relativeHumidity' || key === 'windSpeed') && item.previousMonthValue ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs text-gray-500">Mes anterior:</span>
+                            <span className={`text-sm font-semibold ${
+                              key === 'totalConsumption' ? 'text-blue-600' : 
+                              key === 'totalGeneration' ? 'text-green-600' : 
+                              key === 'averageInstantaneousPower' ? 'text-orange-600' :
+                              key === 'avgDailyTemp' ? 'text-red-600' :
+                              key === 'relativeHumidity' ? 'text-cyan-600' :
+                              'text-teal-600'
+                            }`}>
+                              {key === 'averageInstantaneousPower' 
+                                ? `${(item.previousMonthValue / 1000).toFixed(2)} kW` 
+                                : key === 'avgDailyTemp'
+                                ? `${item.previousMonthValue.toFixed(1)} °C`
+                                : key === 'relativeHumidity'
+                                ? `${item.previousMonthValue.toFixed(1)} %`
+                                : key === 'windSpeed'
+                                ? `${item.previousMonthValue.toFixed(1)} km/h`
+                                : `${(item.previousMonthValue / 1000).toFixed(2)} MWh`
+                              }
+                            </span>
+                          </div>
+                          {item.change && item.change.includes('%') && (
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                              item.change.includes('+') 
+                                ? 'text-red-600 bg-red-100' 
+                                : item.change.includes('-') 
+                                ? 'text-green-600 bg-green-100' 
+                                : 'text-gray-600 bg-gray-100'
+                            }`}>
+                              {item.change.match(/[+-]?\d+\.?\d*%/)?.[0] || item.change}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500">{description}</p>
+                      )}
                     </div>
                   </div>
                 );

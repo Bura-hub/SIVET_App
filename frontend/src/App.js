@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import ElectricalDetails from './components/ElectricalDetails';
 import InverterDetails from './components/InverterDetails';
 import WeatherStationDetails from './components/WeatherStationDetails';
+import ExternalEnergyData from './components/ExternalEnergyData';
 import ExportReports from './components/ExportReports';
 import Sidebar from './components/Sidebar'; // Componente de barra lateral
 
@@ -99,6 +100,8 @@ function App() {
         return <InverterDetails {...commonProps} />;
       case 'weatherDetails':
         return <WeatherStationDetails {...commonProps} />;
+      case 'externalEnergy':
+        return <ExternalEnergyData {...commonProps} />;
       case 'exportReports':
         return <ExportReports {...commonProps} />;
       default:

@@ -59,4 +59,7 @@ urlpatterns = [
 
     # Rutas para la gestión de tareas relacionadas con SCADA
     path('tasks/', include('scada_proxy.urls_tasks')),
+    
+    # Rutas para datos externos de energía
+    path('api/external-energy/', include('external_energy.urls')),
 ]

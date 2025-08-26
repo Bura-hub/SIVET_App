@@ -49,6 +49,14 @@ export const ENDPOINTS = {
     status: '/api/reports/status/',
     download: '/api/reports/download/',
     history: '/api/reports/history/'
+  },
+  
+  // Endpoints para datos externos de energía
+  externalEnergy: {
+    prices: '/api/external-energy/prices/',
+    savings: '/api/external-energy/savings/',
+    sync: '/api/external-energy/sync/',
+    marketOverview: '/api/external-energy/market-overview/'
   }
 };
 

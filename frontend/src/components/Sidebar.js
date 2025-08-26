@@ -125,6 +125,33 @@ function Sidebar({
       inactiveClasses: 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-orange-600'
     },
     { 
+      name: 'Datos Externos', 
+      page: 'externalEnergy', 
+      icon: (
+        <svg
+          className={`w-5 h-5 transition-all duration-300 ${isSidebarMinimized ? '' : 'mr-3'}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M12 2v20"></path>
+          <path d="M2 12h20"></path>
+          <path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"></path>
+          <path d="M4 12V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8"></path>
+          <path d="M12 6v4"></path>
+          <path d="M8 8h8"></path>
+          <path d="M6 16h12"></path>
+          <path d="M8 20h8"></path>
+        </svg>
+      ),
+      activeClasses: 'bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-lg shadow-teal-500/25',
+      inactiveClasses: 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-teal-600'
+    },
+    { 
       name: 'Exportar Reportes', 
       page: 'exportReports', 
       icon: (

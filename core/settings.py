@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'authentication',
     'indicators',
     'scada_proxy',
+    'external_energy',
 ]
 
 # ========================= Middleware =========================

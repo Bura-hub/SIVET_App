@@ -283,6 +283,11 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
     }
   });
 
+  // Estado para mostrar información detallada de KPIs
+  const [showKpiInfo, setShowKpiInfo] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
+
   const [electricityConsumptionData, setElectricityConsumptionData] = useState(null);
   const [inverterGenerationData, setInverterGenerationData] = useState(null);
   const [temperatureTrendsData, setTemperatureTrendsData] = useState(null);
@@ -502,6 +507,89 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
         }
       };
     });
+  };
+
+  // useEffect para manejar la animación de apertura
+  useEffect(() => {
+    if (showKpiInfo && isOpening) {
+      // Pequeño delay para que la animación de entrada funcione
+      const timer = setTimeout(() => {
+        setIsOpening(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showKpiInfo, isOpening]);
+
+  // Función para obtener información detallada de cada KPI
+  const getKpiDetailedInfo = (kpiKey) => {
+    const kpiInfo = {
+      totalConsumption: {
+        title: "Consumo Total de Energía",
+        description: "Representa la cantidad total de energía eléctrica consumida por todas las instalaciones monitoreadas.",
+        calculation: "Se calcula sumando el totalActivePower de todos los medidores eléctricos activos durante el período mensual.",
+        dataSource: "Datos obtenidos de medidores eléctricos SCADA en tiempo real.",
+        units: "kWh (convertido a MWh para visualización)",
+        frequency: "Actualización cada 5 minutos desde SCADA, cálculo mensual automático."
+      },
+      totalGeneration: {
+        title: "Generación Total de Energía",
+        description: "Representa la cantidad total de energía solar generada por todos los inversores activos.",
+        calculation: "Se calcula sumando la energía generada por todos los inversores solares durante el período mensual.",
+        dataSource: "Datos obtenidos de inversores solares SCADA en tiempo real.",
+        units: "kWh (convertido a MWh para visualización)",
+        frequency: "Actualización cada 5 minutos desde SCADA, cálculo mensual automático."
+      },
+      energyBalance: {
+        title: "Equilibrio Energético",
+        description: "Representa la diferencia entre la energía generada y la consumida (Generación - Consumo).",
+        calculation: "Balance = Generación Total - Consumo Total. Valores positivos indican superávit, negativos déficit.",
+        dataSource: "Cálculo derivado de los KPIs de generación y consumo.",
+        units: "kWh (convertido a MWh para visualización)",
+        frequency: "Cálculo automático mensual basado en generación y consumo."
+      },
+      averageInstantaneousPower: {
+        title: "Potencia Instantánea Promedio",
+        description: "Representa la potencia promedio que están generando los inversores solares en tiempo real.",
+        calculation: "Se calcula como el promedio de la potencia instantánea de todos los inversores activos durante el período.",
+        dataSource: "Datos de potencia instantánea de inversores solares SCADA.",
+        units: "W (convertido a kW para visualización)",
+        frequency: "Actualización cada 5 minutos desde SCADA, promedio mensual automático."
+      },
+      avgDailyTemp: {
+        title: "Temperatura Promedio Diaria",
+        description: "Representa la temperatura ambiental promedio registrada por las estaciones meteorológicas.",
+        calculation: "Se calcula como el promedio de las temperaturas máximas y mínimas diarias registradas.",
+        dataSource: "Datos de estaciones meteorológicas SCADA y sensores locales.",
+        units: "°C (grados Celsius)",
+        frequency: "Actualización cada hora, promedio diario y mensual automático."
+      },
+      relativeHumidity: {
+        title: "Humedad Relativa Promedio",
+        description: "Representa el porcentaje de humedad en el aire respecto a la capacidad máxima de retención.",
+        calculation: "Se calcula como el promedio de las mediciones de humedad relativa durante el período.",
+        dataSource: "Sensores de humedad en estaciones meteorológicas SCADA.",
+        units: "% (porcentaje)",
+        frequency: "Actualización cada hora, promedio mensual automático."
+      },
+      windSpeed: {
+        title: "Velocidad del Viento Promedio",
+        description: "Representa la velocidad promedio del viento registrada por las estaciones meteorológicas.",
+        calculation: "Se calcula como el promedio de las velocidades del viento registradas durante el período.",
+        dataSource: "Anemómetros en estaciones meteorológicas SCADA.",
+        units: "km/h (kilómetros por hora)",
+        frequency: "Actualización cada hora, promedio mensual automático."
+      },
+      activeInverters: {
+        title: "Inversores Activos",
+        description: "Representa el número de inversores solares que están funcionando correctamente.",
+        calculation: "Se cuenta el número de inversores con estado 'online' en el sistema SCADA.",
+        dataSource: "Estado de conexión de inversores en tiempo real desde SCADA.",
+        units: "Cantidad (número de inversores)",
+        frequency: "Verificación cada 5 minutos desde SCADA."
+      }
+    };
+    
+    return kpiInfo[kpiKey] || null;
   };
 
   // Modificar las funciones de actualización de gráficos para usar unidades dinámicas
@@ -848,7 +936,7 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
 
       {/* Sección KPI superpuesta con el banner */}
       <section className="-mt-8 mb-8">
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden relative">
           {/* Contenido de KPIs */}
           <div className="p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -873,13 +961,31 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                 return (
                   <div 
                     key={key} 
-                    className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg ${item.onClick ? 'cursor-pointer' : ''}`}
+                    className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg ${item.onClick ? 'cursor-pointer' : ''} relative`}
                     onClick={item.onClick || undefined}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <div className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')}`}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (showKpiInfo === key) {
+                            // Cerrar con animación
+                            setIsAnimating(true);
+                            setTimeout(() => {
+                              setShowKpiInfo(null);
+                              setIsAnimating(false);
+                            }, 500);
+                          } else {
+                            // Abrir con animación
+                            setIsOpening(true);
+                            setShowKpiInfo(key);
+                          }
+                        }}
+                        className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')} hover:scale-110 transition-transform duration-200 cursor-pointer`}
+                        title="Acerca de este KPI"
+                      >
                         {item.icon}
-                      </div>
+                      </button>
                       <div className="text-right">
                         <p className="text-xs font-medium text-gray-600">{description}</p>
                       </div>
@@ -929,11 +1035,96 @@ function Dashboard({ authToken, onLogout, username, isSuperuser, navigateTo, isS
                       ) : (
                         <p className="text-xs text-gray-500">{description}</p>
                       )}
+                      
+
                     </div>
                   </div>
                 );
               })}
             </div>
+            
+            {/* Overlay de información detallada del KPI - Se superpone en toda la sección */}
+            {showKpiInfo && getKpiDetailedInfo(showKpiInfo) && (
+              <div 
+                className={`absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl border-2 border-gray-200 shadow-2xl z-20 p-8 overflow-y-auto transition-all duration-500 ease-out transform ${
+                  isAnimating 
+                    ? 'opacity-0 scale-95 translate-y-4 backdrop-blur-none' 
+                    : isOpening
+                    ? 'opacity-0 scale-95 translate-y-4 backdrop-blur-none'
+                    : 'opacity-100 scale-100 translate-y-0 backdrop-blur-sm'
+                }`}
+              >
+                <div className={`flex justify-between items-start mb-6 transition-all duration-700 delay-100 ${
+                  isAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+                }`}>
+                  <h3 className="font-bold text-gray-800 text-2xl">
+                    {getKpiDetailedInfo(showKpiInfo).title}
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setIsAnimating(true);
+                      setTimeout(() => {
+                        setShowKpiInfo(null);
+                        setIsAnimating(false);
+                      }, 500);
+                    }}
+                    className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+                    title="Cerrar"
+                  >
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className={`bg-blue-50 p-4 rounded-xl border border-blue-200 transition-all duration-700 delay-200 ${
+                    isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+                  }`}>
+                    <span className="text-base font-semibold text-blue-800">Descripción</span>
+                    <p className="text-sm text-blue-700 mt-2 leading-relaxed">
+                      {getKpiDetailedInfo(showKpiInfo).description}
+                    </p>
+                  </div>
+                  
+                  <div className={`bg-green-50 p-4 rounded-xl border border-green-200 transition-all duration-700 delay-300 ${
+                    isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+                  }`}>
+                    <span className="text-base font-semibold text-green-800">Cálculo</span>
+                    <p className="text-sm text-green-700 mt-2 leading-relaxed">
+                      {getKpiDetailedInfo(showKpiInfo).calculation}
+                    </p>
+                  </div>
+                  
+                  <div className={`bg-purple-50 p-4 rounded-xl border border-purple-200 transition-all duration-700 delay-400 ${
+                    isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+                  }`}>
+                    <span className="text-base font-semibold text-purple-800">Fuente de datos</span>
+                    <p className="text-sm text-purple-700 mt-2 leading-relaxed">
+                      {getKpiDetailedInfo(showKpiInfo).dataSource}
+                    </p>
+                  </div>
+                  
+                  <div className={`bg-orange-50 p-4 rounded-xl border border-orange-200 transition-all duration-700 delay-500 ${
+                    isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+                  }`}>
+                    <span className="text-base font-semibold text-orange-800">Unidades</span>
+                    <p className="text-sm text-orange-700 mt-2 leading-relaxed">
+                      {getKpiDetailedInfo(showKpiInfo).units}
+                    </p>
+                  </div>
+                  
+                  <div className={`bg-teal-50 p-4 rounded-xl border border-teal-200 lg:col-span-2 transition-all duration-700 delay-600 ${
+                    isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+                  }`}>
+                    <span className="text-base font-semibold text-teal-800">Frecuencia</span>
+                    <p className="text-sm text-teal-700 mt-2 leading-relaxed">
+                      {getKpiDetailedInfo(showKpiInfo).frequency}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>

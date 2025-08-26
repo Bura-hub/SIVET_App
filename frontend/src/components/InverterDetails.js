@@ -271,7 +271,6 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     try {
       seq = ++requestSeqRef.current;
       if (!filters || !filters.institutionId) return; // no tocar UI si no hay institución
-      
       setInverterLoading(true);
       setInverterError(null);
       
@@ -306,64 +305,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       const indicatorsData = await indicatorsResp.json();
 
       if (seq === requestSeqRef.current) {
-        setInverterData(indicatorsData || { results: [] });
-        
-
-        
-        // Actualizar KPIs con datos reales
-        if (indicatorsData.results && indicatorsData.results.length > 0) {
-          const latestData = indicatorsData.results[0];
-          const totalEnergy = indicatorsData.results.reduce((sum, item) => sum + (item.total_generated_energy_kwh || 0), 0);
-          
-          setKpiData(prev => ({
-            totalGeneration: {
-              ...prev.totalGeneration,
-              value: (totalEnergy / 1000).toFixed(2), // Convertir kWh a MWh
-              change: `${indicatorsData.results.length} registros`
-            },
-            averageEfficiency: {
-              ...prev.averageEfficiency,
-              value: (latestData.dc_ac_efficiency_pct || 0).toFixed(1),
-              change: latestData.dc_ac_efficiency_pct > 90 ? 'Excelente' : latestData.dc_ac_efficiency_pct > 80 ? 'Bueno' : 'Mejorable'
-            },
-            activeInverters: {
-              ...prev.activeInverters,
-              value: indicatorsData.results.length.toString(),
-              change: "activos"
-            },
-            performanceRatio: {
-              ...prev.performanceRatio,
-              value: (latestData.performance_ratio || 0).toFixed(2),
-              change: latestData.performance_ratio > 0.8 ? 'Óptimo' : latestData.performance_ratio > 0.7 ? 'Bueno' : 'Mejorable'
-            },
-            powerFactor: {
-              ...prev.powerFactor,
-              value: (latestData.avg_power_factor || 0).toFixed(2),
-              change: latestData.avg_power_factor > 0.95 ? 'Óptimo' : latestData.avg_power_factor > 0.85 ? 'Bueno' : 'Mejorable'
-            },
-            phaseUnbalance: {
-              ...prev.phaseUnbalance,
-              value: (latestData.max_voltage_unbalance_pct || 0).toFixed(1),
-              change: latestData.max_voltage_unbalance_pct < 2 ? 'Excelente' : latestData.max_voltage_unbalance_pct < 5 ? 'Bueno' : 'Mejorable'
-            },
-            frequencyStability: {
-              ...prev.frequencyStability,
-              value: (latestData.avg_frequency_hz || 0).toFixed(1),
-              change: Math.abs(latestData.avg_frequency_hz - 60) < 0.1 ? 'Estable' : 'Variable'
-            },
-            thdVoltage: {
-              ...prev.thdVoltage,
-              value: (latestData.max_voltage_thd_pct || 0).toFixed(1),
-              change: latestData.max_voltage_thd_pct < 3 ? 'Excelente' : latestData.max_voltage_thd_pct < 5 ? 'Bueno' : 'Mejorable'
-            }
-          }));
-        }
-
-        // Obtener datos de gráficos después de obtener indicadores
-        await fetchChartData(filters, seq);
-        
-        // Resetear página cuando cambien los filtros
-        setCurrentPage(1);
+        setInverterData(indicatorsData);
       }
     } catch (error) {
       // Mostrar error solo si esta solicitud sigue siendo la vigente
@@ -374,6 +316,94 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       if (seq === requestSeqRef.current) setInverterLoading(false);
     }
   }, [authToken]);
+
+  // Función para obtener información detallada de cada KPI
+  const getKpiDetailedInfo = (kpiKey) => {
+    const kpiInfo = {
+      totalGeneration: {
+        title: "Generación Total de Energía",
+        description: "Representa la cantidad total de energía solar generada por todos los inversores activos en la institución seleccionada.",
+        calculation: "Se calcula sumando la energía generada (total_generation_kwh) de todos los inversores durante el período seleccionado.",
+        dataSource: "Datos obtenidos de inversores solares SCADA en tiempo real, incluyendo mediciones de energía activa generada.",
+        units: "kWh (kilovatios-hora)",
+        frequency: "Actualización cada 5 minutos desde SCADA, cálculo automático según el período seleccionado."
+      },
+      averageEfficiency: {
+        title: "Eficiencia Promedio",
+        description: "Indica el rendimiento promedio de los inversores solares, comparando la energía generada con la energía solar incidente.",
+        calculation: "Eficiencia = (Energía Generada / Energía Solar Incidente) × 100%. Valores altos indican mejor rendimiento.",
+        dataSource: "Cálculo derivado de las mediciones de generación y condiciones ambientales de los inversores.",
+        units: "% (porcentaje)",
+        frequency: "Cálculo automático basado en datos de generación, actualización según el período seleccionado."
+      },
+      activeInverters: {
+        title: "Inversores Activos",
+        description: "Representa el número de inversores solares que están funcionando correctamente en el sistema.",
+        calculation: "Se cuenta el número de inversores con estado 'online' y funcionamiento normal en el sistema SCADA.",
+        dataSource: "Estado de conexión y operación de inversores en tiempo real desde SCADA.",
+        units: "Cantidad (número de inversores)",
+        frequency: "Verificación cada 5 minutos desde SCADA, conteo automático de dispositivos activos."
+      },
+      performanceRatio: {
+        title: "Performance Ratio",
+        description: "Mide la eficiencia del sistema fotovoltaico comparando la generación real con la generación teórica esperada.",
+        calculation: "PR = (Energía Generada Real / Energía Teórica) × 100%. Valores cercanos a 100% indican excelente rendimiento.",
+        dataSource: "Cálculo derivado de generación real y condiciones ambientales (irradiancia, temperatura).",
+        units: "Adimensional (sin unidades)",
+        frequency: "Cálculo automático basado en datos de generación y ambientales, actualización según el período."
+      },
+      powerFactor: {
+        title: "Factor de Potencia",
+        description: "Indica la eficiencia del uso de la potencia aparente en los inversores solares.",
+        calculation: "Factor de Potencia = Potencia Activa / Potencia Aparente. Valores cercanos a 1.0 indican alta eficiencia.",
+        dataSource: "Mediciones de potencia activa y aparente desde inversores solares SCADA.",
+        units: "Adimensional (sin unidades)",
+        frequency: "Actualización cada 5 minutos desde SCADA, promedio automático del período seleccionado."
+      },
+      phaseUnbalance: {
+        title: "Desbalance de Fases",
+        description: "Mide la diferencia en el voltaje entre las fases del sistema trifásico de los inversores.",
+        calculation: "Desbalance = ((Vmax - Vmin) / Vpromedio) × 100%. Valores bajos indican mejor balance del sistema.",
+        dataSource: "Mediciones de voltaje por fase desde inversores solares SCADA.",
+        units: "% (porcentaje)",
+        frequency: "Actualización cada 5 minutos desde SCADA, cálculo automático del desbalance."
+      },
+      frequencyStability: {
+        title: "Estabilidad de Frecuencia",
+        description: "Indica la estabilidad de la frecuencia de operación del sistema eléctrico de los inversores.",
+        calculation: "Se mide la desviación de la frecuencia nominal (60 Hz). Valores estables indican buen funcionamiento.",
+        dataSource: "Mediciones de frecuencia desde inversores solares SCADA.",
+        units: "Hz (Hertz)",
+        frequency: "Actualización cada 5 minutos desde SCADA, monitoreo continuo de estabilidad."
+      },
+      thdVoltage: {
+        title: "THD de Voltaje",
+        description: "Mide la distorsión armónica total en el voltaje de salida de los inversores solares.",
+        calculation: "THD = √(Σ(Vh²) / V1²) × 100%. Valores bajos indican mejor calidad de energía.",
+        dataSource: "Análisis armónico del voltaje desde inversores solares SCADA.",
+        units: "% (porcentaje)",
+        frequency: "Actualización cada 5 minutos desde SCADA, análisis automático de distorsión armónica."
+      }
+    };
+    
+    return kpiInfo[kpiKey] || null;
+  };
+
+  // Estados para mostrar información detallada de KPIs
+  const [showKpiInfo, setShowKpiInfo] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
+
+  // useEffect para manejar la animación de apertura
+  useEffect(() => {
+    if (showKpiInfo && isOpening) {
+      // Pequeño delay para que la animación de entrada funcione
+      const timer = setTimeout(() => {
+        setIsOpening(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showKpiInfo, isOpening]);
 
   // Función para obtener datos de gráficos
   const fetchChartData = useCallback(async (filters, requestSeq) => {
@@ -807,11 +837,29 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
               const styleColors = colorMap[item.color] || { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
 
   return (
-                <div key={key} className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg`}>
+                <div key={key} className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg relative`}>
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')}`}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (showKpiInfo === key) {
+                          // Cerrar con animación
+                          setIsAnimating(true);
+                          setTimeout(() => {
+                            setShowKpiInfo(null);
+                            setIsAnimating(false);
+                          }, 500);
+                        } else {
+                          // Abrir con animación
+                          setIsOpening(true);
+                          setShowKpiInfo(key);
+                        }
+                      }}
+                      className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')} hover:scale-110 transition-transform duration-200 cursor-pointer`}
+                      title="Acerca de este KPI"
+                    >
                       {item.icon}
-                    </div>
+                    </button>
                     <div className="text-right">
                       <p className="text-xs font-medium text-gray-600">{item.change}</p>
                     </div>
@@ -884,6 +932,89 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                 )}
           </button>
         </div>
+          </div>
+        )}
+        
+        {/* Overlay de información detallada del KPI - Se superpone en toda la sección */}
+        {showKpiInfo && getKpiDetailedInfo(showKpiInfo) && (
+          <div 
+            className={`absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl border-2 border-gray-200 shadow-2xl z-20 p-8 overflow-y-auto transition-all duration-500 ease-out transform ${
+              isAnimating 
+                ? 'opacity-0 scale-95 translate-y-4 backdrop-blur-none' 
+                : isOpening
+                ? 'opacity-0 scale-95 translate-y-4 backdrop-blur-none'
+                : 'opacity-100 scale-100 translate-y-0 backdrop-blur-sm'
+            }`}
+          >
+            <div className={`flex justify-between items-start mb-6 transition-all duration-700 delay-100 ${
+              isAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+            }`}>
+              <h3 className="font-bold text-gray-800 text-2xl">
+                {getKpiDetailedInfo(showKpiInfo).title}
+              </h3>
+              <button
+                onClick={() => {
+                  setIsAnimating(true);
+                  setTimeout(() => {
+                    setShowKpiInfo(null);
+                    setIsAnimating(false);
+                  }, 500);
+                }}
+                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+                title="Cerrar"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className={`bg-blue-50 p-4 rounded-xl border border-blue-200 transition-all duration-700 delay-200 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-blue-800">Descripción</span>
+                <p className="text-sm text-blue-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).description}
+                </p>
+              </div>
+              
+              <div className={`bg-green-50 p-4 rounded-xl border border-green-200 transition-all duration-700 delay-300 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-green-800">Cálculo</span>
+                <p className="text-sm text-green-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).calculation}
+                </p>
+              </div>
+              
+              <div className={`bg-purple-50 p-4 rounded-xl border border-purple-200 transition-all duration-700 delay-400 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-purple-800">Fuente de datos</span>
+                <p className="text-sm text-purple-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).dataSource}
+                </p>
+              </div>
+              
+              <div className={`bg-orange-50 p-4 rounded-xl border border-orange-200 transition-all duration-700 delay-500 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-orange-800">Unidades</span>
+                <p className="text-sm text-orange-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).units}
+                </p>
+              </div>
+              
+              <div className={`bg-teal-50 p-4 rounded-xl border border-teal-200 lg:col-span-2 transition-all duration-700 delay-600 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-teal-800">Frecuencia</span>
+                <p className="text-sm text-teal-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).frequency}
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </section>

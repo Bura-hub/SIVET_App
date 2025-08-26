@@ -269,15 +269,12 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
     }, 300);
   };
 
+  // Función para obtener datos de estaciones meteorológicas
   const fetchWeatherData = useCallback(async (filters) => {
     let seq = 0;
     try {
       seq = ++requestSeqRef.current;
-      
-      if (!filters || !filters.institutionId) {
-        return;
-      }
-      
+      if (!filters || !filters.institutionId) return; // no tocar UI si no hay institución
       setWeatherLoading(true);
       setWeatherError(null);
       
@@ -297,7 +294,7 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
 
       const indicatorsParams = new URLSearchParams(baseParams);
 
-      const indicatorsResp = await fetch(`${ENDPOINTS.weather.indicators}?${indicatorsParams.toString()}`, {
+      const indicatorsResp = await fetch(`/api/weather-station-indicators/?${indicatorsParams.toString()}`, {
           headers: {
             'Authorization': `Token ${authToken}`,
             'Content-Type': 'application/json'
@@ -306,55 +303,18 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
 
       if (!indicatorsResp.ok) {
         const errText = await indicatorsResp.text();
-        console.error('🔍 fetchWeatherData - Error en indicadores:', errText);
         throw new Error(errText || indicatorsResp.statusText);
       }
 
       const indicatorsData = await indicatorsResp.json();
-      
-      // Verificar secuencia ANTES de procesar los datos
-      if (seq !== requestSeqRef.current) {
-        return;
-      }
 
       if (seq === requestSeqRef.current) {
-        // Verificar que indicatorsData sea válido antes de procesarlo
-        if (!indicatorsData || typeof indicatorsData !== 'object') {
-          console.error('fetchWeatherData: indicatorsData no es válido:', indicatorsData);
-          setWeatherError('Datos recibidos no son válidos');
-          setWeatherLoading(false);
-          return;
-        }
-        
-        console.log('🔍 fetchWeatherData - Actualizando estado con datos:', indicatorsData);
-        console.log('🔍 fetchWeatherData - Tipo de datos:', typeof indicatorsData);
-        console.log('🔍 fetchWeatherData - Estructura de datos:', JSON.stringify(indicatorsData, null, 2));
-        
         setWeatherData(indicatorsData);
-        console.log('🔍 fetchWeatherData - setWeatherData llamado con:', indicatorsData);
-        
-        // Procesar KPIs si hay datos
-        if (indicatorsData.results && Array.isArray(indicatorsData.results) && indicatorsData.results.length > 0) {
-          const latest = indicatorsData.results[0];
-          console.log('🔍 fetchWeatherData - Procesando KPIs con datos:', latest);
-          processKPIData(latest);
-          console.log('🔍 fetchWeatherData - KPIs procesados correctamente');
-        } else {
-          console.log('🔍 fetchWeatherData - No hay resultados de indicadores para procesar KPIs');
-          console.log('🔍 fetchWeatherData - indicatorsData.results:', indicatorsData.results);
-        }
-        
-        console.log('🔍 fetchWeatherData - Estado actualizado, weatherData debería estar disponible');
-      } else {
-        console.log('🔍 fetchWeatherData - Secuencia no coincide ANTES de procesar, saltando. Seq actual:', seq, 'RequestSeq:', requestSeqRef.current);
       }
-      
     } catch (error) {
-      console.error('🔍 fetchWeatherData - Error capturado:', error);
+      // Mostrar error solo si esta solicitud sigue siendo la vigente
       if (seq === requestSeqRef.current) {
-        setWeatherError(error.message || 'Error desconocido al cargar datos meteorológicos');
-        setWeatherData(null); // Limpiar datos en caso de error
-        setKpiData({}); // Limpiar KPIs en caso de error
+        setWeatherError(error.message || 'Error desconocido');
       }
     } finally {
       if (seq === requestSeqRef.current) setWeatherLoading(false);
@@ -415,6 +375,7 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
 
   // Función para procesar datos de KPIs
   const processKPIData = (latestData) => {
+    console.log('🔍 processKPIData iniciado con:', latestData);
     // Verificar que latestData existe y es válido
     if (!latestData || typeof latestData !== 'object') {
       console.warn('processKPIData: latestData no es válido:', latestData);
@@ -539,6 +500,8 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
       }
     };
 
+    // Actualizar el estado de kpiData con los nuevos valores
+    console.log('🔍 Actualizando kpiData con:', kpis);
     setKpiData(kpis);
   };
 
@@ -721,6 +684,90 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
     resetPagination();
   }, [filters.institutionId, filters.deviceId, filters.startDate, filters.endDate]);
 
+  // Efecto para actualizar KPIs cuando cambien los datos meteorológicos
+  useEffect(() => {
+    console.log('🔍 useEffect weatherData cambió:', weatherData);
+    if (weatherData && weatherData.results && weatherData.results.length > 0) {
+      const latestData = weatherData.results[0];
+      console.log('🔍 Procesando KPIs con datos:', latestData);
+      processKPIData(latestData);
+    } else {
+      console.log('🔍 No hay datos meteorológicos para procesar KPIs');
+    }
+  }, [weatherData]);
+
+  // Función para obtener información detallada de cada KPI
+  const getKpiDetailedInfo = (kpiKey) => {
+    const kpiInfo = {
+      irradiance: {
+        title: "Irradiancia Acumulada",
+        description: "Representa la cantidad total de radiación solar incidente en la superficie durante el período seleccionado.",
+        calculation: "Se calcula sumando la irradiancia instantánea (W/m²) a lo largo del tiempo, convertida a energía acumulada (kWh/m²).",
+        dataSource: "Datos obtenidos de piranómetros en estaciones meteorológicas SCADA, mediciones de radiación solar global.",
+        units: "kWh/m² (kilovatios-hora por metro cuadrado)",
+        frequency: "Actualización cada hora desde SCADA, cálculo automático de acumulación según el período seleccionado."
+      },
+      hsp: {
+        title: "Horas Solares Pico",
+        description: "Representa el equivalente en horas de radiación solar a una intensidad estándar de 1000 W/m².",
+        calculation: "HSP = Irradiancia Acumulada (kWh/m²) / 1000 W/m². Es una medida estándar para comparar sitios solares.",
+        dataSource: "Cálculo derivado de la irradiancia acumulada, normalizado a condiciones estándar de medición.",
+        units: "HSP (Horas Solares Pico)",
+        frequency: "Cálculo automático basado en irradiancia acumulada, actualización según el período seleccionado."
+      },
+      windSpeed: {
+        title: "Velocidad del Viento",
+        description: "Representa la velocidad promedio del viento registrada por las estaciones meteorológicas durante el período.",
+        calculation: "Se calcula como el promedio de las velocidades del viento registradas durante el período de análisis.",
+        dataSource: "Anemómetros en estaciones meteorológicas SCADA, mediciones de velocidad del viento en tiempo real.",
+        units: "km/h (kilómetros por hora)",
+        frequency: "Actualización cada hora desde SCADA, promedio automático del período seleccionado."
+      },
+      windDirection: {
+        title: "Dirección del Viento",
+        description: "Indica la dirección predominante del viento durante el período de análisis.",
+        calculation: "Se determina la dirección más frecuente del viento basándose en las mediciones de la rosa de los vientos.",
+        dataSource: "Veletas en estaciones meteorológicas SCADA, mediciones de dirección del viento en tiempo real.",
+        units: "Dirección cardinal (N, NE, E, SE, S, SW, W, NW)",
+        frequency: "Actualización cada hora desde SCADA, análisis de frecuencia direccional del período."
+      },
+      precipitation: {
+        title: "Precipitación Acumulada",
+        description: "Representa la cantidad total de lluvia registrada por las estaciones meteorológicas durante el período.",
+        calculation: "Se suma la precipitación diaria registrada por los pluviómetros durante el período de análisis.",
+        dataSource: "Pluviómetros en estaciones meteorológicas SCADA, mediciones de precipitación en tiempo real.",
+        units: "cm/día (centímetros por día)",
+        frequency: "Actualización cada hora desde SCADA, acumulación automática del período seleccionado."
+      },
+      pvPower: {
+        title: "Potencia Fotovoltaica",
+        description: "Representa la potencia teórica que podría generar un sistema fotovoltaico basándose en la irradiancia solar.",
+        calculation: "Potencia = Irradiancia (W/m²) × Área del panel (m²) × Eficiencia del panel (%).",
+        dataSource: "Cálculo derivado de irradiancia solar y parámetros estándar de paneles fotovoltaicos.",
+        units: "W (vatios)",
+        frequency: "Cálculo automático basado en irradiancia, actualización según el período seleccionado."
+      }
+    };
+    
+    return kpiInfo[kpiKey] || null;
+  };
+
+  // Estados para mostrar información detallada de KPIs
+  const [showKpiInfo, setShowKpiInfo] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
+
+  // useEffect para manejar la animación de apertura
+  useEffect(() => {
+    if (showKpiInfo && isOpening) {
+      // Pequeño delay para que la animación de entrada funcione
+      const timer = setTimeout(() => {
+        setIsOpening(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showKpiInfo, isOpening]);
+
   // Si está cargando, muestra un spinner o mensaje
   if (loading) {
     return (
@@ -837,40 +884,62 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
             ))
           ) : (
             // KPIs reales cuando hay datos
-            Object.keys(kpiData).map((key) => {
-              const item = kpiData[key];
-              // Mapear colores del KPI a colores de estilo adaptado
-              const colorMap = {
-                'text-orange-600': { bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
-                'text-yellow-600': { bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200' },
-                'text-blue-600': { bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
-                'text-indigo-600': { bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200' },
-                'text-cyan-600': { bgColor: 'bg-cyan-50', borderColor: 'border-cyan-200' },
-                'text-purple-600': { bgColor: 'bg-purple-50', borderColor: 'border-purple-200' }
-              };
-              const styleColors = colorMap[item.color] || { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
-              
-              return (
-                <div key={key} className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')}`}>
-                      {item.icon}
+            (() => {
+              console.log('🔍 Renderizando KPIs, kpiData:', kpiData);
+              console.log('🔍 Claves de kpiData:', Object.keys(kpiData));
+              return Object.keys(kpiData).map((key) => {
+                const item = kpiData[key];
+                // Mapear colores del KPI a colores de estilo adaptado
+                const colorMap = {
+                  'text-orange-600': { bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
+                  'text-yellow-600': { bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200' },
+                  'text-blue-600': { bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
+                  'text-indigo-600': { bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200' },
+                  'text-cyan-600': { bgColor: 'bg-cyan-50', borderColor: 'border-cyan-200' },
+                  'text-purple-600': { bgColor: 'bg-purple-50', borderColor: 'border-purple-200' }
+                };
+                const styleColors = colorMap[item.color] || { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
+                
+                return (
+                  <div key={key} className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg relative`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (showKpiInfo === key) {
+                            // Cerrar con animación
+                            setIsAnimating(true);
+                            setTimeout(() => {
+                              setShowKpiInfo(null);
+                              setIsAnimating(false);
+                            }, 500);
+                          } else {
+                            // Abrir con animación
+                            setIsOpening(true);
+                            setShowKpiInfo(key);
+                          }
+                        }}
+                        className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')} hover:scale-110 transition-transform duration-200 cursor-pointer`}
+                        title="Acerca de este KPI"
+                      >
+                        {item.icon}
+                      </button>
+                      <div className="text-right">
+                        <p className="text-xs font-medium text-gray-600">{item.change}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs font-medium text-gray-600">{item.change}</p>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
+                    <div className="flex items-baseline">
+                      <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
+                      <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-500">{item.change}</p>
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
-                  <div className="flex items-baseline">
-                    <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
-                    <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <p className="text-xs text-gray-500">{item.change}</p>
-                  </div>
-                </div>
-              );
-            })
+                );
+              });
+            })()
           )}
         </div>
         
@@ -916,6 +985,89 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
                 </svg>
                 Calcular Datos Meteorológicos
               </button>
+            </div>
+          </div>
+        )}
+        
+        {/* Overlay de información detallada del KPI - Se superpone en toda la sección */}
+        {showKpiInfo && getKpiDetailedInfo(showKpiInfo) && (
+          <div 
+            className={`absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl border-2 border-gray-200 shadow-2xl z-20 p-8 overflow-y-auto transition-all duration-500 ease-out transform ${
+              isAnimating 
+                ? 'opacity-0 scale-95 translate-y-4 backdrop-blur-none' 
+                : isOpening
+                ? 'opacity-0 scale-95 translate-y-4 backdrop-blur-none'
+                : 'opacity-100 scale-100 translate-y-0 backdrop-blur-sm'
+            }`}
+          >
+            <div className={`flex justify-between items-start mb-6 transition-all duration-700 delay-100 ${
+              isAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+            }`}>
+              <h3 className="font-bold text-gray-800 text-2xl">
+                {getKpiDetailedInfo(showKpiInfo).title}
+              </h3>
+              <button
+                onClick={() => {
+                  setIsAnimating(true);
+                  setTimeout(() => {
+                    setShowKpiInfo(null);
+                    setIsAnimating(false);
+                  }, 500);
+                }}
+                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+                title="Cerrar"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className={`bg-blue-50 p-4 rounded-xl border border-blue-200 transition-all duration-700 delay-200 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-blue-800">Descripción</span>
+                <p className="text-sm text-blue-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).description}
+                </p>
+              </div>
+              
+              <div className={`bg-green-50 p-4 rounded-xl border border-green-200 transition-all duration-700 delay-300 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-green-800">Cálculo</span>
+                <p className="text-sm text-green-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).calculation}
+                </p>
+              </div>
+              
+              <div className={`bg-purple-50 p-4 rounded-xl border border-purple-200 transition-all duration-700 delay-400 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-purple-800">Fuente de datos</span>
+                <p className="text-sm text-purple-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).dataSource}
+                </p>
+              </div>
+              
+              <div className={`bg-orange-50 p-4 rounded-xl border border-orange-200 transition-all duration-700 delay-500 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-orange-800">Unidades</span>
+                <p className="text-sm text-orange-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).units}
+                </p>
+              </div>
+              
+              <div className={`bg-teal-50 p-4 rounded-xl border border-teal-200 lg:col-span-2 transition-all duration-700 delay-600 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-teal-800">Frecuencia</span>
+                <p className="text-sm text-teal-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).frequency}
+                </p>
+              </div>
             </div>
           </div>
         )}

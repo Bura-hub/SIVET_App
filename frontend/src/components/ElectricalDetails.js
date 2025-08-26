@@ -148,6 +148,11 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(30);
 
+  // Estados para mostrar información detallada de KPIs
+  const [showKpiInfo, setShowKpiInfo] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
+
   // KPIs dinámicos basados en datos reales
   const [kpiData, setKpiData] = useState({
     totalEnergyConsumed: { 
@@ -438,6 +443,59 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
     }
   }, [meterData]);
 
+  // Función para obtener información detallada de cada KPI
+  const getKpiDetailedInfo = (kpiKey) => {
+    const kpiInfo = {
+      totalEnergyConsumed: {
+        title: "Energía Total Consumida",
+        description: "Representa la cantidad total de energía eléctrica consumida por los medidores monitoreados en la institución seleccionada.",
+        calculation: "Se calcula sumando la energía importada (imported_energy_kwh) de todos los medidores activos durante el período seleccionado.",
+        dataSource: "Datos obtenidos de medidores eléctricos SCADA en tiempo real, incluyendo lecturas de energía activa.",
+        units: "kWh (kilovatios-hora)",
+        frequency: "Actualización cada 5 minutos desde SCADA, cálculo automático según el período seleccionado."
+      },
+      peakDemand: {
+        title: "Demanda Pico",
+        description: "Representa la máxima potencia demandada por los medidores eléctricos en un momento específico del período.",
+        calculation: "Se identifica el valor más alto de potencia activa (peak_demand_kw) registrado durante el período de análisis.",
+        dataSource: "Mediciones de potencia instantánea desde medidores eléctricos SCADA.",
+        units: "kW (kilovatios)",
+        frequency: "Actualización cada 5 minutos desde SCADA, identificación automática del pico máximo."
+      },
+      loadFactor: {
+        title: "Factor de Carga",
+        description: "Indica la eficiencia del uso de la capacidad instalada, comparando la demanda promedio con la demanda máxima.",
+        calculation: "Factor de Carga = (Demanda Promedio / Demanda Máxima) × 100%. Valores altos indican uso eficiente.",
+        dataSource: "Cálculo derivado de las mediciones de potencia activa de medidores eléctricos.",
+        units: "% (porcentaje)",
+        frequency: "Cálculo automático basado en datos de potencia, actualización según el período seleccionado."
+      },
+      powerFactor: {
+        title: "Factor de Potencia",
+        description: "Mide la eficiencia del uso de la potencia aparente, indicando qué tan bien se aprovecha la energía eléctrica.",
+        calculation: "Factor de Potencia = Potencia Activa / Potencia Aparente. Valores cercanos a 1.0 indican alta eficiencia.",
+        dataSource: "Mediciones de potencia activa y aparente desde medidores eléctricos SCADA.",
+        units: "Adimensional (sin unidades)",
+        frequency: "Actualización cada 5 minutos desde SCADA, promedio automático del período seleccionado."
+      }
+    };
+    
+    return kpiInfo[kpiKey] || null;
+  };
+
+  // useEffect para manejar la animación de apertura
+  useEffect(() => {
+    if (showKpiInfo && isOpening) {
+      // Pequeño delay para que la animación de entrada funcione
+      const timer = setTimeout(() => {
+        setIsOpening(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showKpiInfo, isOpening]);
+
+
+
   // Estados de carga y error (suavizados)
   if (loading) {
     return (
@@ -556,11 +614,29 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
               const styleColors = colorMap[item.color] || { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
               
               return (
-                <div key={key} className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg`}>
+                <div key={key} className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg relative`}>
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')}`}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (showKpiInfo === key) {
+                          // Cerrar con animación
+                          setIsAnimating(true);
+                          setTimeout(() => {
+                            setShowKpiInfo(null);
+                            setIsAnimating(false);
+                          }, 500);
+                        } else {
+                          // Abrir con animación
+                          setIsOpening(true);
+                          setShowKpiInfo(key);
+                        }
+                      }}
+                      className={`p-2 rounded-lg ${styleColors.bgColor.replace('bg-', 'bg-').replace('-50', '-100')} hover:scale-110 transition-transform duration-200 cursor-pointer`}
+                      title="Acerca de este KPI"
+                    >
                       {item.icon}
-                    </div>
+                    </button>
                     <div className="text-right">
                       <p className="text-xs font-medium text-gray-600">{item.change}</p>
                     </div>
@@ -632,6 +708,89 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        )}
+        
+        {/* Overlay de información detallada del KPI - Se superpone en toda la sección */}
+        {showKpiInfo && getKpiDetailedInfo(showKpiInfo) && (
+          <div 
+            className={`absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl border-2 border-gray-200 shadow-2xl z-20 p-8 overflow-y-auto transition-all duration-500 ease-out transform ${
+              isAnimating 
+                ? 'opacity-0 scale-95 translate-y-4 backdrop-blur-none' 
+                : isOpening
+                ? 'opacity-0 scale-95 translate-y-4 backdrop-blur-none'
+                : 'opacity-100 scale-100 translate-y-0 backdrop-blur-sm'
+            }`}
+          >
+            <div className={`flex justify-between items-start mb-6 transition-all duration-700 delay-100 ${
+              isAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+            }`}>
+              <h3 className="font-bold text-gray-800 text-2xl">
+                {getKpiDetailedInfo(showKpiInfo).title}
+              </h3>
+              <button
+                onClick={() => {
+                  setIsAnimating(true);
+                  setTimeout(() => {
+                    setShowKpiInfo(null);
+                    setIsAnimating(false);
+                  }, 500);
+                }}
+                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+                title="Cerrar"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className={`bg-blue-50 p-4 rounded-xl border border-blue-200 transition-all duration-700 delay-200 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-blue-800">Descripción</span>
+                <p className="text-sm text-blue-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).description}
+                </p>
+              </div>
+              
+              <div className={`bg-green-50 p-4 rounded-xl border border-green-200 transition-all duration-700 delay-300 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-green-800">Cálculo</span>
+                <p className="text-sm text-green-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).calculation}
+                </p>
+              </div>
+              
+              <div className={`bg-purple-50 p-4 rounded-xl border border-purple-200 transition-all duration-700 delay-400 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-purple-800">Fuente de datos</span>
+                <p className="text-sm text-purple-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).dataSource}
+                </p>
+              </div>
+              
+              <div className={`bg-orange-50 p-4 rounded-xl border border-orange-200 transition-all duration-700 delay-500 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-orange-800">Unidades</span>
+                <p className="text-sm text-orange-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).units}
+                </p>
+              </div>
+              
+              <div className={`bg-teal-50 p-4 rounded-xl border border-teal-200 lg:col-span-2 transition-all duration-700 delay-600 ${
+                isAnimating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'
+              }`}>
+                <span className="text-base font-semibold text-teal-800">Frecuencia</span>
+                <p className="text-sm text-teal-700 mt-2 leading-relaxed">
+                  {getKpiDetailedInfo(showKpiInfo).frequency}
+                </p>
+              </div>
             </div>
           </div>
         )}

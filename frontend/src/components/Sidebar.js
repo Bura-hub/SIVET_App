@@ -249,22 +249,32 @@ function Sidebar({
       <div className="flex-1 px-4 py-6">
         <nav>
           <div className="space-y-2">
-            {navItems.map((item) => (
-              <div key={item.page} className="relative">
-                <a
-                  href="#"
-                  className={`flex items-center p-4 rounded-xl transition-all duration-300 transform hover:scale-105 ${isSidebarMinimized ? 'justify-center' : ''} ${
-                    currentPage === item.page ? item.activeClasses : item.inactiveClasses
-                  }`}
-                  onClick={() => navigateTo(item.page)}
-                >
-                  {item.icon}
-                  <span className={`font-medium transition-all duration-300 ${isSidebarMinimized ? 'opacity-0 w-0' : 'opacity-100 w-auto ml-3'}`}>
-                    {item.name}
-                  </span>
-                </a>
-              </div>
-            ))}
+            {navItems.map((item) => {
+              // Verificar si el elemento requiere permisos de administrador
+              const requiresAdmin = item.page === 'externalEnergy' || item.page === 'exportReports';
+              
+              // Si requiere admin y el usuario no es superuser, no mostrar el elemento
+              if (requiresAdmin && !isSuperuser) {
+                return null;
+              }
+              
+              return (
+                <div key={item.page} className="relative">
+                  <a
+                    href="#"
+                    className={`flex items-center p-4 rounded-xl transition-all duration-300 transform hover:scale-105 ${isSidebarMinimized ? 'justify-center' : ''} ${
+                      currentPage === item.page ? item.activeClasses : item.inactiveClasses
+                    }`}
+                    onClick={() => navigateTo(item.page)}
+                  >
+                    {item.icon}
+                    <span className={`font-medium transition-all duration-300 ${isSidebarMinimized ? 'opacity-0 w-0' : 'opacity-100 w-auto ml-3'}`}>
+                      {item.name}
+                    </span>
+                  </a>
+                </div>
+              );
+            })}
             
             {/* Separador visual */}
             <div className="my-4 border-t border-gray-200"></div>

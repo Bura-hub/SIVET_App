@@ -248,6 +248,6 @@ class LoginAttemptAdmin(admin.ModelAdmin):
 
 
 # Configuración del sitio de admin
-admin.site.site_header = "MTE Lumen - Administración"
-admin.site.site_title = "MTE Lumen Admin"
+admin.site.site_header = "MTE - SIVET - Administración"
+admin.site.site_title = "MTE - SIVET Admin"
 admin.site.index_title = "Panel de Administración"

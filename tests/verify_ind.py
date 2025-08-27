@@ -7,13 +7,13 @@ from datetime import datetime, timedelta, timezone
 # --- INICIO DE CONFIGURACIÓN DE ENTORNO DJANGO ---
 # Obtener la ruta del directorio base del proyecto (donde reside manage.py)
 # Esto asume que el script se ejecuta desde la raíz del proyecto o desde un subdirectorio como 'indicators'.
-# Si el script está en 'MteLumen_App/indicators/exe.py', entonces el base_dir será 'MteLumen_App'.
+# Si el script está en 'MTE-SIVET-App/indicators/exe.py', entonces el base_dir será 'MTE-SIVET-App'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR) # Añadir el directorio base al Python path
 
-# Asegúrate de que 'MteLumen_App' sea el nombre de tu proyecto Django
+# Asegúrate de que 'MTE-SIVET-App' sea el nombre de tu proyecto Django
 # (el directorio que contiene settings.py y urls.py).
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings') # <--- ¡IMPORTANTE! Reemplaza 'MteLumen_App' con el nombre de tu proyecto
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings') # <--- ¡IMPORTANTE! Reemplaza 'MTE-SIVET-App' con el nombre de tu proyecto
 
 import django
 django.setup()

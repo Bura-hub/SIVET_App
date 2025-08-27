@@ -253,9 +253,9 @@ CELERY_BEAT_SCHEDULE = {
 # ========================= Documentación de la API (drf-spectacular) =========================
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'MTE Lumen API',
+    'TITLE': 'MTE - SIVET API',
     'DESCRIPTION': (
-        'API completa para el sistema MTE Lumen con autenticación avanzada, '
+        'API completa para el sistema MTE - SIVET con autenticación avanzada, '
         'monitoreo de sistemas eléctricos, estaciones meteorológicas e inversores. '
         'Incluye funcionalidades de seguridad mejoradas, tokens de refresco, '
         'y auditoría completa de acceso.'

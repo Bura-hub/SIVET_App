@@ -73,7 +73,7 @@ Sigue estos pasos para configurar y ejecutar el proyecto en tu entorno local.
 
 ```bash
 git clone <URL_DEL_REPOSITORIO>
-cd MteLumen_App # Asegúrate de estar en el directorio raíz del proyecto
+cd MTE-SIVET-App # Asegúrate de estar en el directorio raíz del proyecto
 ```
 
 ### 2. Configuración del Backend (Django)
@@ -134,7 +134,7 @@ Abre una nueva terminal y ejecuta:
 
 ```bash
 # Asegúrate de que tu entorno virtual esté activado
-celery -A MteLumen_App worker -l info # Reemplaza MteLumen_App con el nombre de tu proyecto
+celery -A MTE-SIVET-App worker -l info # Reemplaza MTE-SIVET-App con el nombre de tu proyecto
 ```
 
 #### b. Iniciar Celery Beat (Scheduler)
@@ -143,7 +143,7 @@ Abre otra nueva terminal y ejecuta:
 
 ```bash
 # Asegúrate de que tu entorno virtual esté activado
-celery -A MteLumen_App beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+celery -A MTE-SIVET-App beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
 ```
 
 #### c. Iniciar el Servidor de Desarrollo Django
@@ -176,7 +176,7 @@ La aplicación frontend se abrirá automáticamente en tu navegador (normalmente
 ## Estructura del Proyecto
 
 ```
-MteLumen_App/
+MTE-SIVET-App/
 ├── core/           # Directorio principal del proyecto Django
 │   ├── settings.py         # Configuración de Django
 │   ├── urls.py             # URLs principales del proyecto

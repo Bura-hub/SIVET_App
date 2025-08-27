@@ -1,4 +1,4 @@
-# Frontend - MteLumen App
+# Frontend - MTE - SIVET App
 
 ## Funcionalidades de Gráficos
 

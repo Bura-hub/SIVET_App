@@ -3141,7 +3141,7 @@ def generate_pdf_file(report_data, file_path, report_type):
     
     # Pie de página con información adicional
     story.append(Paragraph("INFORMACIÓN ADICIONAL", subtitle_style))
-    story.append(Paragraph("• Este reporte fue generado automáticamente por el sistema MTE Lumen", normal_style))
+    story.append(Paragraph("• Este reporte fue generado automáticamente por el sistema MTE - SIVET", normal_style))
     story.append(Paragraph("• Los datos están sujetos a validación y pueden ser actualizados", normal_style))
     story.append(Paragraph("• Para consultas adicionales, contacte al administrador del sistema", normal_style))
     
@@ -3235,7 +3235,7 @@ def generate_executive_pdf_file(report_data, file_path, report_type, institution
     )
     
     # Encabezado ejecutivo
-    story.append(Paragraph("MTE LUMEN", executive_title_style))
+    story.append(Paragraph("MTE - SIVET", executive_title_style))
     story.append(Paragraph("SISTEMA DE MONITOREO INTEGRAL", executive_title_style))
     story.append(Spacer(1, 15))
     
@@ -3401,9 +3401,9 @@ def generate_executive_pdf_file(report_data, file_path, report_type, institution
     
     # Pie de página ejecutivo
     story.append(Paragraph("INFORMACIÓN DEL SISTEMA", executive_subtitle_style))
-    story.append(Paragraph("• Sistema MTE Lumen - Monitoreo Integral de Energía", executive_text_style))
+    story.append(Paragraph("• Sistema MTE - SIVET - Monitoreo Integral de Energía", executive_text_style))
     story.append(Paragraph("• Reporte generado automáticamente para análisis ejecutivo", executive_text_style))
-    story.append(Paragraph("• Contacto: administrador@mtelumen.com", executive_text_style))
+    story.append(Paragraph("• Contacto: administrador@mtesivet.com", executive_text_style))
     
     # Construir el PDF
     doc.build(story)

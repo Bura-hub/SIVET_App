@@ -272,14 +272,45 @@ class UserProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='user.first_name', read_only=True)
     last_name = serializers.CharField(source='user.last_name', read_only=True)
     
+    # Campos adicionales del perfil
+    phone_number = serializers.CharField(required=False, allow_blank=True)
+    notification_preferences = serializers.JSONField(required=False, default=dict)
+    
     class Meta:
         model = UserProfile
         fields = [
             'username', 'email', 'first_name', 'last_name',
-            'avatar', 'bio', 'date_of_birth', 'two_factor_enabled',
-            'theme_preference', 'language', 'notification_preferences'
+            'avatar', 'bio', 'date_of_birth', 'phone_number',
+            'two_factor_enabled', 'theme_preference', 'language', 
+            'notification_preferences'
         ]
         read_only_fields = ['username', 'email', 'first_name', 'last_name']
+    
+    def update(self, instance, validated_data):
+        """
+        Actualiza el perfil y también los campos del usuario si es necesario
+        """
+        # Actualizar campos del perfil
+        for attr, value in validated_data.items():
+            if hasattr(instance, attr):
+                setattr(instance, attr, value)
+        
+        # Actualizar campos del usuario si están presentes
+        user_data = {}
+        if 'first_name' in validated_data:
+            user_data['first_name'] = validated_data['first_name']
+        if 'last_name' in validated_data:
+            user_data['last_name'] = validated_data['last_name']
+        if 'email' in validated_data:
+            user_data['email'] = validated_data['email']
+        
+        if user_data:
+            for attr, value in user_data.items():
+                setattr(instance.user, attr, value)
+            instance.user.save()
+        
+        instance.save()
+        return instance
 
 
 # ========================= Serializador de Registro de Usuario =========================

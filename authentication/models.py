@@ -2,8 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
-import secrets
 import hashlib
+import secrets
 from datetime import timedelta
 
 
@@ -33,7 +33,6 @@ class UserProfile(models.Model):
     
     # Configuraciones de seguridad
     two_factor_enabled = models.BooleanField(default=False, verbose_name="2FA habilitado")
-    backup_codes = models.JSONField(default=list, verbose_name="Códigos de respaldo")
     notification_preferences = models.JSONField(default=dict, verbose_name="Preferencias de notificación")
     
     # Configuraciones de la aplicación
@@ -83,23 +82,7 @@ class UserProfile(models.Model):
         self.failed_login_attempts = 0
         self.save(update_fields=['failed_login_attempts'])
     
-    def generate_backup_codes(self, count=10):
-        """Genera códigos de respaldo para 2FA"""
-        codes = []
-        for _ in range(count):
-            code = secrets.token_hex(3).upper()[:8]  # 8 caracteres hexadecimales
-            codes.append(code)
-        self.backup_codes = codes
-        self.save(update_fields=['backup_codes'])
-        return codes
-    
-    def verify_backup_code(self, code):
-        """Verifica un código de respaldo"""
-        if code in self.backup_codes:
-            self.backup_codes.remove(code)
-            self.save(update_fields=['backup_codes'])
-            return True
-        return False
+
 
 
 class AuthToken(models.Model):

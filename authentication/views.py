@@ -405,9 +405,21 @@ class ChangePasswordView(APIView):
             
             # Cambiar contraseña
             user.set_password(new_password)
-            user.password_changed_at = timezone.now()
-            user.require_password_change = False
-            user.save(update_fields=['password', 'password_changed_at', 'require_password_change'])
+            user.save()
+            
+            # Actualizar campos del perfil relacionados con la contraseña
+            try:
+                profile = UserProfile.objects.get(user=user)
+                profile.password_changed_at = timezone.now()
+                profile.require_password_change = False
+                profile.save(update_fields=['password_changed_at', 'require_password_change'])
+            except UserProfile.DoesNotExist:
+                # Si no existe el perfil, lo creamos
+                profile = UserProfile.objects.create(
+                    user=user,
+                    password_changed_at=timezone.now(),
+                    require_password_change=False
+                )
             
             # Invalidar todos los tokens existentes
             AuthToken.objects.filter(user=user).update(is_active=False)
@@ -417,7 +429,7 @@ class ChangePasswordView(APIView):
             
             return Response({
                 'message': 'Contraseña cambiada exitosamente',
-                'password_changed_at': user.password_changed_at
+                'password_changed_at': profile.password_changed_at
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -443,29 +455,56 @@ class UserProfileView(APIView):
         Obtiene el perfil del usuario
         """
         try:
-            profile = request.user.profile
+            profile, created = UserProfile.objects.get_or_create(user=request.user)
             serializer = UserProfileSerializer(profile)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except UserProfile.DoesNotExist:
+        except Exception as e:
             return Response({
-                'error': 'Perfil no encontrado'
-            }, status=status.HTTP_404_NOT_FOUND)
+                'error': 'Error al obtener el perfil',
+                'details': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def put(self, request):
         """
         Actualiza el perfil del usuario
         """
         try:
-            profile = request.user.profile
-            serializer = UserProfileSerializer(profile, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            profile, created = UserProfile.objects.get_or_create(user=request.user)
             
+            # Preparar datos para actualización
+            update_data = request.data.copy()
+            
+            # Manejar campos del usuario por separado
+            user_fields = ['first_name', 'last_name', 'email']
+            profile_fields = ['bio', 'date_of_birth', 'phone_number', 'theme_preference', 
+                           'language', 'notification_preferences']
+            
+            # Actualizar campos del usuario
+            user = request.user
+            for field in user_fields:
+                if field in update_data:
+                    setattr(user, field, update_data[field])
+            
+            # Validar y guardar usuario
+            user.full_clean()
+            user.save()
+            
+            # Actualizar campos del perfil
+            for field in profile_fields:
+                if field in update_data:
+                    setattr(profile, field, update_data[field])
+            
+            profile.save()
+            
+            # Serializar respuesta
+            serializer = UserProfileSerializer(profile)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except UserProfile.DoesNotExist:
+            
+        except Exception as e:
             return Response({
-                'error': 'Perfil no encontrado'
-            }, status=status.HTTP_404_NOT_FOUND)
+                'error': 'Error al actualizar el perfil',
+                'details': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @extend_schema(
@@ -571,3 +610,5 @@ class LogoutAllDevicesView(APIView):
             return Response({
                 'error': 'Error al cerrar sesión en todos los dispositivos'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+

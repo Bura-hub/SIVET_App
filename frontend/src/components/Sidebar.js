@@ -3,6 +3,7 @@ import sivetLogo from './sivet-logo.svg';
 import TransitionOverlay from './TransitionOverlay';
 import { fetchWithAuth } from '../utils/apiConfig';
 import ProfileSettings from './ProfileSettings';
+import HelpSupport from './HelpSupport';
 
 function Sidebar({
   username,
@@ -23,6 +24,9 @@ function Sidebar({
   
   // Estado para el modal de configuración del perfil
   const [showProfileSettings, setShowProfileSettings] = useState(false);
+  
+  // Estado para el modal de ayuda y soporte
+  const [showHelpSupport, setShowHelpSupport] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -50,6 +54,12 @@ function Sidebar({
   // Función para abrir configuración del perfil
   const openProfileSettings = () => {
     setShowProfileSettings(true);
+    setShowProfileMenu(false);
+  };
+  
+  // Función para abrir ayuda y soporte
+  const openHelpSupport = () => {
+    setShowHelpSupport(true);
     setShowProfileMenu(false);
   };
 
@@ -355,14 +365,17 @@ function Sidebar({
                       <span className="font-semibold">Configuración</span>
                     </button>
                     
-                    <a href="#" className="group flex items-center px-6 py-3 text-sm text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-300">
+                    <button 
+                      onClick={openHelpSupport}
+                      className="group flex items-center w-full text-left px-6 py-3 text-sm text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-300"
+                    >
                       <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-xl flex items-center justify-center mr-4 group-hover:from-emerald-200 group-hover:to-emerald-300 transition-all duration-300 shadow-sm">
                         <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                       </div>
                       <span className="font-semibold">Ayuda y Soporte</span>
-                    </a>
+                    </button>
                     
                     <div className="border-t border-slate-200/50 my-3 mx-6"></div>
                     
@@ -423,6 +436,13 @@ function Sidebar({
           username={username}
           isSuperuser={isSuperuser}
           onClose={() => setShowProfileSettings(false)}
+        />
+      )}
+      
+      {/* Modal de ayuda y soporte */}
+      {showHelpSupport && (
+        <HelpSupport
+          onClose={() => setShowHelpSupport(false)}
         />
       )}
     </aside>

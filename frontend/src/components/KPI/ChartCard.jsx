@@ -441,62 +441,147 @@ export function ChartCard({
 
       {/* Vista de gráfico en pantalla completa mejorada */}
       {isFullscreen && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300">
-          <div className="bg-white rounded-2xl shadow-2xl w-11/12 h-5/6 max-w-7xl relative overflow-hidden">
-            {/* Header del modal con diseño elegante */}
-            <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-4 text-white">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold flex items-center">
-                    <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full mr-3"></div>
-                    {title}
-                  </h3>
-                  {description && (
-                    <p className="text-sm text-gray-300 mt-1 ml-6">
-                      {description}
-                    </p>
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[9999] p-2">
+          <div className="bg-white rounded-3xl shadow-2xl w-11/12 h-5/6 max-w-7xl max-h-[95vh] relative overflow-hidden border border-gray-100">
+            {/* Header del modal con diseño elegante similar a ProfileSettings */}
+            <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-blue-700 bg-clip-text text-transparent">
+                  {title}
+                </h2>
+                {description && (
+                  <p className="text-slate-600 text-lg">{description}</p>
+                )}
+                <p className="text-slate-500 text-sm">Vista ampliada del gráfico con controles avanzados</p>
+              </div>
+              
+              {/* Controles del modal */}
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={resetChartZoom}
+                  className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 relative ${
+                    isZoomed 
+                      ? 'text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg shadow-blue-500/25' 
+                      : 'text-slate-400 bg-slate-100 hover:bg-slate-200 cursor-not-allowed'
+                  }`}
+                  title="Resetear Zoom"
+                  disabled={!isZoomed}
+                >
+                  <ResetIcon />
+                  {/* Indicador de zoom activo */}
+                  {isZoomed && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white animate-pulse"></div>
                   )}
-                </div>
-                
-                {/* Controles del modal */}
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={resetChartZoom}
-                    className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 relative ${
-                      isZoomed 
-                        ? 'text-white bg-white/20 hover:bg-white/30' 
-                        : 'text-white/50 bg-transparent cursor-not-allowed'
-                    }`}
-                    title="Resetear Zoom"
-                    disabled={!isZoomed}
-                  >
-                    <ResetIcon />
-                    {/* Indicador de zoom activo */}
-                    {isZoomed && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-white"></div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setIsFullscreen(false)}
-                    className="p-2 text-white/70 hover:text-white hover:bg-red-500/20 rounded-lg transition-all duration-200 hover:scale-105"
-                    title="Cerrar"
-                  >
-                    <CloseIcon />
-                  </button>
-                </div>
+                </button>
+                <button
+                  onClick={() => setIsFullscreen(false)}
+                  className="p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200 rounded-xl hover:scale-105"
+                  title="Cerrar"
+                >
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             </div>
 
-            {/* Contenido del modal */}
-            <div className="p-6">
-              <div className="chart-container w-full" style={{ height: fullscreenHeight, maxHeight: maxFullscreenHeight }}>
-                <ChartComponent ref={fullscreenChartRef} data={data} options={chartOptions} />
+            {/* Contenido principal del modal */}
+            <div className="flex h-[calc(100%-200px)]">
+              {/* Área del gráfico */}
+              <div className="flex-1 p-8 overflow-hidden bg-gradient-to-br from-white to-slate-50/30">
+                <div className="h-full w-full">
+                  <div className="chart-container w-full h-full" style={{ height: fullscreenHeight, maxHeight: maxFullscreenHeight }}>
+                    <ChartComponent ref={fullscreenChartRef} data={data} options={chartOptions} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Panel lateral con controles e información */}
+              <div className="w-80 bg-gradient-to-b from-slate-50 to-blue-50 border-l border-slate-200 p-6">
+                <div className="space-y-6">
+                  {/* Información del gráfico */}
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-slate-800 flex items-center">
+                      <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full mr-3"></div>
+                      Controles del Gráfico
+                    </h3>
+                    
+                    {/* Controles de zoom */}
+                    <div className="space-y-3">
+                      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+                        <h4 className="font-semibold text-slate-700 mb-3 flex items-center">
+                          <svg className="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                          Zoom y Navegación
+                        </h4>
+                        <div className="space-y-2 text-sm text-slate-600">
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
+                            <span>Rueda del mouse para zoom</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full mr-2"></div>
+                            <span>Ctrl + arrastrar para mover</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full mr-2"></div>
+                            <span>Arrastrar para zoom en área</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Estado del zoom */}
+                    <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+                      <h4 className="font-semibold text-slate-700 mb-3 flex items-center">
+                        <svg className="w-5 h-5 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Estado del Zoom
+                      </h4>
+                      <div className={`flex items-center justify-between p-3 rounded-xl ${
+                        isZoomed 
+                          ? 'bg-emerald-50 border border-emerald-200' 
+                          : 'bg-slate-50 border border-slate-200'
+                      }`}>
+                        <span className={`font-medium ${isZoomed ? 'text-emerald-700' : 'text-slate-600'}`}>
+                          {isZoomed ? 'Zoom Activo' : 'Sin Zoom'}
+                        </span>
+                        <div className={`w-3 h-3 rounded-full ${isZoomed ? 'bg-emerald-400' : 'bg-slate-400'}`}></div>
+                      </div>
+                    </div>
+
+                    {/* Acciones rápidas */}
+                    <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+                      <h4 className="font-semibold text-slate-700 mb-3 flex items-center">
+                        <svg className="w-5 h-5 text-indigo-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Acciones Rápidas
+                      </h4>
+                      <div className="space-y-2">
+                        <button
+                          onClick={resetChartZoom}
+                          disabled={!isZoomed}
+                          className={`w-full py-2 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                            isZoomed
+                              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-md hover:shadow-lg transform hover:scale-105'
+                              : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                          }`}
+                        >
+                          Resetear Vista
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Indicador de controles en la parte inferior */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm border border-white/10">
-              <div className="flex items-center space-x-6">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-6 py-3 rounded-full text-sm backdrop-blur-sm border border-white/10">
+              <div className="flex items-center space-x-8">
                 <span className="flex items-center">
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

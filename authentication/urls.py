@@ -10,7 +10,8 @@ from .views import (
     UserProfileView,
     SessionInfoView,
     UserRegistrationView,
-    LogoutAllDevicesView
+    LogoutAllDevicesView,
+    ProfileImageView
 )
 
 # ========================= Rutas de Autenticación =========================
@@ -42,6 +43,9 @@ urlpatterns = [
     
     # Ruta para gestionar perfil de usuario
     path('profile/', UserProfileView.as_view(), name='api_user_profile'),
+    
+    # Ruta para gestionar imagen de perfil
+    path('profile-image/', ProfileImageView.as_view(), name='api_profile_image'),
     
     # Ruta para obtener información de la sesión actual
     path('session/', SessionInfoView.as_view(), name='api_session_info'),

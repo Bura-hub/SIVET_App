@@ -21,6 +21,10 @@ Ejemplos de configuración:
 from django.contrib import admin
 from django.urls import path, include
 
+# Configuración para archivos media en desarrollo
+from django.conf import settings
+from django.conf.urls.static import static
+
 # ========================= Documentación automática con drf-spectacular =========================
 
 # Importación de vistas para OpenAPI, Swagger y Redoc
@@ -63,3 +67,7 @@ urlpatterns = [
     # Rutas para datos externos de energía
     path('api/external-energy/', include('external_energy.urls')),
 ]
+
+# Configuración para archivos media en desarrollo
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

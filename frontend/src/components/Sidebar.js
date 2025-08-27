@@ -4,6 +4,7 @@ import TransitionOverlay from './TransitionOverlay';
 import { fetchWithAuth } from '../utils/apiConfig';
 import ProfileSettings from './ProfileSettings';
 import HelpSupport from './HelpSupport';
+import { buildApiUrl } from '../config';
 
 function Sidebar({
   username,
@@ -185,7 +186,7 @@ function Sidebar({
       if (authToken) {
         // Llamar al endpoint de logout del backend para revocar tokens
         // Usar fetch normal para evitar la animación de carga de fetchWithAuth
-        const response = await fetch('/auth/logout/', {
+        const response = await fetch(buildApiUrl('/auth/logout/'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

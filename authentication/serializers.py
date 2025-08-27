@@ -465,3 +465,61 @@ class SessionInfoSerializer(serializers.Serializer):
             'ip_address': attempt.ip_address,
             'user_agent': attempt.user_agent,
         } for attempt in recent_attempts]
+
+
+# ========================= Serializador de Imagen de Perfil =========================
+
+class ProfileImageSerializer(serializers.Serializer):
+    """
+    Serializador para la gestión de imágenes de perfil
+    """
+    profile_image = serializers.ImageField(
+        help_text="Imagen de perfil del usuario (JPG, PNG, WebP hasta 5MB)",
+        max_length=255
+    )
+    
+    class Meta:
+        ref_name = "ProfileImage"
+    
+    def validate_profile_image(self, value):
+        """
+        Validación personalizada para la imagen de perfil
+        """
+        # Verificar tamaño máximo (5MB)
+        if value.size > 5 * 1024 * 1024:  # 5MB en bytes
+            raise serializers.ValidationError(
+                "La imagen no puede ser mayor a 5MB"
+            )
+        
+        # Verificar formato de archivo
+        allowed_formats = ['image/jpeg', 'image/png', 'image/webp']
+        if value.content_type not in allowed_formats:
+            raise serializers.ValidationError(
+                "Solo se permiten imágenes en formato JPG, PNG o WebP"
+            )
+        
+        # Las dimensiones se validarán en la vista después de guardar
+        # para evitar problemas con archivos temporales
+        
+        return value
+
+
+class ProfileImageResponseSerializer(serializers.Serializer):
+    """
+    Serializador de respuesta para la imagen de perfil
+    """
+    profile_image_url = serializers.URLField(
+        help_text="URL de la imagen de perfil"
+    )
+    profile_image_name = serializers.CharField(
+        help_text="Nombre del archivo de la imagen"
+    )
+    uploaded_at = serializers.DateTimeField(
+        help_text="Fecha y hora de subida de la imagen"
+    )
+    file_size = serializers.IntegerField(
+        help_text="Tamaño del archivo en bytes"
+    )
+    dimensions = serializers.DictField(
+        help_text="Dimensiones de la imagen (ancho x alto)"
+    )

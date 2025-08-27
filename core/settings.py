@@ -341,3 +341,17 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+# ========================= Configuración de Archivos Media =========================
+
+# URL para servir archivos media en desarrollo
+MEDIA_URL = '/media/'
+
+# Directorio donde se almacenan los archivos subidos por los usuarios
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Configuración para archivos de imagen
+IMAGE_UPLOAD_MAX_SIZE = 5 * 1024 * 1024  # 5MB
+IMAGE_UPLOAD_ALLOWED_FORMATS = ['image/jpeg', 'image/png', 'image/webp']
+IMAGE_UPLOAD_MIN_DIMENSIONS = (100, 100)  # 100x100 píxeles mínimo
+IMAGE_UPLOAD_MAX_DIMENSIONS = (2000, 2000)  # 2000x2000 píxeles máximo

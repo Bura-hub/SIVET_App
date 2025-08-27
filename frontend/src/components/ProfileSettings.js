@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { buildApiUrl, getEndpoint } from '../config';
+import ProfileImageUpload from './ProfileImageUpload';
 
 function ProfileSettings({ username, isSuperuser, onClose }) {
     const [activeTab, setActiveTab] = useState('profile');
@@ -43,11 +44,15 @@ function ProfileSettings({ username, isSuperuser, onClose }) {
     // Estados para tokens de acceso
     const [accessTokens, setAccessTokens] = useState([]);
     const [loadingTokens, setLoadingTokens] = useState(false);
+    
+    // Estado para imagen de perfil
+    const [profileImageUrl, setProfileImageUrl] = useState(null);
 
     useEffect(() => {
         loadProfileData();
         loadActiveSessions();
         loadAccessTokens();
+        loadProfileImage();
     }, []);
 
     const loadProfileData = async () => {
@@ -65,7 +70,6 @@ function ProfileSettings({ username, isSuperuser, onClose }) {
                 setProfileData({
                     first_name: data.first_name || '',
                     last_name: data.last_name || '',
-                    email: data.email || '',
                     phone_number: data.phone_number || '',
                     bio: data.bio || '',
                     date_of_birth: data.date_of_birth || '',
@@ -77,6 +81,36 @@ function ProfileSettings({ username, isSuperuser, onClose }) {
         } catch (error) {
             console.error('Error cargando perfil:', error);
         }
+    };
+
+    const loadProfileImage = async () => {
+        try {
+            const response = await fetch(buildApiUrl('/auth/profile-image/'), {
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('authToken')}`,
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                setProfileImageUrl(data.profile_image_url);
+            } else if (response.status === 404) {
+                // No hay imagen de perfil configurada
+                setProfileImageUrl(null);
+            } else {
+                console.error('Error cargando imagen de perfil:', response.status);
+            }
+        } catch (error) {
+            console.error('Error cargando imagen de perfil:', error);
+        }
+    };
+
+    const handleImageUpdate = (newImageUrl) => {
+        setProfileImageUrl(newImageUrl);
+    };
+
+    const handleImageDelete = () => {
+        setProfileImageUrl(null);
     };
 
 
@@ -377,10 +411,18 @@ function ProfileSettings({ username, isSuperuser, onClose }) {
                         {activeTab === 'profile' && (
                             <div className="space-y-8">
                                 <div className="text-center mb-8">
-                                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
+                                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+                                        {profileImageUrl ? (
+                                            <img
+                                                src={profileImageUrl}
+                                                alt="Imagen de perfil"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                        )}
                                     </div>
                                     <h3 className="text-3xl font-bold text-slate-800 mb-2">Información Personal</h3>
                                     <p className="text-slate-600 text-lg">Actualiza tu información personal y de contacto</p>
@@ -486,6 +528,15 @@ function ProfileSettings({ username, isSuperuser, onClose }) {
                                         </button>
                                     </div>
                                 </form>
+                                
+                                {/* Componente de Imagen de Perfil */}
+                                <div className="max-w-4xl mx-auto">
+                                    <ProfileImageUpload
+                                        currentImageUrl={profileImageUrl}
+                                        onImageUpdate={handleImageUpdate}
+                                        onImageDelete={handleImageDelete}
+                                    />
+                                </div>
                             </div>
                         )}
 

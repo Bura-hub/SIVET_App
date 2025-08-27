@@ -40,7 +40,9 @@ from .serializers import (
     ChangePasswordSerializer,
     UserProfileSerializer,
     UserRegistrationSerializer,
-    SessionInfoSerializer
+    SessionInfoSerializer,
+    ProfileImageSerializer,
+    ProfileImageResponseSerializer
 )
 
 # Modelos personalizados
@@ -609,6 +611,249 @@ class LogoutAllDevicesView(APIView):
             # No logging por seguridad
             return Response({
                 'error': 'Error al cerrar sesión en todos los dispositivos'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ========================= Vista de Imagen de Perfil =========================
+
+@extend_schema(
+    tags=["Perfil de Usuario"],
+    request=ProfileImageSerializer,
+    responses={200: ProfileImageResponseSerializer, 400: "Bad Request", 401: "Unauthorized"},
+    description="Gestiona la imagen de perfil del usuario autenticado."
+)
+@method_decorator(ratelimit(key='user', rate='10/h', method='POST'), name='post')
+class ProfileImageView(APIView):
+    """
+    Vista para gestionar la imagen de perfil del usuario
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        """
+        Sube una nueva imagen de perfil
+        """
+        try:
+            # Usar request.FILES para archivos subidos
+            data = {'profile_image': request.FILES.get('profile_image')}
+            if not data['profile_image']:
+                return Response({
+                    'error': 'No se proporcionó imagen de perfil'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            serializer = ProfileImageSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            
+            user = request.user
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            # Eliminar imagen anterior si existe
+            if profile.avatar:
+                try:
+                    import os
+                    if os.path.exists(profile.avatar.path):
+                        os.remove(profile.avatar.path)
+                except Exception:
+                    pass  # Ignorar errores al eliminar archivo anterior
+            
+            # Guardar nueva imagen
+            profile.avatar = serializer.validated_data['profile_image']
+            profile.save()
+            
+            # Validar dimensiones después de guardar
+            try:
+                from PIL import Image
+                with Image.open(profile.avatar.path) as img:
+                    width, height = img.size
+                    
+                    # Verificar dimensiones mínimas
+                    if width < 100 or height < 100:
+                        # Eliminar imagen si no cumple dimensiones
+                        profile.avatar.delete()
+                        profile.save()
+                        return Response({
+                            'error': 'La imagen debe tener al menos 100x100 píxeles'
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    # Verificar dimensiones máximas
+                    if width > 2000 or height > 2000:
+                        # Eliminar imagen si no cumple dimensiones
+                        profile.avatar.delete()
+                        profile.save()
+                        return Response({
+                            'error': 'La imagen no puede ser mayor a 2000x2000 píxeles'
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                        
+            except Exception as dim_error:
+                print(f"Error validando dimensiones: {dim_error}")
+                # Continuar sin validación de dimensiones
+                width, height = None, None
+            
+            # Construir respuesta con manejo seguro de dimensiones
+            try:
+                # Intentar obtener dimensiones de la imagen
+                width = getattr(profile.avatar, 'width', None)
+                height = getattr(profile.avatar, 'height', None)
+                
+                # Si no están disponibles, intentar obtenerlas del archivo
+                if width is None or height is None:
+                    try:
+                        from PIL import Image
+                        with Image.open(profile.avatar.path) as img:
+                            width, height = img.size
+                    except Exception as dim_error:
+                        print(f"Error obteniendo dimensiones: {dim_error}")
+                        width, height = None, None
+                
+                response_data = {
+                    'profile_image_url': request.build_absolute_uri(profile.avatar.url),
+                    'profile_image_name': profile.avatar.name,
+                    'uploaded_at': profile.updated_at,
+                    'file_size': profile.avatar.size,
+                    'dimensions': {
+                        'width': width,
+                        'height': height
+                    }
+                }
+            except Exception as response_error:
+                print(f"Error construyendo respuesta: {response_error}")
+                # Respuesta básica si hay error obteniendo dimensiones
+                response_data = {
+                    'profile_image_url': request.build_absolute_uri(profile.avatar.url),
+                    'profile_image_name': profile.avatar.name,
+                    'uploaded_at': profile.updated_at,
+                    'file_size': profile.avatar.size,
+                    'dimensions': {
+                        'width': None,
+                        'height': None
+                    }
+                }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            import traceback
+            error_details = str(e)
+            error_traceback = traceback.format_exc()
+            
+            # Log del error para debugging
+            print(f"Error en ProfileImageView.post: {error_details}")
+            print(f"Traceback: {error_traceback}")
+            
+            return Response({
+                'error': 'Error al subir la imagen de perfil',
+                'details': error_details
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def delete(self, request):
+        """
+        Elimina la imagen de perfil actual
+        """
+        try:
+            user = request.user
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            if profile.avatar:
+                # Eliminar archivo físico
+                try:
+                    import os
+                    if os.path.exists(profile.avatar.path):
+                        os.remove(profile.avatar.path)
+                except Exception:
+                    pass
+                
+                # Limpiar campo en base de datos
+                profile.avatar = None
+                profile.save()
+                
+                return Response({
+                    'message': 'Imagen de perfil eliminada exitosamente'
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'message': 'No hay imagen de perfil para eliminar'
+                }, status=status.HTTP_404_NOT_FOUND)
+                
+        except Exception as e:
+            import traceback
+            error_details = str(e)
+            error_traceback = traceback.format_exc()
+            
+            # Log del error para debugging
+            print(f"Error en ProfileImageView.delete: {error_details}")
+            print(f"Traceback: {error_traceback}")
+            
+            return Response({
+                'error': 'Error al eliminar la imagen de perfil',
+                'details': error_details
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def get(self, request):
+        """
+        Obtiene información de la imagen de perfil actual
+        """
+        try:
+            user = request.user
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            if profile.avatar:
+                try:
+                    # Intentar obtener dimensiones de la imagen
+                    width = getattr(profile.avatar, 'width', None)
+                    height = getattr(profile.avatar, 'height', None)
+                    
+                    # Si no están disponibles, intentar obtenerlas del archivo
+                    if width is None or height is None:
+                        try:
+                            from PIL import Image
+                            with Image.open(profile.avatar.path) as img:
+                                width, height = img.size
+                        except Exception as dim_error:
+                            print(f"Error obteniendo dimensiones en GET: {dim_error}")
+                            width, height = None, None
+                    
+                    response_data = {
+                        'profile_image_url': request.build_absolute_uri(profile.avatar.url),
+                        'profile_image_name': profile.avatar.name,
+                        'uploaded_at': profile.updated_at,
+                        'file_size': profile.avatar.size,
+                        'dimensions': {
+                            'width': width,
+                            'height': height
+                        }
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                except Exception as response_error:
+                    print(f"Error construyendo respuesta en GET: {response_error}")
+                    # Respuesta básica si hay error obteniendo dimensiones
+                    response_data = {
+                        'profile_image_url': request.build_absolute_uri(profile.avatar.url),
+                        'profile_image_name': profile.avatar.name,
+                        'uploaded_at': profile.updated_at,
+                        'file_size': profile.avatar.size,
+                        'dimensions': {
+                            'width': None,
+                            'height': None
+                        }
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'message': 'No hay imagen de perfil configurada'
+                }, status=status.HTTP_404_NOT_FOUND)
+                
+        except Exception as e:
+            import traceback
+            error_details = str(e)
+            error_traceback = traceback.format_exc()
+            
+            # Log del error para debugging
+            print(f"Error en ProfileImageView.get: {error_details}")
+            print(f"Traceback: {error_traceback}")
+            
+            return Response({
+                'error': 'Error al obtener información de la imagen de perfil',
+                'details': error_details
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

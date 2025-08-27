@@ -28,6 +28,9 @@ function Sidebar({
   
   // Estado para el modal de ayuda y soporte
   const [showHelpSupport, setShowHelpSupport] = useState(false);
+  
+  // Estado para la imagen de perfil
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -40,6 +43,13 @@ function Sidebar({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [profileMenuRef]);
+  
+  // Cargar imagen de perfil al montar el componente
+  useEffect(() => {
+    if (username) {
+      loadProfileImage();
+    }
+  }, [username]);
 
   // Función para mostrar transición
   const showTransitionAnimation = (type = 'info', message = '', duration = 2000) => {
@@ -62,6 +72,34 @@ function Sidebar({
   const openHelpSupport = () => {
     setShowHelpSupport(true);
     setShowProfileMenu(false);
+  };
+  
+  // Función para actualizar la imagen de perfil
+  const handleProfileImageUpdate = () => {
+    loadProfileImage(); // Recargar la imagen
+  };
+  
+  // Función para cargar la imagen de perfil
+  const loadProfileImage = async () => {
+    try {
+      const response = await fetch(buildApiUrl('/auth/profile-image/'), {
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('authToken')}`,
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setProfileImageUrl(data.profile_image_url);
+      } else if (response.status === 404) {
+        // No hay imagen de perfil configurada
+        setProfileImageUrl(null);
+      } else {
+        console.error('Error cargando imagen de perfil:', response.status);
+      }
+    } catch (error) {
+      console.error('Error cargando imagen de perfil:', error);
+    }
   };
 
   const navItems = [
@@ -296,14 +334,27 @@ function Sidebar({
               className={`relative flex items-center p-4 rounded-2xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 cursor-pointer hover:from-blue-100 hover:via-indigo-100 hover:to-purple-100 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-500 border border-slate-200/50 hover:border-blue-300/50 ${isSidebarMinimized ? 'justify-center p-3' : ''}`}
               onClick={() => setShowProfileMenu(!showProfileMenu)}
             >
-              <div className="relative">
-                <div className={`rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 ${isSidebarMinimized ? 'w-10 h-10' : 'w-12 h-12'}`}>
-                  <span className="text-white font-bold text-lg">
-                    {(username || 'G').charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className={`absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-400 border-2 border-white rounded-full shadow-sm ${isSidebarMinimized ? '' : 'animate-pulse'}`}></div>
-              </div>
+                             <div className="relative">
+                 {profileImageUrl ? (
+                   // Mostrar imagen de perfil real
+                   <div className={`rounded-2xl overflow-hidden shadow-lg shadow-blue-500/30 ${isSidebarMinimized ? 'w-10 h-10' : 'w-12 h-12'}`}>
+                     <img
+                       src={profileImageUrl}
+                       alt={`Perfil de ${username}`}
+                       className="w-full h-full object-cover"
+                       onError={() => setProfileImageUrl(null)} // Fallback si la imagen falla
+                     />
+                   </div>
+                 ) : (
+                   // Mostrar avatar con iniciales (diseño actual)
+                   <div className={`rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 ${isSidebarMinimized ? 'w-10 h-10' : 'w-12 h-12'}`}>
+                     <span className="text-white font-bold text-lg">
+                       {(username || 'G').charAt(0).toUpperCase()}
+                     </span>
+                   </div>
+                 )}
+                 <div className={`absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-400 border-2 border-white rounded-full shadow-sm ${isSidebarMinimized ? '' : 'animate-pulse'}`}></div>
+               </div>
               <div
                 className={`transition-all duration-500 ease-in-out overflow-hidden ${isSidebarMinimized ? 'max-w-0 opacity-0' : 'max-w-xs opacity-100 ml-4'}`}
               >
@@ -333,14 +384,27 @@ function Sidebar({
                     isSidebarMinimized ? 'left-1/2 -translate-x-1/2 w-64' : 'left-0 w-full'
                   } bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-slate-900/20 py-4 z-20 border border-slate-200/50`}
                 >
-                  {/* Header elegante */}
-                  <div className="px-6 py-4 border-b border-slate-100/50">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 mr-4">
-                        <span className="text-white font-bold text-lg">
-                          {(username || 'G').charAt(0).toUpperCase()}
-                        </span>
-                      </div>
+                                     {/* Header elegante */}
+                   <div className="px-6 py-4 border-b border-slate-100/50">
+                     <div className="flex items-center">
+                       {profileImageUrl ? (
+                         // Mostrar imagen de perfil real en el menú
+                         <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/30 mr-4">
+                           <img
+                             src={profileImageUrl}
+                             alt={`Perfil de ${username}`}
+                             className="w-full h-full object-cover"
+                             onError={() => setProfileImageUrl(null)}
+                           />
+                         </div>
+                       ) : (
+                         // Mostrar avatar con iniciales en el menú
+                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 mr-4">
+                           <span className="text-white font-bold text-lg">
+                             {(username || 'G').charAt(0).toUpperCase()}
+                           </span>
+                         </div>
+                       )}
                       <div>
                         <p className="text-sm font-bold text-slate-800">{username || 'Invitado'}</p>
                         <p className="text-xs text-slate-600 font-medium flex items-center">
@@ -431,14 +495,15 @@ function Sidebar({
         message={transitionMessage}
       />
       
-      {/* Modal de configuración del perfil */}
-      {showProfileSettings && (
-        <ProfileSettings
-          username={username}
-          isSuperuser={isSuperuser}
-          onClose={() => setShowProfileSettings(false)}
-        />
-      )}
+             {/* Modal de configuración del perfil */}
+       {showProfileSettings && (
+         <ProfileSettings
+           username={username}
+           isSuperuser={isSuperuser}
+           onClose={() => setShowProfileSettings(false)}
+           onProfileImageUpdate={handleProfileImageUpdate}
+         />
+       )}
       
       {/* Modal de ayuda y soporte */}
       {showHelpSupport && (

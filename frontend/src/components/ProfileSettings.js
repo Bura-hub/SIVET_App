@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { buildApiUrl, getEndpoint } from '../config';
 import ProfileImageUpload from './ProfileImageUpload';
 
-function ProfileSettings({ username, isSuperuser, onClose }) {
+function ProfileSettings({ username, isSuperuser, onClose, onProfileImageUpdate }) {
     const [activeTab, setActiveTab] = useState('profile');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ text: '', type: '' });
@@ -107,10 +107,18 @@ function ProfileSettings({ username, isSuperuser, onClose }) {
 
     const handleImageUpdate = (newImageUrl) => {
         setProfileImageUrl(newImageUrl);
+        // Notificar a la sidebar que se actualizó la imagen
+        if (onProfileImageUpdate) {
+            onProfileImageUpdate();
+        }
     };
 
     const handleImageDelete = () => {
         setProfileImageUrl(null);
+        // Notificar a la sidebar que se eliminó la imagen
+        if (onProfileImageUpdate) {
+            onProfileImageUpdate();
+        }
     };
 
 

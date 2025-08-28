@@ -1,116 +1,213 @@
 # SIVET: Sistema de Visualización Energética Transaccional
 
-## Descripción General del Proyecto
+## 📋 Descripción General del Proyecto
 
-\`SIVET\` es una aplicación web integral diseñada para la visualización de datos históricos e indicadores clave relacionados con el consumo y la generación de energía eléctrica, así como variables climáticas relevantes. Construida con una arquitectura desacoplada utilizando **Django (Python)** para el backend y **React (JavaScript)** para el frontend, la plataforma se integra de forma segura con una API SCADA externa para la ingesta y el procesamiento de datos.
+**SIVET** es una aplicación web integral diseñada para la visualización de datos históricos e indicadores clave relacionados con el consumo y la generación de energía eléctrica, así como variables climáticas relevantes. Construida con una arquitectura desacoplada utilizando **Django (Python)** para el backend y **React (JavaScript)** para el frontend, la plataforma se integra de forma segura con una API SCADA externa para la ingesta y el procesamiento de datos.
 
 El objetivo principal es transformar datos complejos en información accionable, proporcionando a analistas y ejecutivos una visión clara y dinámica del comportamiento de los sistemas energéticos y climáticos.
 
-## Características Principales
+**Estado del Proyecto: 95% de avance** - Fase de maduración y refinamiento completada.
 
-* **Autenticación Segura:** Sistema de inicio de sesión robusto con gestión de usuarios y roles (Administrador, Usuario Aliado).
-* **Dashboard Interactivo:** Panel de control principal que presenta un resumen de indicadores clave de rendimiento (KPIs) con visualizaciones claras y dinámicas.
-* **Módulos de Detalles Específicos:**
-    * **Detalles Eléctricos:** Información detallada sobre el consumo eléctrico.
-    * **Detalles de Inversores:** Métricas y tendencias de la generación de energía solar.
-    * **Detalles del Clima:** Datos meteorológicos relevantes para el análisis energético.
-* **Visualizaciones de Datos:** Gráficos interactivos (líneas y barras) impulsados por Chart.js para mostrar tendencias históricas.
-* **Cálculo y Persistencia de KPIs:** El backend calcula y almacena KPIs mensuales para consumo, generación, balance energético, potencia instantánea promedio, temperatura promedio, humedad relativa y velocidad del viento.
-* **Integración con API SCADA:** Conexión segura y dinámica a una API SCADA externa a través de un proxy Django para obtener datos en tiempo real y históricos.
-* **Exportación de Reportes:** Funcionalidad para generar y descargar reportes de datos en formato CSV para análisis externos.
-* **Experiencia de Usuario (UI/UX) Optimizada:** Interfaz intuitiva, responsiva y visualmente coherente, con animaciones fluidas y persistencia del estado de la interfaz (ej., estado de la barra lateral, pestañas activas).
-* **Fondo de Login Personalizado:** La página de inicio de sesión cuenta con una imagen de fondo (\`bg.png\`) para mejorar la estética visual.
+## 🚀 Características Principales
 
-## Arquitectura del Proyecto
+### 🔐 Autenticación y Seguridad
+- **Sistema de Autenticación Robusto**: Login seguro con gestión de usuarios y roles (Administrador, Usuario Aliado)
+- **Gestión de Perfiles Avanzada**: Configuración de información personal, avatares y preferencias
+- **Gestión de Sesiones**: Control de dispositivos conectados con capacidad de cerrar sesiones individuales o masivas
+- **Seguridad Mejorada**: Rate limiting, bloqueo temporal por intentos fallidos y validaciones de contraseñas
+- **Tokens de Acceso**: Sistema de autenticación basado en tokens con expiración automática
+
+### 📊 Dashboard y Visualizaciones
+- **Dashboard Interactivo**: Panel de control principal con resumen de indicadores clave de rendimiento (KPIs)
+- **Visualizaciones Dinámicas**: Gráficos interactivos (líneas y barras) impulsados por Chart.js
+- **KPIs en Tiempo Real**: Métricas actualizadas automáticamente para consumo, generación y balance energético
+- **Persistencia de Estado**: Recuerda el estado de la barra lateral y pestañas activas entre sesiones
+
+### 🔌 Módulos Especializados
+- **Detalles Eléctricos**: Información detallada sobre el consumo eléctrico con filtros avanzados
+- **Detalles de Inversores**: Métricas y tendencias de la generación de energía solar
+- **Detalles del Clima**: Datos meteorológicos relevantes para el análisis energético
+- **Datos Externos de Energía**: Análisis de precios, ahorros y mercado energético
+- **Exportación de Reportes**: Generación y descarga de reportes en formato CSV
+
+### ⚡ Integración SCADA y Procesamiento
+- **Integración con API SCADA**: Conexión segura a través de proxy Django para datos en tiempo real
+- **Cálculo Automático de KPIs**: Tareas asíncronas con Celery que calculan indicadores mensuales
+- **Sincronización de Metadatos**: Actualización automática de dispositivos, categorías e instituciones
+- **Procesamiento de Datos Históricos**: Almacenamiento y análisis de mediciones históricas
+
+### 🎨 Experiencia de Usuario
+- **Interfaz Responsiva**: Optimizada para diferentes tamaños de pantalla y dispositivos
+- **Animaciones Fluidas**: Transiciones suaves y feedback visual contextual
+- **Sistema de Notificaciones**: Mensajes de estado con iconografía y colores apropiados
+- **Tema Personalizable**: Soporte para temas claro/oscuro y preferencias de idioma
+- **Sistema de Ayuda**: Guía de usuario interactiva y soporte técnico integrado
+
+## 🏗️ Arquitectura del Proyecto
 
 La aplicación sigue una arquitectura desacoplada para garantizar escalabilidad, mantenibilidad y seguridad.
 
-### Backend (Django)
+### Backend (Django 5.2.4)
 
-* **Framework:** Django 5.x
-* **API:** Django REST Framework (DRF) para construir los endpoints RESTful.
-* **Autenticación:** Basada en tokens para una comunicación segura entre el frontend y el backend.
-* **Proxy SCADA:** Una capa de proxy en Django (\`scada_proxy\`) gestiona la autenticación y el consumo de datos de la API SCADA externa, centralizando las llamadas y protegiendo las credenciales.
-* **Cálculo de KPIs:** Tareas asíncronas con **Celery** que calculan y persisten los indicadores clave de rendimiento (KPIs) en la base de datos local (\`indicators\` app).
-* **Base de Datos:** Utiliza la base de datos configurada en Django (por defecto SQLite para desarrollo, pero adaptable a PostgreSQL, MySQL, etc. para producción).
+#### Framework y Tecnologías
+- **Django 5.2.4**: Framework web principal
+- **Django REST Framework**: Construcción de APIs RESTful
+- **PostgreSQL**: Base de datos principal (configurable)
+- **Redis**: Broker para Celery y caché
+- **Celery**: Procesamiento asíncrono de tareas
+- **Celery Beat**: Programación de tareas periódicas
 
-### Frontend (React)
+#### Aplicaciones Django
+- **`core`**: Configuración principal del proyecto
+- **`authentication`**: Sistema de autenticación y gestión de usuarios
+- **`indicators`**: Cálculo y gestión de KPIs energéticos
+- **`scada_proxy`**: Integración con sistemas SCADA externos
+- **`external_energy`**: Análisis de datos energéticos externos
 
-* **Framework:** React 18+
-* **Estilizado:** Tailwind CSS para un desarrollo rápido y responsivo de la interfaz de usuario.
-* **Visualización de Datos:** Chart.js para la creación de gráficos interactivos.
-* **Manejo de Estado:** \`useState\` y \`useEffect\` de React para la gestión de estado local y la interacción con la API.
-* **Persistencia de UI:** Utiliza \`localStorage\` para recordar el estado de la barra lateral y las pestañas activas entre sesiones.
+#### Características Técnicas
+- **Autenticación por Tokens**: Sistema personalizado con expiración y metadatos
+- **Validaciones Avanzadas**: Verificación robusta de datos de entrada
+- **Rate Limiting**: Protección contra abuso del sistema
+- **Logging Seguro**: Registro de eventos sin comprometer información sensible
+- **Documentación API**: Generación automática con drf-spectacular
 
-## Indicadores Clave de Rendimiento (KPIs) Implementados
+### Frontend (React 19.1.0)
+
+#### Framework y Librerías
+- **React 19.1.0**: Biblioteca de interfaz de usuario
+- **Chart.js 4.5.0**: Visualización de datos y gráficos
+- **Tailwind CSS 3.4.17**: Framework de CSS utilitario
+- **React Router**: Navegación entre componentes
+
+#### Componentes Principales
+- **`Dashboard`**: Panel principal con KPIs y resumen
+- **`ElectricalDetails`**: Detalles de medidores eléctricos
+- **`InverterDetails`**: Información de inversores solares
+- **`WeatherStationDetails`**: Datos meteorológicos
+- **`ExternalEnergyData`**: Análisis de energía externa
+- **`ExportReports`**: Generación de reportes
+- **`ProfileSettings`**: Gestión de perfil de usuario
+- **`HelpSupport`**: Sistema de ayuda y soporte
+
+#### Características de UX
+- **Estado Persistente**: Recuerda preferencias del usuario
+- **Animaciones de Carga**: Indicadores de progreso personalizados
+- **Transiciones Suaves**: Componente `TransitionOverlay` para navegación
+- **Responsividad**: Adaptable a diferentes dispositivos
+- **Tema Personalizable**: Soporte para preferencias visuales
+
+## 📈 Indicadores Clave de Rendimiento (KPIs)
 
 La aplicación calcula y muestra los siguientes KPIs, proporcionando una visión integral del rendimiento energético y ambiental:
 
-* **Consumo Total:** Consumo total acumulado de energía eléctrica (kWh) del mes actual y anterior.
-* **Generación Total:** Generación total acumulada de energía (Wh) por los inversores del mes actual y anterior.
-* **Equilibrio Energético:** Diferencia neta entre la Generación Total y el Consumo Total (kWh), indicando superávit o déficit.
-* **Potencia Instantánea Promedio:** Promedio de la potencia activa (Watts) de los inversores del mes actual y anterior.
-* **Temperatura Promedio Diaria:** Temperatura promedio (°C) del mes actual y anterior, basada en datos de estaciones meteorológicas.
-* **Humedad Relativa:** Humedad relativa promedio (%RH) del mes actual y anterior, con categorización de estado (Óptimo, Alta, Baja).
-* **Velocidad del Viento:** Velocidad promedio del viento (km/h) del mes actual y anterior, con categorización de estado (Bajo, Moderado, Alto).
-* **Inversores Activos:** Conteo en tiempo real de inversores operativos.
+### 🔋 Consumo y Generación
+- **Consumo Total**: Consumo acumulado de energía eléctrica (kWh) del mes actual y anterior
+- **Generación Total**: Generación acumulada de energía (kWh) por inversores del mes actual y anterior
+- **Equilibrio Energético**: Diferencia neta entre generación y consumo, indicando superávit o déficit
+- **Potencia Instantánea Promedio**: Promedio de potencia activa (Watts) de inversores
 
-## Requisitos del Sistema
+### 🌡️ Variables Climáticas
+- **Temperatura Promedio Diaria**: Temperatura promedio (°C) del mes actual y anterior
+- **Humedad Relativa**: Humedad relativa promedio (%RH) con categorización de estado
+- **Velocidad del Viento**: Velocidad promedio del viento (km/h) con categorización
+- **Irradiancia Solar**: Radiación solar promedio (W/m²) para análisis fotovoltaico
 
-Para ejecutar este proyecto, necesitarás:
+### 📊 Métricas Operativas
+- **Inversores Activos**: Conteo en tiempo real de inversores operativos
+- **Eficiencia del Sistema**: Relación entre generación y capacidad instalada
+- **Factor de Capacidad**: Utilización efectiva de la capacidad de generación
+- **Autoconsumo**: Porcentaje de energía generada consumida localmente
 
-* Python 3.9+
-* Node.js (LTS recomendado) y npm/yarn
-* pip (gestor de paquetes de Python)
-* Una instancia de Redis (para Celery y Celery Beat)
-* Acceso a una API SCADA (o simulación de la misma si es para desarrollo local sin datos reales).
+## 🛠️ Requisitos del Sistema
 
-## Configuración e Instalación
+### Software Requerido
+- **Python 3.9+** (recomendado 3.11+)
+- **Node.js 18+** (LTS recomendado) y npm/yarn
+- **PostgreSQL 12+** (o SQLite para desarrollo)
+- **Redis 6+** (para Celery y caché)
+- **Git** para control de versiones
 
-Sigue estos pasos para configurar y ejecutar el proyecto en tu entorno local.
+### APIs Externas (Opcionales)
+- **OpenWeatherMap**: Datos climáticos y solares (gratuito, 60 llamadas/minuto)
+- **Electricity Maps**: Información de precios de energía (acceso limitado gratuito)
+- **API SCADA**: Sistema de monitoreo y control de datos (requerido para funcionalidad completa)
+
+### Hardware Recomendado
+- **RAM**: 4GB mínimo, 8GB recomendado
+- **Almacenamiento**: 10GB mínimo para desarrollo, 50GB+ para producción
+- **CPU**: Procesador de 2+ núcleos para desarrollo, 4+ núcleos para producción
+
+## ⚙️ Configuración e Instalación
 
 ### 1. Clonar el Repositorio
 
 ```bash
 git clone <URL_DEL_REPOSITORIO>
-cd MTE-SIVET-App # Asegúrate de estar en el directorio raíz del proyecto
+cd MteLumen_App
 ```
 
 ### 2. Configuración del Backend (Django)
 
+#### Crear y Activar Entorno Virtual
+
 ```bash
-# Crear y activar un entorno virtual
+# Crear entorno virtual
 python -m venv env_lumen
-.\env_lumen\Scripts\activate # En Windows
-# source env_lumen/bin/activate # En macOS/Linux
 
-# Instalar dependencias de Python
-pip install -r requirements.txt # Asegúrate de tener un requirements.txt con todas las dependencias
-# (django, djangorestframework, celery, redis, requests, etc.)
+# Activar en Windows
+.\env_lumen\Scripts\activate
 
-# Configurar variables de entorno
-# Crea un archivo .env en la raíz de tu proyecto (junto a manage.py)
-# y añade tus credenciales y configuraciones de SCADA y Redis:
-# SECRET_KEY='tu_clave_secreta_django'
-# DEBUG=True
-# ALLOWED_HOSTS='localhost,127.0.0.1'
-# SCADA_API_BASE_URL='http://localhost:3000/api/v1' # O la URL de tu API SCADA
-# SCADA_API_USERNAME='tu_usuario_scada'
-# SCADA_API_PASSWORD='tu_password_scada'
-# REDIS_HOST='localhost'
-# REDIS_PORT=6379
-# REDIS_DB=0
+# Activar en macOS/Linux
+source env_lumen/bin/activate
+```
 
-# Aplicar migraciones de la base de datos
+#### Instalar Dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+#### Configurar Variables de Entorno
+
+Crear archivo `.env` en la raíz del proyecto:
+
+```bash
+# Configuración Django
+SECRET_KEY='tu_clave_secreta_django_aqui'
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Base de Datos PostgreSQL
+name_db=nombre_de_tu_base_de_datos
+user_postgres=usuario_postgres
+password_user_postgres=contraseña_postgres
+port_postgres=5432
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+
+# Credenciales SCADA
+SCADA_USERNAME=tu_usuario_scada
+SCADA_PASSWORD=tu_password_scada
+
+# APIs Externas (Opcionales)
+OPENWEATHER_API_KEY=tu_api_key_openweather
+ELECTRICITY_MAPS_API_KEY=tu_api_key_electricity_maps
+```
+
+#### Configurar Base de Datos
+
+```bash
+# Aplicar migraciones
 python manage.py makemigrations
 python manage.py migrate
-python manage.py makemigrations indicators # Asegúrate de que las migraciones para indicators se generen
-python manage.py migrate indicators
 
-# Crear un superusuario (opcional, para acceder al admin de Django)
+# Crear superusuario
 python manage.py createsuperuser
 
-# Crear un usuario de prueba para el script de verificación
+# Crear usuario de prueba
 python manage.py shell
 from django.contrib.auth.models import User
 User.objects.create_user(username='testuser', password='testpassword')
@@ -120,134 +217,327 @@ exit()
 ### 3. Configuración del Frontend (React)
 
 ```bash
-cd frontend # Navega al directorio del frontend
-npm install # O yarn install
+cd frontend
+npm install
 ```
 
 ### 4. Iniciar Servicios
 
-Asegúrate de que tu instancia de Redis esté ejecutándose.
-
-#### a. Iniciar Celery Worker
-
-Abre una nueva terminal y ejecuta:
-
+#### Iniciar Redis
 ```bash
-# Asegúrate de que tu entorno virtual esté activado
-celery -A MTE-SIVET-App worker -l info # Reemplaza MTE-SIVET-App con el nombre de tu proyecto
+# En Windows (con WSL o Docker)
+redis-server
+
+# En macOS
+brew services start redis
+
+# En Linux
+sudo systemctl start redis
 ```
 
-#### b. Iniciar Celery Beat (Scheduler)
-
-Abre otra nueva terminal y ejecuta:
-
+#### Iniciar Celery Worker
 ```bash
-# Asegúrate de que tu entorno virtual esté activado
-celery -A MTE-SIVET-App beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+# Terminal 1 - Worker
+celery -A core worker -l info
 ```
 
-#### c. Iniciar el Servidor de Desarrollo Django
-
-Abre otra terminal y ejecuta:
-
+#### Iniciar Celery Beat (Scheduler)
 ```bash
-# Asegúrate de que tu entorno virtual esté activado
+# Terminal 2 - Scheduler
+celery -A core beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+```
+
+#### Iniciar Servidor Django
+```bash
+# Terminal 3 - Backend
 python manage.py runserver
 ```
 
-#### d. Iniciar el Servidor de Desarrollo React
-
-Abre una última terminal y ejecuta:
-
+#### Iniciar Servidor React
 ```bash
+# Terminal 4 - Frontend
 cd frontend
-npm start # O yarn start
+npm start
 ```
 
-La aplicación frontend se abrirá automáticamente en tu navegador (normalmente en \`http://localhost:3000\`).
+La aplicación estará disponible en:
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:8000
+- **Admin Django**: http://localhost:8000/admin
+- **API Docs**: http://localhost:8000/docs
 
-## Uso de la Aplicación
+## 📚 Uso de la Aplicación
 
-1.  **Inicio de Sesión:** Accede a la aplicación a través de la página de inicio de sesión. Utiliza las credenciales del superusuario o del usuario de prueba que creaste.
-2.  **Navegación:** Explora los diferentes módulos (Dashboard, Detalles Eléctricos, Detalles de Inversores, Detalles del Clima) usando la barra lateral.
-3.  **Visualización de KPIs y Gráficos:** Observa los indicadores clave y las tendencias de datos en los gráficos interactivos.
-4.  **Exportación de Reportes:** Utiliza el módulo "Exportar Reportes" para descargar datos filtrados.
+### 1. Inicio de Sesión
+- Accede a la aplicación a través de la página de inicio de sesión
+- Utiliza las credenciales del superusuario o usuario de prueba creado
+- El sistema recordará tu sesión y preferencias
 
-## Estructura del Proyecto
+### 2. Navegación Principal
+- **Dashboard**: Vista general con KPIs principales y resumen del sistema
+- **Detalles Eléctricos**: Análisis detallado de consumo energético
+- **Detalles de Inversores**: Monitoreo de generación solar
+- **Detalles del Clima**: Información meteorológica y ambiental
+- **Datos Externos**: Análisis de precios y mercado energético
+- **Exportar Reportes**: Generación de reportes personalizados
+
+### 3. Funcionalidades Avanzadas
+- **Filtros Avanzados**: Por dispositivo, institución, fecha y categoría
+- **Exportación de Datos**: Reportes en CSV con filtros personalizables
+- **Gestión de Perfil**: Configuración de preferencias y avatar
+- **Sistema de Ayuda**: Guía contextual y soporte técnico
+
+## 🗂️ Estructura del Proyecto
 
 ```
-MTE-SIVET-App/
-├── core/           # Directorio principal del proyecto Django
-│   ├── settings.py         # Configuración de Django
-│   ├── urls.py             # URLs principales del proyecto
-│   ├── celery.py
-│   └── wsgi.py
-├── authentication/         # Aplicación Django para autenticación
-│   ├── views.py
-│   ├── serializers.py
-│   ├── urls.py
-│   └── ...
-├── indicators/             # Aplicación Django para cálculo y gestión de KPIs
-│   ├── models.py           # Modelos para KPIs (MonthlyConsumptionKPI)
-│   ├── tasks.py            # Tareas Celery para el cálculo de KPIs
-│   ├── views.py            # Vista de la API para los KPIs
-│   └── urls.py
-├── scada_proxy/            # Aplicación Django para el proxy de la API SCADA
-│   ├── models.py           # Modelos para Device, Measurement, DeviceCategory
-│   ├── scada_client.py     # Lógica para interactuar con la API SCADA externa
-│   ├── serializers.py
-│   ├── tasks.py
-│   ├── urls_local.py
-│   ├── urls_scada.py
-│   ├── urls_task.py
-│   └── views.py
-├── frontend/               # Directorio del proyecto React
-│   ├── public/
-│   │   ├── index.html
-│   │   └── favicon.ico
-│   ├── src/
-│   │   ├── App.js          # Componente principal de React
-│   │   ├── index.css       # Estilos globales (incluye clases para login-card, input-field, etc.)
-│   │   ├── index.js
-│   │   ├── components/
-│   │   │   ├── bg.png         # Imagen de fondo para el login
-│   │   │   ├── LoginPage.js   # Componente de la página de login
-│   │   │   ├── ElectricalDetails.js   # Componente de medidores
-│   │   │   ├── ExportReports.js   # Componente de generación de reportes
-│   │   │   ├── InverterDetails.js   # Componente de inversores
-│   │   │   ├── Dashboard.js   # Componente del dashboard
-│   │   │   ├── WeatherStationDetails # Componente de las estaciones meteorologicas
-│   │   │   ├── Sidebar.js     # Componente de la barra de herramientas
-│   │   │   ├── sivet-logo.svg # Logo de la app
-│   │   │   ├── KPI/           # Componentes para tarjetas KPI y gráficos
-│   │   │   │   ├── KpiCard.js
-│   │   │   │   └── ChartCard.js
-│   │   │   └── ... 
-│   │   ├── logo.svg
-│   │   └── logo.png  # Logo de la aplicación
-│   ├── tailwind.config.js
-│   └── package.json
-├── manage.py               # Utilidad de línea de comandos de Django
-├── requirements.txt        # Dependencias de Python
-├── .env.example            # Ejemplo de archivo de variables de entorno
-└── README.md               # Este archivo
+MteLumen_App/
+├── core/                           # Configuración principal Django
+│   ├── settings.py                 # Configuración del proyecto
+│   ├── urls.py                     # URLs principales
+│   ├── celery.py                   # Configuración de Celery
+│   └── wsgi.py                     # Configuración WSGI
+├── authentication/                  # Sistema de autenticación
+│   ├── models.py                   # Modelos de usuario y tokens
+│   ├── views.py                    # Vistas de autenticación
+│   ├── serializers.py              # Serializadores de la API
+│   └── urls.py                     # URLs de autenticación
+├── indicators/                      # Cálculo y gestión de KPIs
+│   ├── models.py                   # Modelos de KPIs y datos
+│   ├── tasks.py                    # Tareas Celery para cálculos
+│   ├── views.py                    # Vistas de la API
+│   └── urls.py                     # URLs de indicadores
+├── scada_proxy/                     # Integración con SCADA
+│   ├── models.py                   # Modelos de dispositivos y mediciones
+│   ├── scada_client.py             # Cliente para API SCADA
+│   ├── tasks.py                    # Tareas de sincronización
+│   ├── urls_scada.py               # URLs para API SCADA
+│   └── urls_local.py               # URLs para operaciones locales
+├── external_energy/                 # Datos externos de energía
+│   ├── models.py                   # Modelos de precios y ahorros
+│   ├── services.py                 # Servicios de APIs externas
+│   ├── views.py                    # Vistas de datos externos
+│   └── README.md                   # Documentación específica
+├── frontend/                        # Aplicación React
+│   ├── public/                     # Archivos públicos
+│   ├── src/                        # Código fuente
+│   │   ├── components/             # Componentes React
+│   │   │   ├── KPI/                # Componentes de KPIs y gráficos
+│   │   │   ├── Dashboard.js        # Panel principal
+│   │   │   ├── ElectricalDetails.js # Detalles eléctricos
+│   │   │   ├── InverterDetails.js  # Detalles de inversores
+│   │   │   ├── WeatherStationDetails.js # Estaciones meteorológicas
+│   │   │   ├── ExternalEnergyData.js # Datos externos
+│   │   │   ├── ExportReports.js    # Generación de reportes
+│   │   │   ├── ProfileSettings.js  # Configuración de perfil
+│   │   │   ├── HelpSupport.js      # Sistema de ayuda
+│   │   │   └── Sidebar.js          # Barra lateral
+│   │   ├── utils/                  # Utilidades y configuración
+│   │   ├── App.js                  # Componente principal
+│   │   └── index.js                # Punto de entrada
+│   ├── tailwind.config.js          # Configuración de Tailwind CSS
+│   └── package.json                # Dependencias de Node.js
+├── manage.py                        # Utilidad de línea de comandos Django
+├── requirements.txt                 # Dependencias de Python
+├── celery.log                       # Logs de Celery
+└── README.md                        # Este archivo
 ```
 
-## Próximos Pasos
+## 🔄 Tareas Programadas (Celery Beat)
 
-El proyecto tiene un 88% de avance y los siguientes pasos clave se centrarán en:
+El sistema ejecuta automáticamente las siguientes tareas:
 
-* **Refinamiento de la Experiencia de Usuario:** Optimización de la interactividad y fluidez, y pruebas de usabilidad.
-* **Implementación de Filtros Avanzados:** Desarrollo de funcionalidades de filtrado más complejas (por ID de dispositivo, estado, región, etc.).
-* **Integración de Datos Reales:** Conexión a las fuentes de datos SCADA reales (XM, UPME, ASIC) y ajuste de la lógica de mapeo.
-* **Desarrollo del Módulo de Pronósticos:** Implementación de la visualización de proyecciones de demanda basadas en modelos.
-* **Optimización de Rendimiento con Datos Reales:** Pruebas de carga y optimizaciones para grandes volúmenes de datos.
-* **Documentación Exhaustiva:** Completar la documentación técnica y guías de usuario.
+### Sincronización de Datos
+- **Metadatos SCADA**: Sincronización diaria a las 2:00 AM
+- **Verificación de Dispositivos**: Cada hora para monitorear estado
+- **Reparación de Relaciones**: Automática después de verificación de dispositivos
 
-## Contribución
+### Cálculo de KPIs
+- **KPIs Mensuales**: Cálculo diario a las 3:30 AM
+- **Datos Diarios**: Procesamiento a las 3:45 AM para gráficos
+- **Mediciones Históricas**: Obtención cada hora de datos de las últimas 2 horas
 
-Las contribuciones son bienvenidas. Por favor, abre un *issue* o envía un *pull request*.
+### Datos Externos
+- **Sincronización Climática**: Actualización cada 6 horas
+- **Análisis de Mercado**: Procesamiento diario de precios y tendencias
 
-## Licencia
+## 🌐 APIs y Endpoints
 
-Este proyecto está bajo la licencia MIT.
+### Autenticación
+- `POST /auth/login/` - Inicio de sesión
+- `POST /auth/logout/` - Cierre de sesión
+- `POST /auth/refresh/` - Renovación de token
+- `GET /auth/profile/` - Perfil del usuario
+
+### Indicadores
+- `GET /api/dashboard/summary/` - Resumen de KPIs
+- `GET /api/dashboard/chart-data/` - Datos para gráficos
+- `GET /api/electric-meters/` - Medidores eléctricos
+- `GET /api/inverters/` - Inversores solares
+- `GET /api/weather-stations/` - Estaciones meteorológicas
+
+### SCADA
+- `GET /scada/devices/` - Lista de dispositivos
+- `GET /scada/measurements/` - Mediciones históricas
+- `POST /tasks/fetch-historical/` - Obtención de datos históricos
+
+### Datos Externos
+- `GET /api/external-energy/prices/` - Precios de energía
+- `GET /api/external-energy/savings/` - Cálculo de ahorros
+- `GET /api/external-energy/market-overview/` - Vista del mercado
+
+### Reportes
+- `POST /api/reports/generate/` - Generación de reportes
+- `GET /api/reports/status/` - Estado de generación
+- `GET /api/reports/download/` - Descarga de reportes
+
+## 🔧 Comandos de Gestión Útiles
+
+### Desarrollo y Pruebas
+```bash
+# Poblar datos simulados
+python manage.py populate_external_energy_data --days 90
+
+# Verificar estado de dispositivos
+python manage.py check_devices_status
+
+# Sincronizar metadatos SCADA
+python manage.py sync_scada_metadata
+
+# Calcular KPIs manualmente
+python manage.py calculate_monthly_kpis
+```
+
+### Mantenimiento
+```bash
+# Limpiar logs antiguos
+python manage.py cleanup_logs
+
+# Verificar integridad de datos
+python manage.py validate_data_integrity
+
+# Respaldar base de datos
+python manage.py dumpdata > backup.json
+```
+
+### Monitoreo
+```bash
+# Ver estado de tareas Celery
+celery -A core inspect active
+
+# Ver tareas programadas
+celery -A core inspect scheduled
+
+# Ver logs en tiempo real
+tail -f celery.log
+```
+
+## 🚨 Solución de Problemas Comunes
+
+### Error de Conexión a Base de Datos
+```bash
+# Verificar que PostgreSQL esté ejecutándose
+sudo systemctl status postgresql
+
+# Verificar credenciales en .env
+# Probar conexión manual
+psql -h localhost -U usuario -d base_de_datos
+```
+
+### Celery No Ejecuta Tareas
+```bash
+# Verificar que Redis esté ejecutándose
+redis-cli ping
+
+# Reiniciar worker de Celery
+celery -A core worker -l info --purge
+
+# Verificar logs
+tail -f celery.log
+```
+
+### Frontend No Se Conecta al Backend
+```bash
+# Verificar que Django esté ejecutándose en puerto 8000
+# Verificar configuración de proxy en package.json
+# Verificar CORS en settings.py
+```
+
+### Errores de Autenticación
+```bash
+# Limpiar tokens del localStorage
+# Verificar que el token no haya expirado
+# Regenerar token desde el admin de Django
+```
+
+## 📊 Estado de Desarrollo y Próximos Pasos
+
+### ✅ Funcionalidades Completadas (95%)
+- Sistema de autenticación y gestión de usuarios
+- Dashboard principal con KPIs en tiempo real
+- Módulos de detalles eléctricos, inversores y clima
+- Integración con API SCADA y sincronización automática
+- Cálculo automático de indicadores energéticos
+- Sistema de reportes y exportación de datos
+- Módulo de datos externos de energía
+- Sistema de ayuda y soporte técnico
+- Interfaz de usuario responsiva y moderna
+
+### 🔄 En Desarrollo (5%)
+- Optimización de rendimiento con datos reales
+- Pruebas de carga y estabilidad
+- Refinamiento de algoritmos de cálculo
+- Documentación técnica completa
+
+### 🎯 Próximos Pasos
+- **Integración con Datos Reales**: Conexión a fuentes SCADA reales
+- **Módulo de Pronósticos**: Implementación de modelos predictivos
+- **Alertas Inteligentes**: Sistema de notificaciones automáticas
+- **Móvil**: Aplicación móvil nativa o PWA
+- **Analytics Avanzados**: Machine Learning para predicciones
+- **Integración IoT**: Conexión directa con dispositivos inteligentes
+
+## 🤝 Contribución
+
+Las contribuciones son bienvenidas. Por favor, sigue estos pasos:
+
+1. **Fork** del repositorio
+2. **Crear** una rama para tu funcionalidad (`git checkout -b feature/nueva-funcionalidad`)
+3. **Commit** tus cambios (`git commit -am 'Añadir nueva funcionalidad'`)
+4. **Push** a la rama (`git push origin feature/nueva-funcionalidad`)
+5. **Crear** un Pull Request
+
+### Guías de Contribución
+- Sigue las convenciones de código del proyecto
+- Incluye pruebas para nuevas funcionalidades
+- Actualiza la documentación según sea necesario
+- Verifica que el código pase todas las pruebas
+
+## 📞 Soporte y Contacto
+
+### Canales de Soporte
+- **Issues del Proyecto**: Reportar bugs y solicitar funcionalidades
+- **Documentación**: Guías de usuario y técnica
+- **Sistema de Ayuda**: Integrado en la aplicación
+
+### Información del Proyecto
+- **Código BPIN**: 2021000100499
+- **Tipo**: Sistema de Visualización Energética Transaccional
+- **Ubicación**: Departamento de Nariño, Colombia
+- **Estado**: 95% de avance - Fase de maduración
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+## 🙏 Agradecimientos
+
+- **Equipo de Desarrollo**: Por la implementación técnica robusta
+- **Usuarios**: Por el feedback y pruebas continuas
+- **Comunidad Open Source**: Por las librerías y herramientas utilizadas
+- **Instituciones Colaboradoras**: Por el apoyo y recursos proporcionados
+
+---
+
+**Última Actualización**: Agosto 2025  
+**Versión**: 2.0.0  
+**Estado**: Producción - Fase de Maduración

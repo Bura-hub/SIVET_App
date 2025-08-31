@@ -146,6 +146,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
   const [inverterData, setInverterData] = useState({ results: [] });
   const [inverterLoading, setInverterLoading] = useState(false);
   const [inverterError, setInverterError] = useState(null);
+  const [kpisUpdating, setKpisUpdating] = useState(false);
 
   // Estado para la pestaña activa
 
@@ -170,8 +171,8 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
   
   const activeIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-cpu" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 1v3"></path><path d="M15 1v3"></path><path d="M9 21v3"></path><path d="M15 21v3"></path><path d="M1 9h3"></path><path d="M1 15h3"></path><path d="M21 9h3"></path><path d="M21 15h3"></path></svg>;
 
-  // Estado con datos simulados para los KPIs (se actualizará con datos reales)
-  const [kpiData, setKpiData] = useState({
+  // Función para generar KPIs por defecto
+  const getDefaultKPIs = useCallback(() => ({
     totalGeneration: { 
       title: "Generación Total", 
       value: "1.2", 
@@ -261,9 +262,195 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       </svg>,
       color: "text-pink-600"
     }
-  });
+  }), [generationIcon, efficiencyIcon, activeIcon]);
 
-  
+  // Estado con datos simulados para los KPIs (se actualizará con datos reales)
+  const [kpiData, setKpiData] = useState(() => getDefaultKPIs());
+
+  // Función para calcular KPIs dinámicamente basándose en los datos reales
+  const calculateDynamicKPIs = useCallback((data) => {
+    if (!data || !data.results || data.results.length === 0) {
+      return getDefaultKPIs(); // Retornar KPIs por defecto si no hay datos
+    }
+
+    const results = data.results;
+    
+    // Calcular total de generación
+    const totalGeneration = results.reduce((sum, item) => {
+      return sum + (item.total_generated_energy_kwh || 0);
+    }, 0);
+
+    // Calcular eficiencia promedio
+    const efficiencyValues = results
+      .map(item => item.dc_ac_efficiency_pct)
+      .filter(val => val !== null && val !== undefined && !isNaN(val));
+    
+    const averageEfficiency = efficiencyValues.length > 0 
+      ? efficiencyValues.reduce((sum, val) => sum + val, 0) / efficiencyValues.length 
+      : 0;
+
+    // Contar inversores activos (con datos)
+    const activeInverters = new Set(results.map(item => item.device_id || item.device_name)).size;
+
+    // Calcular performance ratio promedio
+    const prValues = results
+      .map(item => item.performance_ratio)
+      .filter(val => val !== null && val !== undefined && !isNaN(val));
+    
+    const avgPerformanceRatio = prValues.length > 0 
+      ? prValues.reduce((sum, val) => sum + val, 0) / prValues.length 
+      : 0;
+
+    // Calcular factor de potencia promedio
+    const pfValues = results
+      .map(item => item.avg_power_factor || item.power_factor || item.power_factor_avg)
+      .filter(val => val !== null && val !== undefined && !isNaN(val));
+    
+    const avgPowerFactor = pfValues.length > 0 
+      ? pfValues.reduce((sum, val) => sum + val, 0) / pfValues.length 
+      : 0;
+
+    // Calcular desbalance de fases promedio
+    const unbalanceValues = results
+      .map(item => item.max_voltage_unbalance_pct || item.voltage_unbalance_pct || item.unbalance_voltage || item.voltage_unbalance)
+      .filter(val => val !== null && val !== undefined && !isNaN(val));
+    
+    const avgPhaseUnbalance = unbalanceValues.length > 0 
+      ? unbalanceValues.reduce((sum, val) => sum + val, 0) / unbalanceValues.length 
+      : 0;
+
+    // Calcular frecuencia promedio
+    const freqValues = results
+      .map(item => item.avg_frequency_hz || item.frequency_hz || item.frequency || item.freq)
+      .filter(val => val !== null && val !== undefined && !isNaN(val));
+    
+    const avgFrequency = freqValues.length > 0 
+      ? freqValues.reduce((sum, val) => sum + val, 0) / freqValues.length 
+      : 60;
+
+    // Calcular THD de voltaje promedio
+    const thdValues = results
+      .map(item => item.max_voltage_thd_pct || item.voltage_thd_pct || item.thd_voltage || item.voltage_thd)
+      .filter(val => val !== null && val !== undefined && !isNaN(val));
+    
+    const avgThdVoltage = thdValues.length > 0 
+      ? thdValues.reduce((sum, val) => sum + val, 0) / thdValues.length 
+      : 0;
+
+    // Calcular cambios porcentuales (comparar con valores anteriores si es posible)
+    const calculateChange = (currentValue, previousValue) => {
+      if (!previousValue || previousValue === 0) return "N/A";
+      const change = ((currentValue - previousValue) / previousValue) * 100;
+      return change > 0 ? `+${change.toFixed(1)}%` : `${change.toFixed(1)}%`;
+    };
+
+    // Obtener valores del período anterior para comparación (si hay suficientes datos)
+    const previousPeriodData = results.length > 1 ? results.slice(0, Math.floor(results.length / 2)) : [];
+    const currentPeriodData = results.length > 1 ? results.slice(Math.floor(results.length / 2)) : results;
+
+    const previousTotalGen = previousPeriodData.reduce((sum, item) => sum + (item.total_generated_energy_kwh || 0), 0);
+    const previousEfficiency = previousPeriodData.length > 0 
+      ? previousPeriodData
+          .map(item => item.dc_ac_efficiency_pct)
+          .filter(val => val !== null && val !== undefined && !isNaN(val))
+          .reduce((sum, val) => sum + val, 0) / Math.max(previousPeriodData.length, 1)
+      : 0;
+
+    const generationChange = calculateChange(totalGeneration, previousTotalGen);
+    const efficiencyChange = calculateChange(averageEfficiency, previousEfficiency);
+
+    return {
+      totalGeneration: { 
+        title: "Generación Total", 
+        value: (totalGeneration / 1000).toFixed(2), // Convertir a MWh
+        unit: "MWh", 
+        change: generationChange !== "N/A" ? generationChange : "Datos disponibles", 
+        status: generationChange !== "N/A" && parseFloat(generationChange) > 0 ? "positivo" : "normal", 
+        icon: generationIcon,
+        color: "text-blue-600"
+      },
+      averageEfficiency: { 
+        title: "Eficiencia Promedio", 
+        value: averageEfficiency.toFixed(1), 
+        unit: "%", 
+        change: efficiencyChange !== "N/A" ? efficiencyChange : "Datos disponibles", 
+        status: efficiencyChange !== "N/A" && parseFloat(efficiencyChange) > 0 ? "positivo" : "normal", 
+        icon: efficiencyIcon,
+        color: "text-green-600"
+      },
+      activeInverters: { 
+        title: "Inversores Activos", 
+        value: activeInverters.toString(), 
+        unit: "", 
+        change: `de ${activeInverters} dispositivos`, 
+        status: "normal", 
+        icon: activeIcon,
+        color: "text-purple-600"
+      },
+      performanceRatio: { 
+        title: "Performance Ratio", 
+        value: avgPerformanceRatio.toFixed(2), 
+        unit: "", 
+        change: "Eficiencia del sistema", 
+        status: avgPerformanceRatio > 0.8 ? "positivo" : "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 3v18h18"></path>
+          <path d="M18 17V9"></path>
+          <path d="M13 17V5"></path>
+          <path d="M8 17v-3"></path>
+        </svg>,
+        color: "text-red-600"
+      },
+      powerFactor: { 
+        title: "Factor de Potencia", 
+        value: avgPowerFactor.toFixed(2), 
+        unit: "", 
+        change: "Calidad de energía", 
+        status: avgPowerFactor > 0.95 ? "positivo" : "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>,
+        color: "text-indigo-600"
+      },
+      phaseUnbalance: { 
+        title: "Desbalance de Fases", 
+        value: avgPhaseUnbalance.toFixed(1), 
+        unit: "%", 
+        change: "Voltaje", 
+        status: avgPhaseUnbalance < 3 ? "positivo" : "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M13 2L3 14h9l-1 8 11-12h-7z"></path>
+          <path d="M6 18l-2-2 2-2"></path>
+          <path d="M10 18l2-2-2-2"></path>
+        </svg>,
+        color: "text-orange-600"
+      },
+      frequencyStability: { 
+        title: "Estabilidad Frecuencia", 
+        value: avgFrequency.toFixed(1), 
+        unit: "Hz", 
+        change: Math.abs(avgFrequency - 60) < 0.5 ? "Estable" : "Variable", 
+        status: Math.abs(avgFrequency - 60) < 0.5 ? "positivo" : "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M12 2v20"></path>
+          <path d="M2 12h20"></path>
+          <path d="M12 2a10 10 0 0 1 0 20"></path>
+        </svg>,
+        color: "text-teal-600"
+      },
+      thdVoltage: { 
+        title: "THD Voltaje", 
+        value: avgThdVoltage.toFixed(1), 
+        unit: "%", 
+        change: "Calidad", 
+        status: avgThdVoltage < 5 ? "positivo" : "normal", 
+        icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M9 12l2 2 4-4"></path>
+          <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z"></path>
+          <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z"></path>
+        </svg>,
+        color: "text-pink-600"
+      }
+    };
+  }, [generationIcon, efficiencyIcon, activeIcon]);
 
   // Función para obtener datos de inversores
   const fetchInverterData = useCallback(async (filters) => {
@@ -306,6 +493,14 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
 
       if (seq === requestSeqRef.current) {
         setInverterData(indicatorsData);
+        // Mostrar estado de actualización de KPIs
+        setKpisUpdating(true);
+        // Actualizar KPIs inmediatamente con los nuevos datos
+        const newKpiData = calculateDynamicKPIs(indicatorsData);
+        console.log('KPIs calculados dinámicamente:', newKpiData);
+        setKpiData(newKpiData);
+        // Ocultar estado de actualización después de un breve delay
+        setTimeout(() => setKpisUpdating(false), 1000);
       }
     } catch (error) {
       // Mostrar error solo si esta solicitud sigue siendo la vigente
@@ -676,6 +871,14 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
     }
   }, [filters, fetchInverterData]);
 
+  // Efecto para actualizar KPIs cuando cambien los datos de inversores
+  useEffect(() => {
+    if (inverterData && inverterData.results) {
+      const newKpiData = calculateDynamicKPIs(inverterData);
+      setKpiData(newKpiData);
+    }
+  }, [inverterData, calculateDynamicKPIs]);
+
   // Función para mostrar transición
   const showTransitionAnimation = (type = 'info', message = '', duration = 2000) => {
     setTransitionType(type);
@@ -837,7 +1040,13 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
               const styleColors = colorMap[item.color] || { bgColor: 'bg-gray-50', borderColor: 'border-gray-200' };
 
   return (
-                <div key={key} className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg relative`}>
+                <div key={key} className={`${styleColors.bgColor} p-6 rounded-xl shadow-md border ${styleColors.borderColor} transform hover:scale-105 transition-all duration-300 hover:shadow-lg relative ${kpisUpdating ? 'ring-2 ring-blue-300 ring-opacity-50' : ''}`}>
+                  {/* Indicador de actualización */}
+                  {kpisUpdating && (
+                    <div className="absolute top-2 right-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between mb-4">
                     <button
                       onClick={(e) => {
@@ -866,7 +1075,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                   </div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
                   <div className="flex items-baseline">
-                    <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
+                    <p className={`text-3xl font-bold ${item.color} ${kpisUpdating ? 'animate-pulse' : ''}`}>{item.value}</p>
                     <span className="ml-2 text-lg text-gray-500">{item.unit}</span>
                   </div>
                   <div className="mt-3 pt-3 border-t border-gray-100">
@@ -896,7 +1105,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
               <svg className="w-4 h-4 lg:w-5 lg:h-5 text-blue-500 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-              <span className="text-blue-700 font-medium">Cargando indicadores de la institución...</span>
+              <span className="text-blue-700 font-medium">Cargando indicadores y actualizando KPIs...</span>
             </div>
           </div>
         )}
@@ -918,7 +1127,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                 {inverterLoading ? (
                   <>
                     <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
                     Calculando...
                   </>
@@ -932,6 +1141,35 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
                 )}
           </button>
         </div>
+          </div>
+        )}
+        
+        {/* Indicador de KPIs actualizados */}
+        {filters.institutionId && inverterData && inverterData.results && inverterData.results.length > 0 && (
+          <div className="text-center mt-4 lg:mt-6 space-y-2">
+            <div className="inline-flex items-center px-3 lg:px-4 py-2 bg-green-50 border border-green-200 rounded-full text-sm lg:text-base">
+              <svg className="w-4 h-4 lg:w-5 lg:h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-green-700 font-medium">
+                KPIs actualizados con datos de {inverterData.results.length} registros
+                {filters.startDate && filters.endDate && (
+                  <span className="ml-2 text-xs opacity-75">
+                    ({new Date(filters.startDate).toLocaleDateString('es-ES')} - {new Date(filters.endDate).toLocaleDateString('es-ES')})
+                  </span>
+                )}
+              </span>
+            </div>
+            
+            {/* Información adicional sobre la actualización automática */}
+            <div className="inline-flex items-center px-3 lg:px-4 py-2 bg-blue-50 border border-blue-200 rounded-full text-xs lg:text-sm">
+              <svg className="w-3 h-3 lg:w-4 lg:h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-blue-700">
+                Los KPIs se actualizan automáticamente al cambiar filtros de institución o fechas
+              </span>
+            </div>
           </div>
         )}
         

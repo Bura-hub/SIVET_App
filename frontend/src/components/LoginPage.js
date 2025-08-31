@@ -652,7 +652,7 @@ function LoginPage({ onLoginSuccess }) {
                             Sistema de Visualización Energética Transaccional
                         </p>
                         <p className="text-xs text-gray-400">
-                            Plataforma MTE para transparencia energética
+                            SIVET para transparencia energética
                         </p>
                         <div className="flex items-center justify-center space-x-4 text-xs text-gray-400 pt-1">
                             <div className="flex items-center space-x-1">
@@ -660,13 +660,6 @@ function LoginPage({ onLoginSuccess }) {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                                 </svg>
                                 <span>Universidad de Nariño</span>
-                            </div>
-                            <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-                            <div className="flex items-center space-x-1">
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                                </svg>
-                                <span>Plataforma MTE</span>
                             </div>
                         </div>
                     </div>

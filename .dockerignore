@@ -1,0 +1,96 @@
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Entornos virtuales
+env_lumen/
+venv/
+ENV/
+env/
+.venv/
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Archivos de base de datos
+*.db
+*.sqlite3
+
+# Archivos de Node.js (para el contexto del backend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos de Git
+.git/
+.gitignore
+
+# Archivos de Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Archivos de documentación
+*.md
+docs/
+
+# Archivos de prueba
+tests/
+test_*.py
+*_test.py
+
+# Archivos de configuración local
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de reportes
+reports/
+*.csv
+
+# Archivos de recursos adicionales
+recursos_adicionales/
+
+# Archivos de Celery
+celerybeat-schedule
+celery.log
+
+# Archivos de media (se montan como volumen)
+media/
+
+# Archivos temporales
+*.tmp
+*.temp

@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: mte_postgres
+    environment:
+      POSTGRES_DB: ${name_db}
+      POSTGRES_USER: ${user_postgres}
+      POSTGRES_PASSWORD: ${password_user_postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - mte_network
+    restart: unless-stopped
+
+  # Redis para Celery
+  redis:
+    image: redis:7-alpine
+    container_name: mte_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mte_network
+    restart: unless-stopped
+
+  # Backend Django
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: mte_backend
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY}
+      - name_db=${name_db}
+      - user_postgres=${user_postgres}
+      - password_user_postgres=${password_user_postgres}
+      - port_postgres=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - SCADA_USERNAME=${SCADA_USERNAME}
+      - SCADA_PASSWORD=${SCADA_PASSWORD}
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,frontend
+    volumes:
+      - ./media:/app/media
+      - ./celery.log:/app/celery.log
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - mte_network
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  # Worker de Celery
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: mte_celery_worker
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY}
+      - name_db=${name_db}
+      - user_postgres=${user_postgres}
+      - password_user_postgres=${password_user_postgres}
+      - port_postgres=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - SCADA_USERNAME=${SCADA_USERNAME}
+      - SCADA_PASSWORD=${SCADA_PASSWORD}
+    volumes:
+      - ./media:/app/media
+      - ./celery.log:/app/celery.log
+    depends_on:
+      - db
+      - redis
+    networks:
+      - mte_network
+    restart: unless-stopped
+    command: celery -A core worker -l info
+
+  # Scheduler de Celery Beat
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: mte_celery_beat
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY}
+      - name_db=${name_db}
+      - user_postgres=${user_postgres}
+      - password_user_postgres=${password_user_postgres}
+      - port_postgres=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - SCADA_USERNAME=${SCADA_USERNAME}
+      - SCADA_PASSWORD=${SCADA_PASSWORD}
+    volumes:
+      - ./media:/app/media
+      - ./celery.log:/app/celery.log
+    depends_on:
+      - db
+      - redis
+    networks:
+      - mte_network
+    restart: unless-stopped
+    command: celery -A core beat -l info
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mte_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - mte_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  mte_network:
+    driver: bridge

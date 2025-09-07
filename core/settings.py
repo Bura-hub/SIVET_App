@@ -269,7 +269,10 @@ SPECTACULAR_SETTINGS = {
     ),
     'VERSION': '2.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    'SECURITY': [{"TokenAuth": []}],
+    'SECURITY': [
+        {"TokenAuth": []},
+        {"SessionAuth": []}
+    ],
     'COMPONENTS': {
         'securitySchemes': {
             'TokenAuth': {
@@ -277,6 +280,12 @@ SPECTACULAR_SETTINGS = {
                 'in': 'header',
                 'name': 'Authorization',
                 'description': "Formato: **Token <access_token>**"
+            },
+            'SessionAuth': {
+                'type': 'apiKey',
+                'in': 'cookie',
+                'name': 'sessionid',
+                'description': "Autenticación por sesión (automática si estás logueado en /admin)"
             }
         }
     },

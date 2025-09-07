@@ -3,6 +3,7 @@ import { KpiCard } from "./KPI/KpiCard";
 import { ChartCard } from "./KPI/ChartCard";
 import TransitionOverlay from './TransitionOverlay';
 import ElectricMeterFilters from './ElectricMeterFilters';
+import { buildApiUrl, ENDPOINTS } from '../utils/apiConfig';
 
 //###########################################################################
 // Importaciones Chart.js
@@ -230,7 +231,8 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
 
       const indicatorsParams = new URLSearchParams(baseParams);
 
-      const indicatorsResp = await fetch(`/api/electric-meter-indicators/?${indicatorsParams.toString()}`, {
+      const indicatorsUrl = buildApiUrl(ENDPOINTS.electrical.indicators, baseParams);
+      const indicatorsResp = await fetch(indicatorsUrl, {
           headers: {
             'Authorization': `Token ${authToken}`,
             'Content-Type': 'application/json'
@@ -284,7 +286,7 @@ function ElectricalDetails({ authToken, onLogout, username, isSuperuser, navigat
       setMeterLoading(true);
       setMeterError(null);
 
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || ''}/api/electric-meters/calculate-new/`, {
+      const response = await fetch(buildApiUrl(ENDPOINTS.electrical.calculate), {
         method: 'POST',
         headers: {
           'Authorization': `Token ${authToken}`,

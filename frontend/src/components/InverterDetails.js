@@ -4,6 +4,7 @@ import { KpiCard } from "./KPI/KpiCard";
 import { ChartCard } from "./KPI/ChartCard";
 import TransitionOverlay from './TransitionOverlay';
 import InverterFilters from './InverterFilters';
+import { buildApiUrl, ENDPOINTS } from '../utils/apiConfig';
 
 //###########################################################################
 // Importaciones Chart.js
@@ -444,9 +445,8 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
         end_date: filters.endDate || defaultEndDate.toISOString().split('T')[0]
       };
 
-      const indicatorsParams = new URLSearchParams(baseParams);
-
-      const indicatorsResp = await fetch(`/api/inverter-indicators/?${indicatorsParams.toString()}`, {
+      const indicatorsUrl = buildApiUrl(ENDPOINTS.inverters.indicators, baseParams);
+      const indicatorsResp = await fetch(indicatorsUrl, {
           headers: {
             'Authorization': `Token ${authToken}`,
             'Content-Type': 'application/json'
@@ -573,15 +573,16 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
       const defaultStartDate = new Date();
       defaultStartDate.setDate(defaultStartDate.getDate() - 30); // Últimos 30 días para gráficos
       
-      const chartParams = new URLSearchParams({
+      const chartBaseParams = {
         time_range: filters.timeRange || 'daily',
         institution_id: filters.institutionId,
         ...(filters.deviceId && { device_id: filters.deviceId }),
         start_date: filters.startDate || defaultStartDate.toISOString().split('T')[0],
         end_date: filters.endDate || defaultEndDate.toISOString().split('T')[0]
-      });
+      };
 
-      const chartResp = await fetch(`/api/inverter-chart-data/?${chartParams.toString()}`, {
+      const chartUrl = buildApiUrl(ENDPOINTS.inverters.chartData, chartBaseParams);
+      const chartResp = await fetch(chartUrl, {
         headers: {
           'Authorization': `Token ${authToken}`,
           'Content-Type': 'application/json'
@@ -727,7 +728,7 @@ function InverterDetails({ authToken, onLogout, username, isSuperuser, navigateT
         ...(filters.deviceId && { device_id: filters.deviceId })
       };
 
-      const response = await fetch('/api/inverters/calculate/', {
+      const response = await fetch(buildApiUrl(ENDPOINTS.inverters.calculate), {
         method: 'POST',
         headers: {
           'Authorization': `Token ${authToken}`,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ENDPOINTS, getDefaultFetchOptions } from '../utils/apiConfig';
+import { ENDPOINTS, getDefaultFetchOptions, buildApiUrl } from '../utils/apiConfig';
 
 const WeatherStationFilters = ({ onFiltersChange, authToken }) => {
   const [timeRange, setTimeRange] = useState('daily');
@@ -67,7 +67,7 @@ const WeatherStationFilters = ({ onFiltersChange, authToken }) => {
     try {
       console.log('🔍 WeatherStationFilters - fetchInstitutions iniciando');
       // Usar el endpoint correcto para instituciones (compartido entre todas las categorías)
-      const response = await fetch(ENDPOINTS.electrical.institutions, {
+      const response = await fetch(buildApiUrl(ENDPOINTS.electrical.institutions), {
         ...getDefaultFetchOptions(authToken)
       });
       console.log('🔍 WeatherStationFilters - fetchInstitutions response status:', response.status);
@@ -95,7 +95,7 @@ const WeatherStationFilters = ({ onFiltersChange, authToken }) => {
       console.log('🔍 WeatherStationFilters - institutions disponibles:', institutions);
       
       // Usar el endpoint específico para estaciones meteorológicas
-      const url = `${ENDPOINTS.weather.stations}?institution_id=${institutionId}`;
+      const url = buildApiUrl(ENDPOINTS.weather.stations, { institution_id: institutionId });
       console.log('🔍 WeatherStationFilters - fetchDevices URL:', url);
       console.log('🔍 WeatherStationFilters - fetchDevices headers:', getDefaultFetchOptions(authToken));
       

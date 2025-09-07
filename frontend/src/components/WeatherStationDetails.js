@@ -294,7 +294,8 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
 
       const indicatorsParams = new URLSearchParams(baseParams);
 
-      const indicatorsResp = await fetch(`/api/weather-station-indicators/?${indicatorsParams.toString()}`, {
+      const indicatorsUrl = buildApiUrl(ENDPOINTS.weather.indicators, baseParams);
+      const indicatorsResp = await fetch(indicatorsUrl, {
           headers: {
             'Authorization': `Token ${authToken}`,
             'Content-Type': 'application/json'
@@ -336,7 +337,7 @@ function WeatherStationDetails({ authToken, onLogout, username, isSuperuser, nav
       setWeatherLoading(true);
       setWeatherError(null);
 
-      const response = await fetch(`${ENDPOINTS.weather.calculate}`, {
+      const response = await fetch(buildApiUrl(ENDPOINTS.weather.calculate), {
         method: 'POST',
         headers: {
           'Authorization': `Token ${authToken}`,

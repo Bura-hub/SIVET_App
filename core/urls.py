@@ -21,6 +21,9 @@ Ejemplos de configuración:
 from django.contrib import admin
 from django.urls import path, include
 
+# Importar vista de health check
+from .health_views import health_check
+
 # Configuración para archivos media en desarrollo
 from django.conf import settings
 from django.conf.urls.static import static
@@ -37,6 +40,9 @@ from drf_spectacular.views import (
 # ========================= Rutas principales del proyecto =========================
 
 urlpatterns = [
+    # Health check endpoint
+    path('health/', health_check, name='health_check'),
+    
     # Ruta para obtener el esquema OpenAPI en formato JSON
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
 

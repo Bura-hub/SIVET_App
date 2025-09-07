@@ -1,0 +1,38 @@
+# Django Core
+Django==5.2.4
+djangorestframework==3.16.0
+django-cors-headers==4.7.0
+django-filter==25.1
+django-timezone-field==7.1
+django-ratelimit==4.1.0
+
+# Database
+psycopg2-binary==2.9.10
+
+# Celery
+celery==5.5.3
+django-celery-beat==2.8.1
+redis==6.2.0
+
+# API Documentation
+drf-spectacular==0.28.0
+drf-spectacular-sidecar==2025.7.1
+
+# Data Processing
+numpy==2.3.2
+matplotlib==3.10.5
+openpyxl==3.1.5
+reportlab==4.4.3
+
+# HTTP Requests
+requests==2.32.4
+
+# Image Processing
+pillow==11.3.0
+
+# Environment
+python-dotenv==1.1.1
+
+# Utilities
+PyYAML==6.0.2
+python-dateutil==2.9.0.post0

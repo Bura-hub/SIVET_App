@@ -1,5 +1,5 @@
 // Configuración base de la API
-export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 
 // Endpoints organizados por categoría
 export const ENDPOINTS = {
@@ -67,7 +67,7 @@ export const ENDPOINTS = {
  * @returns {string} - URL completa
  */
 export const buildApiUrl = (endpoint, params = {}) => {
-  const url = new URL(API_BASE_URL + endpoint, window.location.origin);
+  const url = new URL(API_BASE_URL + endpoint);
   Object.keys(params).forEach(key => {
     if (params[key] !== undefined && params[key] !== null) {
       url.searchParams.append(key, params[key]);

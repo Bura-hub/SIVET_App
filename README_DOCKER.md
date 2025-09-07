@@ -1,344 +1,400 @@
-# 🐳 Dockerización de MteLumen_App
+# 🐳 MTE Lumen - Docker Deployment Guide
 
-Este documento describe cómo dockerizar y ejecutar la aplicación MteLumen_App usando Docker y Docker Compose.
+## 📋 Tabla de Contenidos
 
-## 📋 Prerrequisitos
+- [Requisitos Previos](#requisitos-previos)
+- [Configuración Inicial](#configuración-inicial)
+- [Desarrollo](#desarrollo)
+- [Producción](#producción)
+- [Scripts de Gestión](#scripts-de-gestión)
+- [Monitoreo](#monitoreo)
+- [Troubleshooting](#troubleshooting)
+- [Estructura del Proyecto](#estructura-del-proyecto)
 
-- Docker (versión 20.10 o superior)
-- Docker Compose (versión 2.0 o superior)
-- Git (para clonar el repositorio)
+## 🔧 Requisitos Previos
 
-## 🚀 Inicio Rápido
+### Software Necesario
+- **Docker**: Versión 20.10 o superior
+- **Docker Compose**: Versión 2.0 o superior
+- **Git**: Para clonar el repositorio
+- **OpenSSL**: Para generar certificados SSL (producción)
 
-### 1. Configuración Inicial
-
+### Verificar Instalación
 ```bash
-# Clonar el repositorio (si no lo has hecho)
-git clone <tu-repositorio>
+docker --version
+docker-compose --version
+```
+
+## ⚙️ Configuración Inicial
+
+### 1. Clonar el Repositorio
+```bash
+git clone <repository-url>
 cd MteLumen_App
-
-# Copiar el archivo de configuración de ejemplo
-cp env.example .env
-
-# Editar las variables de entorno
-nano .env
 ```
 
 ### 2. Configurar Variables de Entorno
+```bash
+# Copiar archivo de ejemplo
+cp env.example .env
 
-Edita el archivo `.env` con tus configuraciones:
+# Editar variables de entorno
+nano .env
+```
 
+### Variables de Entorno Requeridas
 ```env
 # Configuración de Django
 DEBUG=True
-SECRET_KEY=tu_clave_secreta_aqui_cambiar_en_produccion
+SECRET_KEY=tu_clave_secreta_muy_segura_aqui
 ALLOWED_HOSTS=localhost,127.0.0.1
 
-# Configuración de Base de Datos PostgreSQL
+# Base de Datos PostgreSQL
 name_db=mte_lumen_db
 user_postgres=mte_user
 password_user_postgres=tu_password_seguro_aqui
 port_postgres=5432
 
-# Configuración de Redis
-REDIS_HOST=redis
-REDIS_PORT=6379
-REDIS_DB=0
+# Redis
+REDIS_PASSWORD=tu_password_redis_seguro
 
 # Credenciales SCADA
 SCADA_USERNAME=tu_usuario_scada
 SCADA_PASSWORD=tu_password_scada
+
+# Producción
+DOMAIN_NAME=tu-dominio.com
 ```
 
-### 3. Ejecutar la Aplicación
+## 🚀 Desarrollo
 
+### Opciones de Desarrollo
+
+#### 1. Desarrollo con Docker (Base de datos y Redis en contenedores)
 ```bash
-# Dar permisos de ejecución a los scripts
-chmod +x scripts/*.sh
+# Usar el script de gestión
+./scripts/docker-manager.sh dev-up
 
-# Iniciar la aplicación
-./scripts/start.sh
-
-# O usar Docker Compose directamente
+# O manualmente
 docker-compose up -d
 ```
 
-## 🏗️ Arquitectura de la Aplicación
-
-La aplicación está compuesta por los siguientes servicios:
-
-### Servicios Principales
-
-- **Frontend (React)**: Interfaz de usuario en el puerto 3000
-- **Backend (Django)**: API REST en el puerto 8000
-- **PostgreSQL**: Base de datos principal
-- **Redis**: Broker para Celery y caché
-- **Celery Worker**: Procesamiento de tareas asíncronas
-- **Celery Beat**: Programador de tareas periódicas
-
-### Redes y Volúmenes
-
-- **Red**: `mte_network` - Conecta todos los servicios
-- **Volúmenes**:
-  - `postgres_data`: Datos de PostgreSQL
-  - `redis_data`: Datos de Redis
-  - `./media`: Archivos multimedia de la aplicación
-
-## 📁 Estructura de Archivos Docker
-
-```
-MteLumen_App/
-├── Dockerfile.backend          # Dockerfile para Django
-├── frontend/Dockerfile         # Dockerfile para React
-├── docker-compose.yml          # Configuración de desarrollo
-├── docker-compose.prod.yml     # Configuración de producción
-├── .dockerignore              # Archivos a ignorar en Docker
-├── env.example                # Variables de entorno de ejemplo
-├── init-db.sql               # Script de inicialización de BD
-├── nginx.conf                # Configuración de Nginx
-└── scripts/                  # Scripts de utilidad
-    ├── start.sh              # Iniciar aplicación
-    ├── stop.sh               # Detener aplicación
-    ├── restart.sh            # Reiniciar aplicación
-    ├── logs.sh               # Ver logs
-    └── backup.sh             # Crear backup
-```
-
-## 🛠️ Comandos Útiles
-
-### Gestión de la Aplicación
-
+#### 2. Desarrollo Local (Todo en Docker - PostgreSQL 17 + Redis + Celery)
 ```bash
-# Iniciar todos los servicios
-docker-compose up -d
+# Usar el script de gestión
+./scripts/docker-manager.sh local-up
 
-# Detener todos los servicios
-docker-compose down
+# O manualmente
+docker-compose -f docker-compose.local.yml up -d
+```
 
-# Reiniciar la aplicación
-docker-compose restart
+### Servicios Disponibles
 
-# Ver logs en tiempo real
-docker-compose logs -f
+#### Desarrollo con Docker (todo en contenedores):
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **Nginx**: http://localhost:80
+- **PostgreSQL**: localhost:5432 (contenedor)
+- **Redis**: localhost:6379 (contenedor)
+
+#### Desarrollo Local (Todo en Docker):
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **Nginx**: http://localhost:80
+- **PostgreSQL 17**: localhost:5432 (Docker)
+- **Redis**: localhost:6379 (Docker)
+- **Celery Worker**: Docker
+- **Celery Beat**: Docker
+
+### Comandos Útiles
+```bash
+# Ver logs
+./scripts/docker-manager.sh logs dev
+./scripts/docker-manager.sh logs local
 
 # Ver logs de un servicio específico
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f celery_worker
+./scripts/docker-manager.sh logs dev backend
+./scripts/docker-manager.sh logs local backend
+
+# Reiniciar servicios
+./scripts/docker-manager.sh restart dev
+./scripts/docker-manager.sh restart local
+
+# Ver estado de servicios
+./scripts/docker-manager.sh status dev
+./scripts/docker-manager.sh status local
+
+# Verificar salud de servicios
+./scripts/docker-manager.sh health dev
+./scripts/docker-manager.sh health local
 ```
 
-### Gestión de la Base de Datos
+## 🏭 Producción
 
+### 1. Configurar SSL (Opcional)
 ```bash
-# Ejecutar migraciones
-docker-compose exec backend python manage.py migrate
+# Crear directorio para certificados
+mkdir -p ssl
 
-# Crear superusuario
-docker-compose exec backend python manage.py createsuperuser
+# Generar certificados autofirmados (solo para testing)
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout ssl/key.pem \
+    -out ssl/cert.pem
 
-# Acceder a la base de datos
-docker-compose exec db psql -U mte_user -d mte_lumen_db
-
-# Hacer backup de la base de datos
-docker-compose exec db pg_dump -U mte_user mte_lumen_db > backup.sql
+# Para producción real, usar Let's Encrypt o certificados comerciales
 ```
 
-### Gestión de Celery
-
-```bash
-# Ver estado de Celery
-docker-compose exec celery_worker celery -A core status
-
-# Ejecutar tarea específica
-docker-compose exec celery_worker celery -A core call scada_proxy.tasks.sync_scada_metadata
-
-# Ver tareas en cola
-docker-compose exec redis redis-cli llen celery
+### 2. Configurar Variables de Producción
+```env
+# En .env
+DEBUG=False
+ALLOWED_HOSTS=tu-dominio.com,www.tu-dominio.com
+DOMAIN_NAME=tu-dominio.com
 ```
 
-## 🔧 Desarrollo
-
-### Modo Desarrollo
-
+### 3. Desplegar a Producción
 ```bash
-# Iniciar en modo desarrollo
-docker-compose up -d
+# Despliegue completo
+./scripts/deploy.sh deploy
 
-# Ver logs en tiempo real
-docker-compose logs -f
-
-# Reconstruir después de cambios
-docker-compose up --build -d
+# O manualmente
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
-### Debugging
-
+### 4. Verificar Despliegue
 ```bash
-# Acceder al contenedor del backend
-docker-compose exec backend bash
+# Verificar salud
+./scripts/monitor.sh report prod
 
-# Acceder al contenedor del frontend
-docker-compose exec frontend sh
-
-# Ver logs de un servicio específico
-docker-compose logs -f backend
+# Ver logs
+./scripts/docker-manager.sh logs prod
 ```
 
-## 🚀 Producción
+## 🛠️ Scripts de Gestión
 
-### Configuración de Producción
-
-1. **Configurar variables de entorno**:
-   ```bash
-   cp env.example .env
-   # Editar .env con configuraciones de producción
-   ```
-
-2. **Usar docker-compose.prod.yml**:
-   ```bash
-   docker-compose -f docker-compose.prod.yml up -d
-   ```
-
-3. **Configurar Nginx** (opcional):
-   - Editar `nginx.conf` con tu dominio
-   - Configurar certificados SSL
-   - Descomentar configuración HTTPS
-
-### Optimizaciones de Producción
-
-- Usar Gunicorn en lugar del servidor de desarrollo de Django
-- Configurar Nginx como proxy reverso
-- Usar volúmenes persistentes para datos
-- Configurar logs centralizados
-- Implementar monitoreo y alertas
-
-## 🔒 Seguridad
-
-### Buenas Prácticas
-
-1. **Variables de entorno**:
-   - Nunca commitees archivos `.env`
-   - Usa claves secretas fuertes
-   - Rota las claves regularmente
-
-2. **Redes**:
-   - Los servicios de base de datos no exponen puertos en producción
-   - Usa redes internas para comunicación entre servicios
-
-3. **Volúmenes**:
-   - Usa volúmenes nombrados para datos persistentes
-   - Configura permisos apropiados
-
-## 🐛 Solución de Problemas
-
-### Problemas Comunes
-
-1. **Error de conexión a la base de datos**:
-   ```bash
-   # Verificar que PostgreSQL esté ejecutándose
-   docker-compose ps
-   
-   # Ver logs de la base de datos
-   docker-compose logs db
-   ```
-
-2. **Error de permisos**:
-   ```bash
-   # Dar permisos a los scripts
-   chmod +x scripts/*.sh
-   ```
-
-3. **Puerto ya en uso**:
-   ```bash
-   # Verificar qué proceso usa el puerto
-   lsof -i :3000
-   lsof -i :8000
-   
-   # Detener la aplicación
-   docker-compose down
-   ```
-
-4. **Problemas de memoria**:
-   ```bash
-   # Limpiar recursos de Docker
-   docker system prune -a
-   ```
-
-### Logs y Debugging
-
+### Docker Manager (`scripts/docker-manager.sh`)
 ```bash
-# Ver todos los logs
-docker-compose logs
+# Desarrollo
+./scripts/docker-manager.sh dev-up          # Iniciar desarrollo (todo en Docker)
+./scripts/docker-manager.sh local-up        # Iniciar desarrollo local (PostgreSQL 17 + Docker)
+./scripts/docker-manager.sh stop            # Detener servicios
+./scripts/docker-manager.sh restart dev     # Reiniciar desarrollo
+./scripts/docker-manager.sh restart local   # Reiniciar desarrollo local
 
-# Ver logs de un servicio específico
-docker-compose logs backend
+# Producción
+./scripts/docker-manager.sh prod-up         # Iniciar producción
+./scripts/docker-manager.sh restart prod    # Reiniciar producción
 
-# Seguir logs en tiempo real
-docker-compose logs -f
+# Utilidades
+./scripts/docker-manager.sh backup-db       # Backup de base de datos (PostgreSQL Docker)
+./scripts/docker-manager.sh health local    # Verificar salud (PostgreSQL 17 + Docker)
+./scripts/docker-manager.sh health prod     # Verificar salud (producción)
+./scripts/docker-manager.sh cleanup         # Limpiar recursos Docker
+```
 
-# Ver logs con timestamps
-docker-compose logs -t
+### Deployment Script (`scripts/deploy.sh`)
+```bash
+# Despliegue completo
+./scripts/deploy.sh deploy
+
+# Verificar salud
+./scripts/deploy.sh health
+
+# Rollback
+./scripts/deploy.sh rollback
+
+# Solo backup
+./scripts/deploy.sh backup
+```
+
+### Monitoring Script (`scripts/monitor.sh`)
+```bash
+# Reporte completo
+./scripts/monitor.sh report local
+./scripts/monitor.sh report prod
+
+# Monitoreo continuo
+./scripts/monitor.sh monitor local
+./scripts/monitor.sh monitor prod
+
+# Verificar componentes específicos
+./scripts/monitor.sh status local
+./scripts/monitor.sh resources local
+./scripts/monitor.sh database local
+./scripts/monitor.sh redis local
 ```
 
 ## 📊 Monitoreo
 
-### Verificar Estado de los Servicios
+### Health Checks
+Todos los servicios incluyen health checks automáticos:
 
+- **Backend**: `http://localhost:8000/health/`
+- **Frontend**: `http://localhost:3000/health`
+- **Nginx**: `http://localhost/health`
+
+### Logs
 ```bash
-# Estado de todos los contenedores
-docker-compose ps
+# Ver logs en tiempo real
+docker-compose logs -f
 
+# Logs de un servicio específico
+docker-compose logs -f backend
+
+# Logs con timestamps
+docker-compose logs -f -t
+```
+
+### Métricas de Recursos
+```bash
 # Uso de recursos
 docker stats
 
-# Espacio en disco
+# Información del sistema
 docker system df
 ```
 
-### Métricas de la Aplicación
+## 🔧 Troubleshooting
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **Admin Django**: http://localhost:8000/admin
-- **Documentación API**: http://localhost:8000/api/schema/swagger-ui/
+### Problemas Comunes
 
-## 🔄 Backup y Restauración
-
-### Crear Backup
-
+#### 1. Puerto ya en uso
 ```bash
-# Usar el script de backup
-./scripts/backup.sh
+# Verificar qué proceso usa el puerto
+netstat -tulpn | grep :80
 
-# O manualmente
-docker-compose exec db pg_dump -U mte_user mte_lumen_db > backup.sql
+# Cambiar puerto en docker-compose.yml
+ports:
+  - "8080:80"  # Cambiar 80 por 8080
 ```
 
-### Restaurar Backup
-
+#### 2. Error de permisos
 ```bash
-# Restaurar base de datos
-docker-compose exec -T db psql -U mte_user -d mte_lumen_db < backup.sql
+# En Linux/Mac, cambiar permisos
+sudo chown -R $USER:$USER .
+
+# En Windows, ejecutar como administrador
 ```
 
-## 📚 Recursos Adicionales
+#### 3. Base de datos no conecta
+```bash
+# Verificar que PostgreSQL esté corriendo
+docker-compose ps db
 
-- [Documentación de Docker](https://docs.docker.com/)
-- [Documentación de Docker Compose](https://docs.docker.com/compose/)
-- [Documentación de Django](https://docs.djangoproject.com/)
-- [Documentación de React](https://reactjs.org/docs/)
-- [Documentación de Celery](https://docs.celeryproject.org/)
+# Ver logs de la base de datos
+docker-compose logs db
 
-## 🤝 Contribución
+# Reiniciar base de datos
+docker-compose restart db
+```
 
-Para contribuir al proyecto:
+#### 4. Celery no procesa tareas
+```bash
+# Verificar workers
+docker-compose logs celery_worker
 
-1. Fork el repositorio
-2. Crea una rama para tu feature
-3. Haz commit de tus cambios
-4. Push a la rama
-5. Abre un Pull Request
+# Reiniciar workers
+docker-compose restart celery_worker celery_beat
 
-## 📄 Licencia
+# Verificar Redis
+docker-compose exec redis redis-cli ping
+```
 
-Este proyecto está bajo la licencia [MIT](LICENSE).
+### Comandos de Diagnóstico
+```bash
+# Verificar estado de todos los servicios
+./scripts/monitor.sh status prod
+
+# Verificar conectividad de red
+docker network ls
+docker network inspect mte_network_prod
+
+# Verificar volúmenes
+docker volume ls
+docker volume inspect mte_postgres_data_prod
+```
+
+## 📁 Estructura del Proyecto
+
+```
+MteLumen_App/
+├── 📁 authentication/          # App de autenticación
+├── 📁 core/                    # Configuración principal
+├── 📁 external_energy/         # App de energía externa
+├── 📁 frontend/                # Aplicación React
+│   ├── 📄 Dockerfile          # Dockerfile del frontend
+│   └── 📄 nginx.conf          # Configuración Nginx del frontend
+├── 📁 indicators/              # App de indicadores
+├── 📁 nginx/                   # Configuración Nginx
+│   ├── 📄 nginx.conf          # Nginx desarrollo
+│   └── 📄 nginx.prod.conf     # Nginx producción
+├── 📁 requirements/            # Dependencias Python
+│   ├── 📄 base.txt            # Dependencias base
+│   ├── 📄 development.txt     # Dependencias desarrollo
+│   └── 📄 production.txt      # Dependencias producción
+├── 📁 scada_proxy/             # App proxy SCADA
+├── 📁 scripts/                 # Scripts de gestión
+│   ├── 📄 docker-manager.sh   # Gestor principal
+│   ├── 📄 deploy.sh           # Script de despliegue
+│   └── 📄 monitor.sh          # Script de monitoreo
+├── 📄 docker-compose.yml       # Compose desarrollo
+├── 📄 docker-compose.prod.yml  # Compose producción
+├── 📄 Dockerfile.backend       # Dockerfile backend
+├── 📄 .env                     # Variables de entorno
+├── 📄 env.example              # Ejemplo de variables
+└── 📄 README_DOCKER.md         # Esta documentación
+```
+
+## 🔒 Seguridad
+
+### Mejores Prácticas Implementadas
+
+1. **Usuarios no-root**: Todos los contenedores ejecutan con usuarios no-privilegiados
+2. **Health checks**: Monitoreo automático de salud de servicios
+3. **Rate limiting**: Protección contra ataques DDoS
+4. **Security headers**: Headers de seguridad en Nginx
+5. **SSL/TLS**: Soporte para HTTPS en producción
+6. **Variables de entorno**: Credenciales fuera del código
+7. **Logs centralizados**: Gestión de logs para auditoría
+
+### Configuración de Firewall
+```bash
+# Permitir solo puertos necesarios
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw allow 22/tcp  # SSH
+ufw enable
+```
+
+## 📈 Escalabilidad
+
+### Escalar Servicios
+```bash
+# Escalar workers de Celery
+docker-compose -f docker-compose.prod.yml up -d --scale celery_worker=3
+
+# Escalar backend
+docker-compose -f docker-compose.prod.yml up -d --scale backend=2
+```
+
+### Load Balancing
+El Nginx está configurado para balancear carga entre múltiples instancias del backend.
+
+## 🆘 Soporte
+
+### Logs de Error
+```bash
+# Ver logs de error
+./scripts/monitor.sh logs prod
+
+# Logs específicos de error
+docker-compose logs | grep ERROR
+```
+
+### Contacto
+Para soporte técnico, contactar al equipo de desarrollo.
+
+---
+
+**Última actualización**: $(date)
+**Versión**: 2.0.0

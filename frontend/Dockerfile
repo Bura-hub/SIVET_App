@@ -1,34 +1,56 @@
-# Dockerfile para el frontend React
-FROM node:18-alpine
+# ================================
+# Multi-stage Dockerfile para Frontend React
+# ================================
 
-# Establecer directorio de trabajo
+# Stage 1: Build stage
+FROM node:18-alpine as build
+
+# Set working directory
 WORKDIR /app
 
-# Copiar archivos de dependencias
+# Copy package files
 COPY package*.json ./
 
-# Instalar dependencias
-RUN npm ci --only=production
+# Install dependencies
+RUN npm ci --only=production --silent
 
-# Copiar código fuente
+# Copy source code
 COPY . .
 
-# Construir la aplicación para producción
+# Build the application
 RUN npm run build
 
-# Instalar servidor web ligero
-RUN npm install -g serve
+# Stage 2: Production stage
+FROM nginx:alpine as production
 
-# Crear usuario no-root
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+# Install curl for health checks
+RUN apk add --no-cache curl
 
-# Cambiar propietario de archivos
-RUN chown -R nextjs:nodejs /app
+# Copy built application from build stage
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Create nginx user and set permissions
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001 -G nodejs && \
+    chown -R nextjs:nodejs /usr/share/nginx/html && \
+    chown -R nextjs:nodejs /var/cache/nginx && \
+    chown -R nextjs:nodejs /var/log/nginx && \
+    chown -R nextjs:nodejs /etc/nginx/conf.d && \
+    touch /var/run/nginx.pid && \
+    chown -R nextjs:nodejs /var/run/nginx.pid
+
+# Switch to non-root user
 USER nextjs
 
-# Exponer puerto
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/ || exit 1
+
+# Expose port
 EXPOSE 3000
 
-# Comando para servir la aplicación
-CMD ["serve", "-s", "build", "-l", "3000"]
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ENDPOINTS, getDefaultFetchOptions } from '../utils/apiConfig';
+import { ENDPOINTS, getDefaultFetchOptions, buildApiUrl } from '../utils/apiConfig';
 
 const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
   const [timeRange, setTimeRange] = useState('daily');
@@ -63,7 +63,7 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
 
   const fetchInstitutions = async () => {
     try {
-      const response = await fetch(ENDPOINTS.electrical.institutions, {
+      const response = await fetch(buildApiUrl(ENDPOINTS.electrical.institutions), {
         ...getDefaultFetchOptions(authToken)
       });
       if (!response.ok) {
@@ -84,7 +84,7 @@ const ElectricMeterFilters = ({ onFiltersChange, authToken }) => {
       console.log('Fetching devices for institution:', institutionId, 'Type:', typeof institutionId);
       console.log('Institutions available:', institutions);
       
-      const url = `${ENDPOINTS.electrical.devices}?institution_id=${institutionId}`;
+      const url = buildApiUrl(ENDPOINTS.electrical.devices, { institution_id: institutionId });
       console.log('Request URL:', url);
       console.log('Request headers:', getDefaultFetchOptions(authToken));
       

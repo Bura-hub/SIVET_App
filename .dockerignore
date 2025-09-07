@@ -1,96 +1,164 @@
-# Archivos de Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# Git
+.git
+.gitignore
+.gitattributes
 
-# Entornos virtuales
-env_lumen/
-venv/
-ENV/
-env/
-.venv/
+# Documentation
+README.md
+README_DOCKER.md
+*.md
 
-# Archivos de IDE
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Archivos de sistema
+# OS files
 .DS_Store
 Thumbs.db
 
 # Logs
 *.log
 logs/
+celery.log
 
-# Archivos de base de datos
-*.db
-*.sqlite3
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.coverage
+htmlcov/
 
-# Archivos de Node.js (para el contexto del backend)
+# Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.npm
+.yarn-integrity
 
-# Archivos de Git
-.git/
-.gitignore
+# Build outputs
+build/
+dist/
+static/
+media/
 
-# Archivos de Docker
+# Docker
 Dockerfile*
 docker-compose*.yml
 .dockerignore
 
-# Archivos de documentación
-*.md
-docs/
+# Scripts
+scripts/
 
-# Archivos de prueba
+# Backups
+backups/
+
+# SSL certificates
+ssl/
+
+# Nginx config
+nginx/
+
+# Requirements (will be copied separately)
+requirements/
+
+# Tests
 tests/
-test_*.py
-*_test.py
+*.test.js
+*.spec.js
 
-# Archivos de configuración local
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Archivos de reportes
-reports/
-*.csv
-
-# Archivos de recursos adicionales
-recursos_adicionales/
-
-# Archivos de Celery
-celerybeat-schedule
-celery.log
-
-# Archivos de media (se montan como volumen)
-media/
-
-# Archivos temporales
+# Temporary files
+tmp/
+temp/
 *.tmp
 *.temp
+
+# Database
+*.db
+*.sqlite3
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Local development
+local_settings.py

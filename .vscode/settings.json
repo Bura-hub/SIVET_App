@@ -1,5 +1,12 @@
 {
-    "cSpell.words": [
-        "corsheaders"
-    ]
+    "python.analysis.extraPaths": [
+        "./",
+        "./authentication",
+        "./core",
+        "./external_energy",
+        "./indicators",
+        "./scada_proxy"
+    ],
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "basic"
 }

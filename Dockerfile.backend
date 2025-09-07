@@ -1,43 +1,101 @@
-# Dockerfile para el backend Django
-FROM python:3.11-slim
+# ================================
+# Multi-stage Dockerfile para Backend Django
+# ================================
 
-# Establecer variables de entorno
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV DEBIAN_FRONTEND=noninteractive
+# Stage 1: Base Python image with system dependencies
+FROM python:3.11-slim as base
 
-# Instalar dependencias del sistema
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        postgresql-client \
-        build-essential \
-        libpq-dev \
-        gettext \
-        curl \
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    build-essential \
+    libpq-dev \
+    gettext \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear directorio de trabajo
+# Stage 2: Dependencies
+FROM base as dependencies
+
+# Create and activate virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy requirements file
+COPY requirements.txt /tmp/requirements.txt
+
+# Install Python dependencies
+RUN pip install --upgrade pip && \
+    pip install -r /tmp/requirements.txt
+
+# Stage 3: Development image
+FROM dependencies as development
+
+# Install development tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    vim \
+    nano \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Set work directory
 WORKDIR /app
 
-# Copiar archivos de dependencias
-COPY requirements.txt .
+# Copy application code
+COPY --chown=appuser:appuser . .
 
-# Instalar dependencias de Python
-RUN pip install --no-cache-dir -r requirements.txt
+# Create necessary directories
+RUN mkdir -p /app/static /app/media /app/logs && \
+    chown -R appuser:appuser /app
 
-# Copiar código de la aplicación
-COPY . .
-
-# Crear directorio para archivos estáticos
-RUN mkdir -p /app/static
-
-# Crear usuario no-root para seguridad
-RUN adduser --disabled-password --gecos '' appuser \
-    && chown -R appuser:appuser /app
+# Switch to non-root user
 USER appuser
 
-# Exponer puerto
+# Expose port
 EXPOSE 8000
 
-# Comando por defecto
+# Default command for development
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+# Stage 4: Production image
+FROM base as production
+
+# Copy virtual environment from dependencies stage
+COPY --from=dependencies /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create app user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Set work directory
+WORKDIR /app
+
+# Copy application code
+COPY --chown=appuser:appuser . .
+
+# Create necessary directories
+RUN mkdir -p /app/static /app/media /app/logs && \
+    chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Default command
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "core.wsgi:application"]

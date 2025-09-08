@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ================================
-# MTE Lumen - Deployment Script
+# MTE Lumen - Production Deployment Script
 # ================================
 
 set -e
@@ -59,13 +59,34 @@ pre_deployment_checks() {
         exit 1
     fi
     
-    # Check disk space (at least 2GB free)
+    # Check SSL certificates for production
+    if [ ! -d "./ssl" ] || [ ! -f "./ssl/cert.pem" ] || [ ! -f "./ssl/key.pem" ]; then
+        log_warning "SSL certificates not found. Creating self-signed certificates..."
+        create_ssl_certificates
+    fi
+    
+    # Check disk space (at least 5GB free for production)
     available_space=$(df . | tail -1 | awk '{print $4}')
-    if [ "$available_space" -lt 2097152 ]; then
-        log_warning "Low disk space. At least 2GB recommended for deployment."
+    if [ "$available_space" -lt 5242880 ]; then
+        log_warning "Low disk space. At least 5GB recommended for production deployment."
     fi
     
     log_success "Pre-deployment checks passed"
+}
+
+# Create SSL certificates
+create_ssl_certificates() {
+    log_info "Creating SSL certificates..."
+    
+    mkdir -p ssl
+    
+    # Generate self-signed certificate
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout ssl/key.pem \
+        -out ssl/cert.pem \
+        -subj "/C=CO/ST=Bogota/L=Bogota/O=MTE/OU=IT/CN=localhost"
+    
+    log_success "SSL certificates created"
 }
 
 # Create backup before deployment
@@ -132,7 +153,7 @@ deploy_services() {
     
     # Wait for services to be healthy
     log_info "Waiting for services to be healthy..."
-    sleep 30
+    sleep 45
     
     # Check health
     if health_check; then
@@ -172,6 +193,13 @@ health_check() {
         all_healthy=false
     fi
     
+    # Check HTTPS endpoint
+    if curl -f -k https://localhost/health > /dev/null 2>&1; then
+        log_success "Nginx HTTPS health check passed"
+    else
+        log_warning "Nginx HTTPS health check failed (this might be expected with self-signed certificates)"
+    fi
+    
     return $([ "$all_healthy" = true ] && echo 0 || echo 1)
 }
 
@@ -202,7 +230,7 @@ post_deployment() {
     log_info "Running post-deployment tasks..."
     
     # Clear cache
-    docker-compose -f docker-compose.prod.yml exec -T backend python manage.py clear_cache
+    docker-compose -f docker-compose.prod.yml exec -T backend python manage.py clear_cache 2>/dev/null || log_warning "Cache clear command not available"
     
     # Restart Celery workers
     docker-compose -f docker-compose.prod.yml restart celery_worker celery_beat
@@ -219,7 +247,7 @@ cleanup() {
 
 # Main deployment function
 deploy() {
-    log_info "Starting deployment process..."
+    log_info "Starting production deployment process..."
     log_info "Deployment log: $DEPLOYMENT_LOG"
     
     # Create log directory
@@ -236,21 +264,27 @@ deploy() {
     post_deployment
     cleanup
     
-    log_success "Deployment completed successfully!"
-    log_info "Application is available at: https://${DOMAIN_NAME:-localhost}"
+    log_success "Production deployment completed successfully!"
+    log_info "Application is available at:"
+    log_info "  HTTP:  http://${DOMAIN_NAME:-localhost}"
+    log_info "  HTTPS: https://${DOMAIN_NAME:-localhost}"
+    log_info ""
+    log_info "Admin panel: https://${DOMAIN_NAME:-localhost}/admin"
+    log_info "API docs: https://${DOMAIN_NAME:-localhost}/api/schema/swagger-ui/"
 }
 
 # Show help
 show_help() {
-    echo "MTE Lumen Deployment Script"
+    echo "MTE Lumen Production Deployment Script"
     echo ""
     echo "Usage: $0 [COMMAND]"
     echo ""
     echo "Commands:"
-    echo "  deploy          Full deployment process"
+    echo "  deploy          Full production deployment process"
     echo "  health          Check service health"
     echo "  rollback        Rollback to previous version"
     echo "  backup          Create backup only"
+    echo "  ssl             Create SSL certificates"
     echo "  help            Show this help message"
     echo ""
     echo "Environment variables:"
@@ -272,6 +306,9 @@ case "${1:-help}" in
         ;;
     "backup")
         create_backup
+        ;;
+    "ssl")
+        create_ssl_certificates
         ;;
     "help"|*)
         show_help

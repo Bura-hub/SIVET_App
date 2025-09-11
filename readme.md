@@ -1,4 +1,4 @@
-# 🌟 MTE Lumen - Sistema de Visualización Energética Transaccional
+# 🌟 MTE SIVE - Sistema de Visualización Energética Transaccional
 
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![Django](https://img.shields.io/badge/Django-5.2.4-green.svg)](https://www.djangoproject.com/)
@@ -8,7 +8,7 @@
 
 ## 📋 Descripción General
 
-**MTE Lumen** es una aplicación web integral para la visualización de datos históricos e indicadores clave relacionados con el consumo y generación de energía eléctrica, así como variables climáticas relevantes. Construida con una arquitectura desacoplada utilizando **Django (Python)** para el backend y **React (JavaScript)** para el frontend.
+**MTE SIVE** es una aplicación web integral para la visualización de datos históricos e indicadores clave relacionados con el consumo y generación de energía eléctrica, así como variables climáticas relevantes. Construida con una arquitectura desacoplada utilizando **Django (Python)** para el backend y **React (JavaScript)** para el frontend.
 
 ### 🎯 Objetivo Principal
 Transformar datos complejos en información accionable, proporcionando a analistas y ejecutivos una visión clara y dinámica del comportamiento de los sistemas energéticos y climáticos.
@@ -61,9 +61,9 @@ Transformar datos complejos en información accionable, proporcionando a analist
 
 ### Infraestructura
 - **Docker**: Containerización completa de la aplicación
-- **Nginx**: Proxy reverso con SSL/TLS
 - **PostgreSQL**: Base de datos con persistencia
 - **Redis**: Cache y broker de mensajes
+- **Acceso Directo**: Sin proxy reverso - acceso directo a puertos
 
 ## 🛠️ Requisitos del Sistema
 
@@ -82,7 +82,7 @@ Transformar datos complejos en información accionable, proporcionando a analist
 ### 1. Clonar el Repositorio
 ```bash
 git clone <URL_DEL_REPOSITORIO>
-cd MteLumen_App
+cd MteSive_App
 ```
 
 ### 2. Configurar Variables de Entorno
@@ -104,7 +104,7 @@ nano .env     # Linux/Mac
 
 #### Para Producción (Windows):
 ```powershell
-.\scripts\deploy_production_simple.ps1
+.\scripts\deploy_production.ps1 deploy
 ```
 
 #### Para Producción (Linux/Mac):
@@ -125,15 +125,15 @@ docker-compose -f docker-compose.prod.yml ps
 ## 🌐 URLs de Acceso
 
 ### Desarrollo:
-- **Frontend**: http://localhost:3000
-- **Backend**: http://localhost:8000
-- **Admin**: http://localhost:8000/admin
+- **Frontend**: http://localhost:${FRONTEND_PORT:-3503}
+- **Backend**: http://localhost:${BACKEND_PORT:-3504}
+- **Admin**: http://localhost:${BACKEND_PORT:-3504}/admin
 
 ### Producción:
-- **HTTP**: http://localhost
-- **HTTPS**: https://localhost (si SSL está configurado)
-- **Admin**: http://localhost/admin
-- **API**: http://localhost/api/schema/swagger-ui/
+- **Frontend**: http://localhost:${FRONTEND_PORT:-3503}
+- **Backend**: http://localhost:${BACKEND_PORT:-3504}
+- **Admin**: http://localhost:${BACKEND_PORT:-3504}/admin
+- **API**: http://localhost:${BACKEND_PORT:-3504}/api/schema/swagger-ui/
 
 ## 📊 Indicadores Clave de Rendimiento (KPIs)
 

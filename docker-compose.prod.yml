@@ -1,9 +1,11 @@
+name: mtesive_app
+
 services:
   # ================================
   # Base de datos PostgreSQL
   # ================================
   db:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     container_name: mte_postgres_prod
     environment:
       POSTGRES_DB: ${name_db}
@@ -71,7 +73,10 @@ services:
       context: .
       dockerfile: Dockerfile.backend
       target: production
+    image: mtesive_app-backend:latest
     container_name: mte_backend_prod
+    ports:
+      - "${BACKEND_PORT:-3504}:8000"
     environment:
       - DEBUG=False
       - SECRET_KEY=${SECRET_KEY}
@@ -79,13 +84,16 @@ services:
       - user_postgres=${user_postgres}
       - password_user_postgres=${password_user_postgres}
       - port_postgres=5432
+      - POSTGRES_HOST=db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_DB=0
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - SCADA_BASE_URL=${SCADA_BASE_URL}
       - SCADA_USERNAME=${SCADA_USERNAME}
       - SCADA_PASSWORD=${SCADA_PASSWORD}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
       - DJANGO_SETTINGS_MODULE=core.settings
     volumes:
       - ./media:/app/media
@@ -129,6 +137,7 @@ services:
       context: .
       dockerfile: Dockerfile.backend
       target: production
+    image: mtesive_app-celery_worker:latest
     container_name: mte_celery_worker_prod
     environment:
       - DEBUG=False
@@ -137,10 +146,12 @@ services:
       - user_postgres=${user_postgres}
       - password_user_postgres=${password_user_postgres}
       - port_postgres=5432
+      - POSTGRES_HOST=db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_DB=0
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - SCADA_BASE_URL=${SCADA_BASE_URL}
       - SCADA_USERNAME=${SCADA_USERNAME}
       - SCADA_PASSWORD=${SCADA_PASSWORD}
       - DJANGO_SETTINGS_MODULE=core.settings
@@ -181,6 +192,7 @@ services:
       context: .
       dockerfile: Dockerfile.backend
       target: production
+    image: mtesive_app-celery_beat:latest
     container_name: mte_celery_beat_prod
     environment:
       - DEBUG=False
@@ -189,10 +201,12 @@ services:
       - user_postgres=${user_postgres}
       - password_user_postgres=${password_user_postgres}
       - port_postgres=5432
+      - POSTGRES_HOST=db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_DB=0
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - SCADA_BASE_URL=${SCADA_BASE_URL}
       - SCADA_USERNAME=${SCADA_USERNAME}
       - SCADA_PASSWORD=${SCADA_PASSWORD}
       - DJANGO_SETTINGS_MODULE=core.settings
@@ -229,7 +243,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: production
+    image: mtesive_app-frontend:latest
     container_name: mte_frontend_prod
+    ports:
+      - "${FRONTEND_PORT:-3503}:3000"
     depends_on:
       backend:
         condition: service_healthy
@@ -254,42 +271,8 @@ services:
           memory: 256M
 
   # ================================
-  # Nginx como Proxy Reverso
+  # Nginx eliminado - Acceso directo a puertos
   # ================================
-  nginx:
-    image: nginx:alpine
-    container_name: mte_nginx_prod
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./static:/var/www/static:ro
-      - ./media:/var/www/media:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - mte_network_prod
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
 
 # ================================
 # Volumes

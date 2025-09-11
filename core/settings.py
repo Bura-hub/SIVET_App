@@ -82,10 +82,8 @@ MIDDLEWARE = [
 
 # ========================= CORS =========================
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React frontend
-    "http://127.0.0.1:3000",
-]
+# CORS dinámico desde variables de entorno
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
 
 # Restringe CORS a orígenes definidos explícitamente
 CORS_ALLOW_ALL_ORIGINS = False

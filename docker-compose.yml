@@ -1,11 +1,13 @@
 version: '3.8'
 
+name: mtesive_app
+
 services:
   # ================================
   # Base de datos PostgreSQL
   # ================================
   db:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     container_name: mte_postgres_dev
     environment:
       POSTGRES_DB: ${name_db}
@@ -64,6 +66,7 @@ services:
       context: .
       dockerfile: Dockerfile.backend
       target: production
+    image: mtesive_app-backend:dev
     container_name: mte_backend_dev
     environment:
       - DEBUG=${DEBUG:-True}
@@ -78,7 +81,7 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD:-defaultpassword}
       - SCADA_USERNAME=${SCADA_USERNAME}
       - SCADA_PASSWORD=${SCADA_PASSWORD}
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,frontend,nginx
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,frontend
       - DJANGO_SETTINGS_MODULE=core.settings
     volumes:
       - ./media:/app/media
@@ -118,6 +121,7 @@ services:
       context: .
       dockerfile: Dockerfile.backend
       target: production
+    image: mtesive_app-celery_worker:dev
     container_name: mte_celery_worker_dev
     environment:
       - DEBUG=${DEBUG:-True}
@@ -164,6 +168,7 @@ services:
       context: .
       dockerfile: Dockerfile.backend
       target: production
+    image: mtesive_app-celery_beat:dev
     container_name: mte_celery_beat_dev
     environment:
       - DEBUG=${DEBUG:-True}
@@ -206,6 +211,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: production
+    image: mtesive_app-frontend:dev
     container_name: mte_frontend_dev
     ports:
       - "3000:3000"
@@ -227,34 +233,8 @@ services:
         max-file: "3"
 
   # ================================
-  # Nginx como Proxy Reverso
+  # Nginx eliminado - Acceso directo a puertos
   # ================================
-  nginx:
-    image: nginx:alpine
-    container_name: mte_nginx_dev
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./static:/var/www/static:ro
-      - ./media:/var/www/media:ro
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - mte_network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
 # ================================
 # Volumes

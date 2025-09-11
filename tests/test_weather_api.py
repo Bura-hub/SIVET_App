@@ -51,7 +51,9 @@ def test_weather_api():
     # 2. Probar endpoint sin filtros
     print(f"\n2. PROBANDO ENDPOINT SIN FILTROS:")
     try:
-        url = "http://localhost:8000/api/weather-stations/list/"
+        backend_host = os.getenv('DOMAIN_NAME', 'localhost')
+        backend_port = os.getenv('BACKEND_PORT', '8000')
+        url = f"http://{backend_host}:{backend_port}/api/weather-stations/list/"
         headers = {
             'Authorization': f'Token {token.key}',
             'Content-Type': 'application/json'
@@ -85,7 +87,7 @@ def test_weather_api():
     print(f"\n3. PROBANDO ENDPOINT CON FILTRO DE INSTITUCIÓN:")
     try:
         # Probar con la primera institución (Udenar, ID=1)
-        url = "http://localhost:8000/api/weather-stations/list/?institution_id=1"
+        url = f"http://{backend_host}:{backend_port}/api/weather-stations/list/?institution_id=1"
         
         print(f"   URL: {url}")
         

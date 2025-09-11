@@ -37,7 +37,7 @@ SIMULATED_DATA_DAYS=90
 
 ```bash
 # Activar entorno virtual
-.\env_lumen\Scripts\activate
+.\env_sive\Scripts\activate
 
 # Ejecutar migraciones
 python manage.py makemigrations external_energy

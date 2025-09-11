@@ -1,4 +1,4 @@
-# 📚 Índice de Documentación - MTE Lumen
+# 📚 Índice de Documentación - MTE SIVE
 
 ## 🏠 Documentación Principal
 
@@ -73,7 +73,7 @@
 ## 🗂️ Estructura de Documentación
 
 ```
-MteLumen_App/
+MteSive_App/
 ├── README.md                    # 📖 Documentación principal
 ├── DOCS_INDEX.md               # 📚 Este índice
 ├── DEPLOYMENT_PRODUCTION.md    # 🚀 Despliegue en producción

@@ -1,4 +1,4 @@
-# Guía de Despliegue en Producción - MTE Lumen App
+# Guía de Despliegue en Producción - MTE SIVE App
 
 ## 🚀 Aplicar Cambios y Desplegar en Producción
 
@@ -9,7 +9,7 @@
 - **RAM**: Mínimo 4GB, recomendado 8GB
 - **Almacenamiento**: Mínimo 20GB libres
 - **Docker**: Docker Engine 20.10+ y Docker Compose 2.0+
-- **Puertos**: 80 (HTTP) y 443 (HTTPS) abiertos
+- **Puertos**: 80 (HTTP), 443 (HTTPS), 3503 (Frontend), 3504 (Backend)
 
 #### Instalar Docker en Linux:
 ```bash
@@ -27,18 +27,18 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 #### Opción A: Clonar desde Git
 ```bash
-git clone <tu-repositorio> /opt/mte-lumen
-cd /opt/mte-lumen
+git clone <tu-repositorio> /opt/mte-sive
+cd /opt/mte-sive
 ```
 
 #### Opción B: Transferir archivos manualmente
 ```bash
 # Crear directorio en el servidor
-sudo mkdir -p /opt/mte-lumen
-sudo chown $USER:$USER /opt/mte-lumen
+sudo mkdir -p /opt/mte-sive
+sudo chown $USER:$USER /opt/mte-sive
 
 # Transferir archivos (desde tu máquina local)
-scp -r . usuario@servidor:/opt/mte-lumen/
+scp -r . usuario@servidor:/opt/mte-sive/
 ```
 
 ### 3. **Configurar Variables de Entorno**
@@ -59,7 +59,7 @@ SECRET_KEY=tu_clave_secreta_muy_segura_aqui
 ALLOWED_HOSTS=tu-dominio.com,www.tu-dominio.com,IP_DEL_SERVIDOR
 
 # Base de datos
-name_db=mte_lumen_prod
+name_db=mte_sive_prod
 user_postgres=mte_user
 password_user_postgres=password_muy_seguro_para_postgres
 
@@ -125,10 +125,10 @@ docker exec mte_backend_prod python manage.py collectstatic --noinput
 ### 5. **Verificar el Despliegue**
 
 #### URLs de Acceso:
-- **HTTP**: http://tu-dominio.com o http://IP_DEL_SERVIDOR
-- **HTTPS**: https://tu-dominio.com o https://IP_DEL_SERVIDOR
-- **Admin**: https://tu-dominio.com/admin
-- **API**: https://tu-dominio.com/api/schema/swagger-ui/
+- **Frontend**: http://tu-dominio.com:3503 o http://IP_DEL_SERVIDOR:3503
+- **Backend**: http://tu-dominio.com:3504 o http://IP_DEL_SERVIDOR:3504
+- **Admin**: http://tu-dominio.com:3504/admin o http://IP_DEL_SERVIDOR:3504/admin
+- **API**: http://tu-dominio.com:3504/api/schema/swagger-ui/ o http://IP_DEL_SERVIDOR:3504/api/schema/swagger-ui/
 
 #### Comandos de Verificación:
 ```bash
@@ -142,8 +142,8 @@ docker-compose -f docker-compose.prod.yml logs -f
 ./scripts/deploy_production.sh health
 
 # Verificar endpoints
-curl -f http://localhost/health
-curl -f -k https://localhost/health
+curl -f http://localhost:3503/health
+curl -f http://localhost:3504/health/
 ```
 
 ### 6. **Configurar Dominio (Opcional)**
@@ -167,7 +167,7 @@ sudo cp /etc/letsencrypt/live/tu-dominio.com/privkey.pem ssl/key.pem
 sudo chown $USER:$USER ssl/*.pem
 
 # Reiniciar servicios
-docker-compose -f docker-compose.prod.yml restart nginx
+docker-compose -f docker-compose.prod.yml restart frontend backend
 ```
 
 ### 7. **Comandos de Mantenimiento**
@@ -182,7 +182,7 @@ docker-compose -f docker-compose.prod.yml restart
 
 # Ver logs específicos
 docker logs mte_backend_prod --tail 50
-docker logs mte_nginx_prod --tail 50
+docker logs mte_frontend_prod --tail 50
 
 # Actualizar aplicación
 git pull
@@ -195,10 +195,10 @@ git pull
 ./scripts/deploy_production.sh backup
 
 # Acceder a la base de datos
-docker exec -it mte_postgres_prod psql -U mte_user -d mte_lumen_prod
+docker exec -it mte_postgres_prod psql -U mte_user -d mte_sive_prod
 
 # Restaurar desde backup
-docker exec -i mte_postgres_prod psql -U mte_user -d mte_lumen_prod < backup.sql
+docker exec -i mte_postgres_prod psql -U mte_user -d mte_sive_prod < backup.sql
 ```
 
 #### Gestión de Celery:
@@ -255,7 +255,7 @@ sudo systemctl stop nginx    # Si Nginx está corriendo
 #### Error: Permisos de archivos
 ```bash
 # Dar permisos correctos
-sudo chown -R $USER:$USER /opt/mte-lumen
+sudo chown -R $USER:$USER /opt/mte-sive
 chmod +x scripts/*.sh
 ```
 
@@ -307,7 +307,7 @@ sudo ufw status
 ./scripts/deploy_production.sh backup
 
 # Backup manual de base de datos
-docker exec mte_postgres_prod pg_dump -U mte_user mte_lumen_prod > backup_$(date +%Y%m%d).sql
+docker exec mte_postgres_prod pg_dump -U mte_user mte_sive_prod > backup_$(date +%Y%m%d).sql
 
 # Backup de archivos media
 tar -czf media_backup_$(date +%Y%m%d).tar.gz media/
@@ -316,7 +316,7 @@ tar -czf media_backup_$(date +%Y%m%d).tar.gz media/
 #### Recuperación:
 ```bash
 # Restaurar base de datos
-docker exec -i mte_postgres_prod psql -U mte_user -d mte_lumen_prod < backup.sql
+docker exec -i mte_postgres_prod psql -U mte_user -d mte_sive_prod < backup.sql
 
 # Restaurar archivos media
 tar -xzf media_backup.tar.gz

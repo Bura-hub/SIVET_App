@@ -3,7 +3,7 @@
 # ================================
 
 # Stage 1: Build stage
-FROM node:18-alpine as build
+FROM node:18-alpine AS build
 
 # Set working directory
 WORKDIR /app
@@ -21,7 +21,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production stage
-FROM nginx:alpine as production
+FROM nginx:alpine AS production
 
 # Install curl for health checks
 RUN apk add --no-cache curl

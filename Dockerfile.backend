@@ -3,7 +3,7 @@
 # ================================
 
 # Stage 1: Base Python image with system dependencies
-FROM python:3.11-slim as base
+FROM python:3.11-slim AS base
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Stage 2: Dependencies
-FROM base as dependencies
+FROM base AS dependencies
 
 # Create and activate virtual environment
 RUN python -m venv /opt/venv
@@ -36,7 +36,7 @@ RUN pip install --upgrade pip && \
     pip install -r /tmp/requirements.txt
 
 # Stage 3: Development image
-FROM dependencies as development
+FROM dependencies AS development
 
 # Install development tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -68,7 +68,7 @@ EXPOSE 8000
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 # Stage 4: Production image
-FROM base as production
+FROM base AS production
 
 # Copy virtual environment from dependencies stage
 COPY --from=dependencies /opt/venv /opt/venv

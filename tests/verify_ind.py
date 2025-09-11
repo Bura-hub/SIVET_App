@@ -38,8 +38,9 @@ logger = logging.getLogger(__name__)
 print("--- Preparando entorno de prueba ---")
 factory = APIRequestFactory()
 
-# CORRECCIÓN: Usar HTTP_HOST='localhost' para evitar DisallowedHost
-request = factory.get('/api/indicators/consumption-summary/', HTTP_HOST='localhost')
+# CORRECCIÓN: Usar HTTP_HOST dinámico para evitar DisallowedHost
+backend_host = os.getenv('DOMAIN_NAME', 'localhost')
+request = factory.get('/api/indicators/consumption-summary/', HTTP_HOST=backend_host)
 
 view = ConsumptionSummaryView.as_view() # Obtiene la función de vista para llamar
 

@@ -1,8 +1,8 @@
-# Script para desplegar MTE Lumen App en una nueva máquina (Windows)
+# Script para desplegar MTE SIVE App en una nueva máquina (Windows)
 # Uso: .\deploy_to_new_machine.ps1
 
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "DESPLIEGUE DE MTE LUMEN APP" -ForegroundColor Cyan
+Write-Host "DESPLIEGUE DE MTE SIVE APP" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
 # Verificar que Docker esté instalado
@@ -78,10 +78,13 @@ docker exec mte_backend_local python manage.py collectstatic --noinput
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "✅ DESPLIEGUE COMPLETADO" -ForegroundColor Green
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "🌐 Frontend: http://localhost:3000" -ForegroundColor Green
-Write-Host "🔧 Backend API: http://localhost:8000" -ForegroundColor Green
-Write-Host "📚 Admin Panel: http://localhost:8000/admin" -ForegroundColor Green
-Write-Host "📖 Swagger API: http://localhost:8000/api/schema/swagger-ui/" -ForegroundColor Green
+$frontendPort = if ($env:FRONTEND_PORT) { $env:FRONTEND_PORT } else { "3503" }
+$backendPort = if ($env:BACKEND_PORT) { $env:BACKEND_PORT } else { "3504" }
+Write-Host "🌐 Frontend: http://localhost`:$frontendPort" -ForegroundColor Green
+Write-Host "🔧 Backend API: http://localhost`:$backendPort" -ForegroundColor Green
+Write-Host "📚 Admin Panel: http://localhost`:$backendPort/admin" -ForegroundColor Green
+Write-Host "📖 Swagger API: http://localhost`:$backendPort/api/schema/swagger-ui/" -ForegroundColor Green
+Write-Host "ℹ️  Nota: En producción, usa puertos 3503 (frontend) y 3504 (backend)" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "📋 Comandos útiles:" -ForegroundColor Yellow
 Write-Host "   Ver logs: docker-compose -f docker-compose.local.yml logs -f" -ForegroundColor White

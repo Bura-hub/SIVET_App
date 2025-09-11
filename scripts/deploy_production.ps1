@@ -1,160 +1,463 @@
-# Script para desplegar MTE Lumen App en Producción (Windows)
-# Uso: .\deploy_production_fixed.ps1
+# ================================
+# MTE SIVE - Production Deployment Script (Windows PowerShell)
+# ================================
 
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "DESPLIEGUE DE PRODUCCIÓN - MTE LUMEN APP" -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
+param(
+    [Parameter(Position=0)]
+    [ValidateSet("deploy", "health", "rollback", "backup", "ssl", "help")]
+    [string]$Command = "help"
+)
 
-# Verificar Docker
-Write-Host "🔍 Verificando Docker..." -ForegroundColor Yellow
-try {
-    $dockerVersion = docker --version
-    Write-Host "✅ Docker instalado: $dockerVersion" -ForegroundColor Green
+# Configuration
+$PROJECT_NAME = "mte-sive"
+$ENV_FILE = ".env"
+$BACKUP_DIR = ".\backups"
+$LOG_DIR = ".\logs"
+$DEPLOYMENT_LOG = "$LOG_DIR\deployment_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+
+# Get server IP from .env or use default
+$SERVER_IP = ""
+if (Test-Path $ENV_FILE) {
+    $envContent = Get-Content $ENV_FILE
+    $domainLine = $envContent | Where-Object { $_ -match "^DOMAIN_NAME=" }
+    if ($domainLine) {
+        $SERVER_IP = ($domainLine -split "=")[1].Trim()
+    }
 }
-catch {
-    Write-Host "❌ Docker no está instalado. Por favor instala Docker Desktop primero." -ForegroundColor Red
+
+if (-not $SERVER_IP) {
+    Write-LogError "DOMAIN_NAME not found in .env file. Please set DOMAIN_NAME in your .env file."
     exit 1
 }
 
-# Verificar Docker Compose
-try {
-    $composeVersion = docker-compose --version
-    Write-Host "✅ Docker Compose instalado: $composeVersion" -ForegroundColor Green
-}
-catch {
-    Write-Host "❌ Docker Compose no está instalado." -ForegroundColor Red
-    exit 1
+# Functions
+function Write-LogInfo {
+    param([string]$Message)
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logMessage = "[$timestamp] [INFO] $Message"
+    Write-Host $logMessage -ForegroundColor Blue
+    Add-Content -Path $DEPLOYMENT_LOG -Value $logMessage
 }
 
-# Verificar archivo .env
-if (-not (Test-Path ".env")) {
-    Write-Host "❌ Archivo .env no encontrado" -ForegroundColor Red
-    Write-Host "📝 Creando archivo .env desde env.example..." -ForegroundColor Yellow
-    Copy-Item "env.example" ".env"
-    Write-Host "✅ Archivo .env creado. Por favor edítalo con tus configuraciones." -ForegroundColor Green
-    Write-Host "   notepad .env" -ForegroundColor Cyan
-    exit 1
+function Write-LogSuccess {
+    param([string]$Message)
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logMessage = "[$timestamp] [SUCCESS] $Message"
+    Write-Host $logMessage -ForegroundColor Green
+    Add-Content -Path $DEPLOYMENT_LOG -Value $logMessage
 }
-Write-Host "✅ Archivo .env encontrado" -ForegroundColor Green
 
-# Crear directorios necesarios
-Write-Host "📁 Creando directorios necesarios..." -ForegroundColor Yellow
-$directories = @("logs", "media\avatars", "static", "reports", "backups", "ssl")
-foreach ($dir in $directories) {
-    New-Item -ItemType Directory -Force -Path $dir | Out-Null
+function Write-LogWarning {
+    param([string]$Message)
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logMessage = "[$timestamp] [WARNING] $Message"
+    Write-Host $logMessage -ForegroundColor Yellow
+    Add-Content -Path $DEPLOYMENT_LOG -Value $logMessage
 }
-Write-Host "✅ Directorios creados" -ForegroundColor Green
 
-# Crear certificados SSL si no existen
-if (-not (Test-Path "ssl\cert.pem") -or -not (Test-Path "ssl\key.pem")) {
-    Write-Host "🔐 Creando certificados SSL autofirmados..." -ForegroundColor Yellow
+function Write-LogError {
+    param([string]$Message)
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logMessage = "[$timestamp] [ERROR] $Message"
+    Write-Host $logMessage -ForegroundColor Red
+    Add-Content -Path $DEPLOYMENT_LOG -Value $logMessage
+}
+
+# Pre-deployment checks
+function Test-PreDeploymentChecks {
+    Write-LogInfo "Running pre-deployment checks..."
     
-    # Verificar OpenSSL
-    $opensslAvailable = $false
+    # Check if .env file exists
+    if (-not (Test-Path $ENV_FILE)) {
+        Write-LogError ".env file not found. Please create it from env.example"
+        exit 1
+    }
+    
+    # Check if Docker is running
     try {
-        $null = openssl version
-        $opensslAvailable = $true
+        docker info | Out-Null
     }
     catch {
-        Write-Host "⚠️  OpenSSL no está disponible. Continuando sin SSL..." -ForegroundColor Yellow
+        Write-LogError "Docker is not running. Please start Docker first."
+        exit 1
     }
     
-    if ($opensslAvailable) {
-        try {
-            openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ssl\key.pem -out ssl\cert.pem -subj "/C=CO/ST=Bogota/L=Bogota/O=MTE/OU=IT/CN=localhost"
-            Write-Host "✅ Certificados SSL creados con OpenSSL" -ForegroundColor Green
-        }
-        catch {
-            Write-Host "⚠️  Error creando certificados con OpenSSL. Continuando sin SSL..." -ForegroundColor Yellow
-        }
+    # Check if docker-compose is available
+    try {
+        docker-compose --version | Out-Null
     }
-    else {
-        Write-Host "⚠️  OpenSSL no disponible. La aplicación funcionará solo con HTTP." -ForegroundColor Yellow
-        Write-Host "   Para HTTPS, instala OpenSSL o proporciona certificados manualmente." -ForegroundColor Cyan
+    catch {
+        Write-LogError "docker-compose is not installed or not in PATH"
+        exit 1
     }
-}
-else {
-    Write-Host "✅ Certificados SSL encontrados" -ForegroundColor Green
-}
-
-# Construir imágenes
-Write-Host "🔨 Construyendo imágenes Docker..." -ForegroundColor Yellow
-docker-compose -f docker-compose.prod.yml build --no-cache
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Error al construir las imágenes Docker" -ForegroundColor Red
-    exit 1
-}
-Write-Host "✅ Imágenes construidas correctamente" -ForegroundColor Green
-
-# Detener servicios existentes
-Write-Host "🛑 Deteniendo servicios existentes..." -ForegroundColor Yellow
-docker-compose -f docker-compose.prod.yml down
-
-# Iniciar servicios
-Write-Host "🚀 Iniciando servicios de producción..." -ForegroundColor Yellow
-docker-compose -f docker-compose.prod.yml up -d
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Error al iniciar los servicios" -ForegroundColor Red
-    exit 1
-}
-
-# Esperar que los servicios estén listos
-Write-Host "⏳ Esperando que los servicios estén listos..." -ForegroundColor Yellow
-Start-Sleep -Seconds 30
-
-# Ejecutar migraciones
-Write-Host "📊 Ejecutando migraciones de base de datos..." -ForegroundColor Yellow
-docker exec mte_backend_prod python manage.py migrate
-
-# Recopilar archivos estáticos
-Write-Host "📦 Recopilando archivos estáticos..." -ForegroundColor Yellow
-docker exec mte_backend_prod python manage.py collectstatic --noinput
-
-# Verificar estado de servicios
-Write-Host "🔍 Verificando estado de servicios..." -ForegroundColor Yellow
-$containers = docker-compose -f docker-compose.prod.yml ps -q
-$allHealthy = $true
-
-foreach ($container in $containers) {
-    $name = docker inspect --format='{{.Name}}' $container | ForEach-Object { $_ -replace '/', '' }
-    $status = docker inspect --format='{{.State.Status}}' $container
     
-    if ($status -eq "running") {
-        Write-Host "✅ $name está ejecutándose" -ForegroundColor Green
+    # Check SSL certificates for production
+    if (-not (Test-Path ".\ssl") -or -not (Test-Path ".\ssl\cert.pem") -or -not (Test-Path ".\ssl\key.pem")) {
+        Write-LogWarning "SSL certificates not found. Creating self-signed certificates..."
+        New-SSLCertificates
     }
-    else {
-        Write-Host "❌ $name no está ejecutándose (Estado: $status)" -ForegroundColor Red
+    
+    # Check disk space (at least 5GB free for production)
+    $drive = (Get-Location).Drive
+    $freeSpace = (Get-WmiObject -Class Win32_LogicalDisk -Filter "DeviceID='$($drive.Name)'").FreeSpace
+    $freeSpaceGB = [math]::Round($freeSpace / 1GB, 2)
+    
+    if ($freeSpaceGB -lt 5) {
+        Write-LogWarning "Low disk space. At least 5GB recommended for production deployment. Available: $freeSpaceGB GB"
+    }
+    
+    Write-LogSuccess "Pre-deployment checks passed"
+    Write-LogInfo "Using server IP: $SERVER_IP"
+}
+
+# Create SSL certificates
+function New-SSLCertificates {
+    Write-LogInfo "Creating SSL certificates for $SERVER_IP..."
+    
+    # Create ssl directory
+    if (-not (Test-Path ".\ssl")) {
+        New-Item -ItemType Directory -Path ".\ssl" | Out-Null
+    }
+    
+    # Check if OpenSSL is available
+    try {
+        openssl version | Out-Null
+    }
+    catch {
+        Write-LogError "OpenSSL is not installed or not in PATH. Please install OpenSSL first."
+        Write-LogInfo "You can download OpenSSL from: https://slproweb.com/products/Win32OpenSSL.html"
+        exit 1
+    }
+    
+    # Generate self-signed certificate with server IP
+    $opensslCmd = "openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ssl\key.pem -out ssl\cert.pem -subj `/`"C=CO/ST=Bogota/L=Bogota/O=MTE/OU=IT/CN=$SERVER_IP`/`""
+    
+    try {
+        Invoke-Expression $opensslCmd
+        Write-LogSuccess "SSL certificates created for $SERVER_IP"
+    }
+    catch {
+        Write-LogError "Failed to create SSL certificates: $_"
+        exit 1
+    }
+}
+
+# Create backup before deployment
+function New-Backup {
+    Write-LogInfo "Creating backup before deployment..."
+    
+    # Create backup directory
+    if (-not (Test-Path $BACKUP_DIR)) {
+        New-Item -ItemType Directory -Path $BACKUP_DIR | Out-Null
+    }
+    
+    # Backup database
+    $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+    $backupFile = "$BACKUP_DIR\pre_deploy_backup_$timestamp.sql"
+    
+    # Get database credentials from .env
+    $envContent = Get-Content $ENV_FILE
+    $userPostgres = ($envContent | Where-Object { $_ -match "^user_postgres=" } | ForEach-Object { ($_ -split "=")[1].Trim() }) -join ""
+    $nameDb = ($envContent | Where-Object { $_ -match "^name_db=" } | ForEach-Object { ($_ -split "=")[1].Trim() }) -join ""
+    
+    if ([string]::IsNullOrEmpty($userPostgres)) { $userPostgres = "BuraHub" }
+    if ([string]::IsNullOrEmpty($nameDb)) { $nameDb = "sivet_db" }
+    
+    try {
+        docker-compose -f docker-compose.prod.yml exec -T db pg_dump -U $userPostgres $nameDb | Out-File -FilePath $backupFile -Encoding UTF8
+        Write-LogSuccess "Database backup created: $backupFile"
+    }
+    catch {
+        Write-LogWarning "Could not create database backup (database might not be running): $_"
+    }
+    
+    # Backup media files
+    if (Test-Path ".\media") {
+        $mediaBackup = "$BACKUP_DIR\media_backup_$timestamp.zip"
+        Compress-Archive -Path ".\media\*" -DestinationPath $mediaBackup -Force
+        Write-LogSuccess "Media files backup created: $mediaBackup"
+    }
+}
+
+# Pull latest images
+function Invoke-PullImages {
+    Write-LogInfo "Checking for latest Docker images..."
+    try {
+        # Pull only external images (postgres, redis) silently, ignore local build warnings
+        docker-compose -f docker-compose.prod.yml pull --quiet 2>$null
+        Write-LogSuccess "External images updated successfully"
+    }
+    catch {
+        Write-LogInfo "Some images will be built locally (this is normal for custom images)"
+    }
+}
+
+# Build new images
+function Invoke-BuildImages {
+    Write-LogInfo "Building new Docker images..."
+    try {
+        docker-compose -f docker-compose.prod.yml build --no-cache
+        Write-LogSuccess "Images built successfully"
+    }
+    catch {
+        Write-LogError "Failed to build images: $_"
+        exit 1
+    }
+}
+
+# Run database migrations
+function Invoke-RunMigrations {
+    Write-LogInfo "Running database migrations..."
+    try {
+        docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate
+        Write-LogSuccess "Migrations completed successfully"
+    }
+    catch {
+        Write-LogError "Failed to run migrations: $_"
+        exit 1
+    }
+}
+
+# Collect static files
+function Invoke-CollectStatic {
+    Write-LogInfo "Collecting static files..."
+    try {
+        docker-compose -f docker-compose.prod.yml exec -T backend python manage.py collectstatic --noinput
+        Write-LogSuccess "Static files collected successfully"
+    }
+    catch {
+        Write-LogError "Failed to collect static files: $_"
+        exit 1
+    }
+}
+
+# Deploy services
+function Invoke-DeployServices {
+    Write-LogInfo "Deploying services..."
+    
+    try {
+        # Stop existing services
+        docker-compose -f docker-compose.prod.yml down
+        
+        # Start new services
+        docker-compose -f docker-compose.prod.yml up -d
+        
+        # Wait for services to be healthy
+        Write-LogInfo "Waiting for services to be healthy..."
+        Start-Sleep -Seconds 45
+        
+        # Check health
+        if (Test-HealthCheck) {
+            Write-LogSuccess "Services deployed successfully"
+        }
+        else {
+            Write-LogError "Some services are not healthy after deployment"
+            Invoke-Rollback
+            exit 1
+        }
+    }
+    catch {
+        Write-LogError "Failed to deploy services: $_"
+        Invoke-Rollback
+        exit 1
+    }
+}
+
+# Health check
+function Test-HealthCheck {
+    Write-LogInfo "Performing health checks..."
+    
+    # Check if all containers are running
+    $containers = docker-compose -f docker-compose.prod.yml ps -q
+    $allHealthy = $true
+    
+    foreach ($container in $containers) {
+        $name = docker inspect --format='{{.Name}}' $container | ForEach-Object { $_.TrimStart('/') }
+        $status = docker inspect --format='{{.State.Status}}' $container
+        
+        if ($status -ne "running") {
+            Write-LogError "$name is not running"
+            $allHealthy = $false
+        }
+        else {
+            Write-LogSuccess "$name is running"
+        }
+    }
+    
+    # Check direct ports (Nginx eliminado)
+    try {
+        $frontendPort = if ($env:FRONTEND_PORT) { $env:FRONTEND_PORT } else { "3503" }
+        $response = Invoke-WebRequest -Uri "http://$SERVER_IP`:$frontendPort" -TimeoutSec 10 -UseBasicParsing
+        if ($response.StatusCode -eq 200) {
+            Write-LogSuccess "Frontend direct port ($frontendPort) is working"
+        }
+    }
+    catch {
+        Write-LogError "Frontend not accessible on port $frontendPort"
         $allHealthy = $false
     }
+    
+    try {
+        $backendPort = if ($env:BACKEND_PORT) { $env:BACKEND_PORT } else { "3504" }
+        $response = Invoke-WebRequest -Uri "http://$SERVER_IP`:$backendPort/health/" -TimeoutSec 10 -UseBasicParsing
+        if ($response.StatusCode -eq 200) {
+            Write-LogSuccess "Backend direct port ($backendPort) is working"
+        }
+    }
+    catch {
+        Write-LogError "Backend not accessible on port $backendPort"
+        $allHealthy = $false
+    }
+    
+    return $allHealthy
 }
 
-# Limpiar imágenes antiguas
-Write-Host "🧹 Limpiando imágenes Docker antiguas..." -ForegroundColor Yellow
-docker image prune -f
-
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "✅ DESPLIEGUE COMPLETADO" -ForegroundColor Green
-Write-Host "==========================================" -ForegroundColor Cyan
-
-if ($allHealthy) {
-    Write-Host "🎉 Todos los servicios están funcionando!" -ForegroundColor Green
+# Rollback function
+function Invoke-Rollback {
+    Write-LogWarning "Rolling back deployment..."
+    
+    try {
+        # Stop current services
+        docker-compose -f docker-compose.prod.yml down
+        
+        # Restore from backup if available
+        $latestBackup = Get-ChildItem -Path "$BACKUP_DIR\pre_deploy_backup_*.sql" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        
+        if ($latestBackup) {
+            Write-LogInfo "Restoring database from backup: $($latestBackup.Name)"
+            
+            # Get database credentials from .env
+            $envContent = Get-Content $ENV_FILE
+            $userPostgres = ($envContent | Where-Object { $_ -match "^user_postgres=" } | ForEach-Object { ($_ -split "=")[1].Trim() }) -join ""
+            $nameDb = ($envContent | Where-Object { $_ -match "^name_db=" } | ForEach-Object { ($_ -split "=")[1].Trim() }) -join ""
+            
+            if ([string]::IsNullOrEmpty($userPostgres)) { $userPostgres = "BuraHub" }
+            if ([string]::IsNullOrEmpty($nameDb)) { $nameDb = "sivet_db" }
+            
+            docker-compose -f docker-compose.prod.yml up -d db
+            Start-Sleep -Seconds 10
+            Get-Content $latestBackup.FullName | docker-compose -f docker-compose.prod.yml exec -T db psql -U $userPostgres -d $nameDb
+        }
+        
+        # Start previous version
+        docker-compose -f docker-compose.prod.yml up -d
+        
+        Write-LogWarning "Rollback completed"
+    }
+    catch {
+        Write-LogError "Rollback failed: $_"
+    }
 }
-else {
-    Write-Host "⚠️  Algunos servicios pueden tener problemas. Revisa los logs." -ForegroundColor Yellow
+
+# Post-deployment tasks
+function Invoke-PostDeployment {
+    Write-LogInfo "Running post-deployment tasks..."
+    
+    try {
+        # Clear cache
+        docker-compose -f docker-compose.prod.yml exec -T backend python manage.py clear_cache 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            Write-LogWarning "Cache clear command not available"
+        }
+        
+        # Restart Celery workers
+        docker-compose -f docker-compose.prod.yml restart celery_worker celery_beat
+        
+        Write-LogSuccess "Post-deployment tasks completed"
+    }
+    catch {
+        Write-LogWarning "Some post-deployment tasks failed: $_"
+    }
 }
 
-Write-Host ""
-Write-Host "🌐 URLs de acceso:" -ForegroundColor Cyan
-Write-Host "   HTTP:  http://localhost" -ForegroundColor White
-Write-Host "   HTTPS: https://localhost (si SSL está configurado)" -ForegroundColor White
-Write-Host "   Admin: http://localhost/admin" -ForegroundColor White
-Write-Host "   API:   http://localhost/api/schema/swagger-ui/" -ForegroundColor White
-Write-Host ""
-Write-Host "📋 Comandos útiles:" -ForegroundColor Yellow
-Write-Host "   Ver logs: docker-compose -f docker-compose.prod.yml logs -f" -ForegroundColor White
-Write-Host "   Detener: docker-compose -f docker-compose.prod.yml down" -ForegroundColor White
-Write-Host "   Estado: docker-compose -f docker-compose.prod.yml ps" -ForegroundColor White
-Write-Host "   Crear superusuario: docker exec -it mte_backend_prod python manage.py createsuperuser" -ForegroundColor White
-Write-Host "==========================================" -ForegroundColor Cyan
+# Cleanup old images
+function Invoke-Cleanup {
+    Write-LogInfo "Cleaning up old Docker images..."
+    try {
+        docker image prune -f
+        Write-LogSuccess "Cleanup completed"
+    }
+    catch {
+        Write-LogWarning "Cleanup failed: $_"
+    }
+}
+
+# Main deployment function
+function Invoke-Deploy {
+    Write-LogInfo "Starting production deployment process..."
+    Write-LogInfo "Deployment log: $DEPLOYMENT_LOG"
+    Write-LogInfo "Target server: $SERVER_IP"
+    
+    # Create log directory
+    if (-not (Test-Path $LOG_DIR)) {
+        New-Item -ItemType Directory -Path $LOG_DIR | Out-Null
+    }
+    
+    # Run deployment steps
+    Test-PreDeploymentChecks
+    New-Backup
+    Invoke-PullImages
+    Invoke-BuildImages
+    Invoke-DeployServices
+    Invoke-RunMigrations
+    Invoke-CollectStatic
+    Invoke-PostDeployment
+    Invoke-Cleanup
+    
+    Write-LogSuccess "Production deployment completed successfully!"
+    Write-LogInfo "Application is available at:"
+    $frontendPort = if ($env:FRONTEND_PORT) { $env:FRONTEND_PORT } else { "3503" }
+    $backendPort = if ($env:BACKEND_PORT) { $env:BACKEND_PORT } else { "3504" }
+    Write-LogInfo "  Frontend: http://$SERVER_IP`:$frontendPort"
+    Write-LogInfo "  Backend:  http://$SERVER_IP`:$backendPort"
+    Write-LogInfo ""
+    Write-LogInfo "Admin panel: http://$SERVER_IP`:$backendPort/admin"
+    Write-LogInfo "API docs: http://$SERVER_IP`:$backendPort/docs/"
+}
+
+# Show help
+function Show-Help {
+    Write-Host "MTE SIVE Production Deployment Script (Windows PowerShell)" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Usage: .\deploy_production.ps1 [COMMAND]" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Commands:" -ForegroundColor Yellow
+    Write-Host "  deploy          Full production deployment process" -ForegroundColor White
+    Write-Host "  health          Check service health" -ForegroundColor White
+    Write-Host "  rollback        Rollback to previous version" -ForegroundColor White
+    Write-Host "  backup          Create backup only" -ForegroundColor White
+    Write-Host "  ssl             Create SSL certificates" -ForegroundColor White
+    Write-Host "  help            Show this help message" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Environment variables:" -ForegroundColor Yellow
+    Write-Host "  DOMAIN_NAME     Domain name for the application (default: localhost)" -ForegroundColor White
+    Write-Host "  user_postgres   PostgreSQL username (default: BuraHub)" -ForegroundColor White
+    Write-Host "  name_db         Database name (default: sivet_db)" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Current server IP: $SERVER_IP" -ForegroundColor Green
+}
+
+# Main script logic
+switch ($Command) {
+    "deploy" {
+        Invoke-Deploy
+    }
+    "health" {
+        Test-HealthCheck
+    }
+    "rollback" {
+        Invoke-Rollback
+    }
+    "backup" {
+        New-Backup
+    }
+    "ssl" {
+        New-SSLCertificates
+    }
+    "help" {
+        Show-Help
+    }
+    default {
+        Show-Help
+    }
+}

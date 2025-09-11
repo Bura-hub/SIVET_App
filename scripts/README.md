@@ -185,14 +185,18 @@ nano .env     # Linux/Mac
 # Configuración de Django
 DEBUG=False
 SECRET_KEY=tu_clave_secreta_muy_segura
-ALLOWED_HOSTS=tu-dominio.com,IP_DEL_SERVIDOR
+ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,TU_IP_SERVIDOR
 
 # Base de datos
 name_db=mte_sive_prod
 user_postgres=mte_user
 password_user_postgres=password_seguro
+POSTGRES_HOST=postgres
 
 # Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_DB=0
 REDIS_PASSWORD=password_seguro_redis
 
 # SCADA
@@ -204,12 +208,15 @@ SCADA_PASSWORD=tu_password
 FRONTEND_PORT=3503
 BACKEND_PORT=3504
 
-# URLs para el frontend
-REACT_APP_API_URL=http://tu-dominio.com:3504
-REACT_APP_FRONTEND_URL=http://tu-dominio.com:3503
+# URLs para el frontend (CAMBIAR localhost por tu IP)
+REACT_APP_API_URL=http://TU_IP_SERVIDOR:3504
+REACT_APP_FRONTEND_URL=http://TU_IP_SERVIDOR:3503
 
-# Configuración de CORS
-CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:3503,http://127.0.0.1:3503
+# Configuración de CORS (INCLUYE localhost Y IP real)
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:3503,http://127.0.0.1:3503,http://TU_IP_SERVIDOR,http://TU_IP_SERVIDOR:3503
+
+# Configuración de dominio
+DOMAIN_NAME=TU_IP_SERVIDOR
 ```
 
 ### **4. Política de Ejecución de PowerShell (Windows):**
@@ -232,12 +239,12 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 - **Admin**: http://localhost:3504/admin
 
 ### **Producción:**
-- **HTTP**: http://tu-dominio.com
-- **HTTPS**: https://tu-dominio.com (si SSL está configurado)
-- **Frontend directo**: http://tu-dominio.com:3503
-- **Backend directo**: http://tu-dominio.com:3504
-- **Admin**: http://tu-dominio.com/admin
-- **API**: http://tu-dominio.com/api/schema/swagger-ui/
+- **Frontend**: http://TU_IP_SERVIDOR:3503
+- **Backend**: http://TU_IP_SERVIDOR:3504
+- **Admin**: http://TU_IP_SERVIDOR:3504/admin
+- **API**: http://TU_IP_SERVIDOR:3504/api/schema/swagger-ui/
+
+**Nota**: Reemplaza `TU_IP_SERVIDOR` con la IP específica de tu servidor (ej: 192.168.1.100)
 
 ## 🛠️ **Solución de Problemas**
 

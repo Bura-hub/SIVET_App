@@ -258,6 +258,7 @@ health_check() {
     # Check direct ports (Nginx eliminado)
     FRONTEND_PORT=${FRONTEND_PORT:-3503}
     BACKEND_PORT=${BACKEND_PORT:-3504}
+    DOMAIN_NAME=${DOMAIN_NAME:-$SERVER_IP}
     
     # Check if curl is available
     if ! command -v curl > /dev/null 2>&1; then
@@ -265,14 +266,14 @@ health_check() {
         return 0
     fi
     
-    if curl -f -s http://$SERVER_IP:$FRONTEND_PORT > /dev/null 2>&1; then
+    if curl -f -s http://$DOMAIN_NAME:$FRONTEND_PORT > /dev/null 2>&1; then
         log_success "Frontend direct port ($FRONTEND_PORT) is working"
     else
         log_error "Frontend not accessible on port $FRONTEND_PORT"
         all_healthy=false
     fi
     
-    if curl -f -s http://$SERVER_IP:$BACKEND_PORT/health/ > /dev/null 2>&1; then
+    if curl -f -s http://$DOMAIN_NAME:$BACKEND_PORT/health/ > /dev/null 2>&1; then
         log_success "Backend direct port ($BACKEND_PORT) is working"
     else
         log_error "Backend not accessible on port $BACKEND_PORT"
@@ -374,12 +375,13 @@ deploy() {
     # Get port values from environment or use defaults
     FRONTEND_PORT=${FRONTEND_PORT:-3503}
     BACKEND_PORT=${BACKEND_PORT:-3504}
+    DOMAIN_NAME=${DOMAIN_NAME:-$SERVER_IP}
     
-    log_info "  Frontend: http://$SERVER_IP:$FRONTEND_PORT"
-    log_info "  Backend:  http://$SERVER_IP:$BACKEND_PORT"
+    log_info "  Frontend: http://$DOMAIN_NAME:$FRONTEND_PORT"
+    log_info "  Backend:  http://$DOMAIN_NAME:$BACKEND_PORT"
     log_info ""
-    log_info "Admin panel: http://$SERVER_IP:$BACKEND_PORT/admin"
-    log_info "API docs: http://$SERVER_IP:$BACKEND_PORT/api/schema/swagger-ui/"
+    log_info "Admin panel: http://$DOMAIN_NAME:$BACKEND_PORT/admin"
+    log_info "API docs: http://$DOMAIN_NAME:$BACKEND_PORT/api/schema/swagger-ui/"
 }
 
 # Show help

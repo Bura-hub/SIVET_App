@@ -80,11 +80,13 @@ Write-Host "✅ DESPLIEGUE COMPLETADO" -ForegroundColor Green
 Write-Host "==========================================" -ForegroundColor Cyan
 $frontendPort = if ($env:FRONTEND_PORT) { $env:FRONTEND_PORT } else { "3503" }
 $backendPort = if ($env:BACKEND_PORT) { $env:BACKEND_PORT } else { "3504" }
-Write-Host "🌐 Frontend: http://localhost`:$frontendPort" -ForegroundColor Green
-Write-Host "🔧 Backend API: http://localhost`:$backendPort" -ForegroundColor Green
-Write-Host "📚 Admin Panel: http://localhost`:$backendPort/admin" -ForegroundColor Green
-Write-Host "📖 Swagger API: http://localhost`:$backendPort/api/schema/swagger-ui/" -ForegroundColor Green
-Write-Host "ℹ️  Nota: En producción, usa puertos 3503 (frontend) y 3504 (backend)" -ForegroundColor Cyan
+$domainName = if ($env:DOMAIN_NAME) { $env:DOMAIN_NAME } else { "localhost" }
+
+Write-Host "🌐 Frontend: http://$domainName`:$frontendPort" -ForegroundColor Green
+Write-Host "🔧 Backend API: http://$domainName`:$backendPort" -ForegroundColor Green
+Write-Host "📚 Admin Panel: http://$domainName`:$backendPort/admin" -ForegroundColor Green
+Write-Host "📖 Swagger API: http://$domainName`:$backendPort/api/schema/swagger-ui/" -ForegroundColor Green
+Write-Host "ℹ️  Nota: URLs configuradas con DOMAIN_NAME=$domainName, FRONTEND_PORT=$frontendPort, BACKEND_PORT=$backendPort" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "📋 Comandos útiles:" -ForegroundColor Yellow
 Write-Host "   Ver logs: docker-compose -f docker-compose.local.yml logs -f" -ForegroundColor White

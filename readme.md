@@ -130,10 +130,12 @@ docker-compose -f docker-compose.prod.yml ps
 - **Admin**: http://localhost:${BACKEND_PORT:-3504}/admin
 
 ### Producción:
-- **Frontend**: http://localhost:${FRONTEND_PORT:-3503}
-- **Backend**: http://localhost:${BACKEND_PORT:-3504}
-- **Admin**: http://localhost:${BACKEND_PORT:-3504}/admin
-- **API**: http://localhost:${BACKEND_PORT:-3504}/api/schema/swagger-ui/
+- **Frontend**: http://TU_IP:${FRONTEND_PORT:-3503}
+- **Backend**: http://TU_IP:${BACKEND_PORT:-3504}
+- **Admin**: http://TU_IP:${BACKEND_PORT:-3504}/admin
+- **API**: http://TU_IP:${BACKEND_PORT:-3504}/api/schema/swagger-ui/
+
+**Nota**: Reemplaza `TU_IP` con la IP específica de tu servidor (ej: 192.168.1.100)
 
 ## 📊 Indicadores Clave de Rendimiento (KPIs)
 
@@ -299,5 +301,3 @@ Este proyecto está bajo la licencia MIT. Ver el archivo `LICENSE` para más det
 ---
 
 **Última Actualización**: Enero 2025  
-**Versión**: 2.0.0  
-**Estado**: Producción - Fase de Maduración

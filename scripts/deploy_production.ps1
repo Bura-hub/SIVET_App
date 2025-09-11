@@ -408,11 +408,12 @@ function Invoke-Deploy {
     Write-LogInfo "Application is available at:"
     $frontendPort = if ($env:FRONTEND_PORT) { $env:FRONTEND_PORT } else { "3503" }
     $backendPort = if ($env:BACKEND_PORT) { $env:BACKEND_PORT } else { "3504" }
-    Write-LogInfo "  Frontend: http://$SERVER_IP`:$frontendPort"
-    Write-LogInfo "  Backend:  http://$SERVER_IP`:$backendPort"
+    $domainName = if ($env:DOMAIN_NAME) { $env:DOMAIN_NAME } else { $SERVER_IP }
+    Write-LogInfo "  Frontend: http://$domainName`:$frontendPort"
+    Write-LogInfo "  Backend:  http://$domainName`:$backendPort"
     Write-LogInfo ""
-    Write-LogInfo "Admin panel: http://$SERVER_IP`:$backendPort/admin"
-    Write-LogInfo "API docs: http://$SERVER_IP`:$backendPort/docs/"
+    Write-LogInfo "Admin panel: http://$domainName`:$backendPort/admin"
+    Write-LogInfo "API docs: http://$domainName`:$backendPort/docs/"
 }
 
 # Show help

@@ -1,4 +1,4 @@
-# Frontend - MTE - SIVET App
+# Frontend - MTE - SIVE App
 
 ## Funcionalidades de Gráficos
 

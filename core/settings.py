@@ -258,9 +258,9 @@ CELERY_BEAT_SCHEDULE = {
 # ========================= Documentación de la API (drf-spectacular) =========================
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'MTE - SIVET API',
+    'TITLE': 'MTE - SIVE API',
     'DESCRIPTION': (
-        'API completa para el sistema MTE - SIVET con autenticación avanzada, '
+        'API completa para el sistema MTE - SIVE con autenticación avanzada, '
         'monitoreo de sistemas eléctricos, estaciones meteorológicas e inversores. '
         'Incluye funcionalidades de seguridad mejoradas, tokens de refresco, '
         'y auditoría completa de acceso.'

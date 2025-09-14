@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import sivetLogo from './sivet-logo.svg';
+import siveLogo from './sive-logo.svg';
 import TransitionOverlay from './TransitionOverlay';
 import { fetchWithAuth } from '../utils/apiConfig';
 import ProfileSettings from './ProfileSettings';
@@ -270,8 +270,8 @@ function Sidebar({
           {!isSidebarMinimized && (
             <div className="flex items-center space-x-3">
               <img
-                src={sivetLogo}
-                alt="SIVET Logo"
+                src={siveLogo}
+                alt="SIVE Logo"
                 className="max-w-[200px] h-auto object-contain"
               />
             </div>
@@ -467,7 +467,7 @@ function Sidebar({
           <div className="px-3 py-3 border-t border-gray-100">
             <div className="text-center space-y-2">
               <p className="text-xs text-gray-600 font-medium leading-tight">
-                Sistema de Visualización Energética Transaccional
+                Sistema de Visualización Energético
               </p>
               <div className="flex flex-col items-center space-y-1 text-xs text-gray-400">
                 <div className="flex items-center space-x-1">

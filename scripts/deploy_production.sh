@@ -144,7 +144,7 @@ create_backup() {
     
     # Get database credentials from .env with defaults
     user_postgres=${user_postgres:-BuraHub}
-    name_db=${name_db:-sivet_db}
+    name_db=${name_db:-sive_db}
     
     if docker-compose -f docker-compose.prod.yml exec -T db pg_dump -U "$user_postgres" "$name_db" > "$backup_file" 2>/dev/null; then
         log_success "Database backup created: $backup_file"
@@ -297,7 +297,7 @@ rollback() {
         
         # Get database credentials from .env with defaults
         user_postgres=${user_postgres:-BuraHub}
-        name_db=${name_db:-sivet_db}
+        name_db=${name_db:-sive_db}
         
         # Start database first
         docker-compose -f docker-compose.prod.yml up -d db
@@ -400,8 +400,10 @@ show_help() {
     echo ""
     echo "Environment variables:"
     echo "  DOMAIN_NAME     Domain name for the application (default: localhost)"
+    echo "  FRONTEND_PORT   Frontend port (default: 3503)"
+    echo "  BACKEND_PORT    Backend port (default: 3504)"
     echo "  user_postgres   PostgreSQL username (default: BuraHub)"
-    echo "  name_db         Database name (default: sivet_db)"
+    echo "  name_db         Database name (default: sive_db)"
     echo ""
     echo -e "Current server IP: ${GREEN}$SERVER_IP${NC}"
 }

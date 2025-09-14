@@ -161,7 +161,7 @@ function New-Backup {
     $nameDb = ($envContent | Where-Object { $_ -match "^name_db=" } | ForEach-Object { ($_ -split "=")[1].Trim() }) -join ""
     
     if ([string]::IsNullOrEmpty($userPostgres)) { $userPostgres = "BuraHub" }
-    if ([string]::IsNullOrEmpty($nameDb)) { $nameDb = "sivet_db" }
+    if ([string]::IsNullOrEmpty($nameDb)) { $nameDb = "sive_db" }
     
     try {
         docker-compose -f docker-compose.prod.yml exec -T db pg_dump -U $userPostgres $nameDb | Out-File -FilePath $backupFile -Encoding UTF8
@@ -287,7 +287,8 @@ function Test-HealthCheck {
     # Check direct ports (Nginx eliminado)
     try {
         $frontendPort = if ($env:FRONTEND_PORT) { $env:FRONTEND_PORT } else { "3503" }
-        $response = Invoke-WebRequest -Uri "http://$SERVER_IP`:$frontendPort" -TimeoutSec 10 -UseBasicParsing
+        $domainName = if ($env:DOMAIN_NAME) { $env:DOMAIN_NAME } else { $SERVER_IP }
+        $response = Invoke-WebRequest -Uri "http://$domainName`:$frontendPort" -TimeoutSec 10 -UseBasicParsing
         if ($response.StatusCode -eq 200) {
             Write-LogSuccess "Frontend direct port ($frontendPort) is working"
         }
@@ -299,7 +300,8 @@ function Test-HealthCheck {
     
     try {
         $backendPort = if ($env:BACKEND_PORT) { $env:BACKEND_PORT } else { "3504" }
-        $response = Invoke-WebRequest -Uri "http://$SERVER_IP`:$backendPort/health/" -TimeoutSec 10 -UseBasicParsing
+        $domainName = if ($env:DOMAIN_NAME) { $env:DOMAIN_NAME } else { $SERVER_IP }
+        $response = Invoke-WebRequest -Uri "http://$domainName`:$backendPort/health/" -TimeoutSec 10 -UseBasicParsing
         if ($response.StatusCode -eq 200) {
             Write-LogSuccess "Backend direct port ($backendPort) is working"
         }
@@ -332,7 +334,7 @@ function Invoke-Rollback {
             $nameDb = ($envContent | Where-Object { $_ -match "^name_db=" } | ForEach-Object { ($_ -split "=")[1].Trim() }) -join ""
             
             if ([string]::IsNullOrEmpty($userPostgres)) { $userPostgres = "BuraHub" }
-            if ([string]::IsNullOrEmpty($nameDb)) { $nameDb = "sivet_db" }
+            if ([string]::IsNullOrEmpty($nameDb)) { $nameDb = "sive_db" }
             
             docker-compose -f docker-compose.prod.yml up -d db
             Start-Sleep -Seconds 10
@@ -432,8 +434,10 @@ function Show-Help {
     Write-Host ""
     Write-Host "Environment variables:" -ForegroundColor Yellow
     Write-Host "  DOMAIN_NAME     Domain name for the application (default: localhost)" -ForegroundColor White
+    Write-Host "  FRONTEND_PORT   Frontend port (default: 3503)" -ForegroundColor White
+    Write-Host "  BACKEND_PORT    Backend port (default: 3504)" -ForegroundColor White
     Write-Host "  user_postgres   PostgreSQL username (default: BuraHub)" -ForegroundColor White
-    Write-Host "  name_db         Database name (default: sivet_db)" -ForegroundColor White
+    Write-Host "  name_db         Database name (default: sive_db)" -ForegroundColor White
     Write-Host ""
     Write-Host "Current server IP: $SERVER_IP" -ForegroundColor Green
 }

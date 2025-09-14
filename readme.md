@@ -1,4 +1,4 @@
-# 🌟 MTE SIVE - Sistema de Visualización Energética Transaccional
+# 🌟 MTE SIVE - Sistema de Visualización Energético
 
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![Django](https://img.shields.io/badge/Django-5.2.4-green.svg)](https://www.djangoproject.com/)
@@ -283,7 +283,7 @@ Las contribuciones son bienvenidas:
 
 ### Información del Proyecto
 - **Código BPIN**: 2021000100499
-- **Tipo**: Sistema de Visualización Energética Transaccional
+- **Tipo**: Sistema de Visualización Energético
 - **Ubicación**: Departamento de Nariño, Colombia
 - **Estado**: 95% de avance - Fase de maduración
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import sivetLogo from './sivet-logo.svg';
+import siveLogo from './sive-logo.svg';
 import background from './bg.png';
 import TransitionOverlay from './TransitionOverlay';
 import { fetchWithAuth, handleApiResponse } from '../utils/apiConfig';
@@ -420,8 +420,8 @@ function LoginPage({ onLoginSuccess }) {
                 <div className="flex justify-center mb-6">
                     <div className="logo-container">
                         <img
-                            src={sivetLogo}
-                            alt="SIVET Logo"
+                            src={siveLogo}
+                            alt="SIVE Logo"
                             className="w-50 h-auto mx-auto transition-transform duration-300 hover:scale-105"
                         />
                     </div>
@@ -649,10 +649,10 @@ function LoginPage({ onLoginSuccess }) {
                 <div className="mt-6 pt-4 border-t border-gray-200">
                     <div className="text-center space-y-2">
                         <p className="text-xs text-gray-500 leading-relaxed">
-                            Sistema de Visualización Energética Transaccional
+                            Sistema de Visualización Energético
                         </p>
                         <p className="text-xs text-gray-400">
-                            SIVET para transparencia energética
+                            SIVE para transparencia energética
                         </p>
                         <div className="flex items-center justify-center space-x-4 text-xs text-gray-400 pt-1">
                             <div className="flex items-center space-x-1">

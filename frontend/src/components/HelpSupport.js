@@ -54,7 +54,7 @@ function HelpSupport({ onClose }) {
 
     const helpContent = {
         overview: {
-            title: 'Sistema de Visualización Energética Transaccional (MTE)',
+            title: 'Sistema de Visualización Energético (MTE)',
             description: 'Plataforma integral para el monitoreo y análisis de datos energéticos en tiempo real.',
             content: [
                 {

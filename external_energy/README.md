@@ -275,4 +275,4 @@ El componente React `ExternalEnergyData.js` proporciona:
 
 ## Licencia
 
-Este proyecto está bajo la misma licencia que el proyecto principal MTE - SIVET App.
+Este proyecto está bajo la misma licencia que el proyecto principal MTE - SIVE App.

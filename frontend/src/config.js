@@ -1,7 +1,7 @@
 // Configuración del backend
 const config = {
     // URL base del backend Django
-    API_BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:3504',
+    API_BASE_URL: process.env.REACT_APP_API_URL,
     
     // Endpoints de autenticación
     ENDPOINTS: {

@@ -88,9 +88,9 @@ pre_deployment_checks() {
         exit 1
     fi
     
-    # Check if docker-compose is available
-    if ! command -v docker-compose > /dev/null 2>&1; then
-        log_error "docker-compose is not installed or not in PATH"
+    # Check if docker compose is available
+    if ! docker compose version > /dev/null 2>&1; then
+        log_error "docker compose is not installed or not in PATH"
         exit 1
     fi
     
@@ -153,7 +153,7 @@ create_backup() {
     user_postgres=${user_postgres:-BuraHub}
     name_db=${name_db:-sive_db}
     
-    if docker-compose -f docker-compose.prod.yml exec -T db pg_dump -U "$user_postgres" "$name_db" > "$backup_file" 2>/dev/null; then
+    if docker compose -f docker-compose.prod.yml exec -T db pg_dump -U "$user_postgres" "$name_db" > "$backup_file" 2>/dev/null; then
         log_success "Database backup created: $backup_file"
     else
         log_warning "Could not create database backup (database might not be running)"
@@ -173,7 +173,7 @@ create_backup() {
 # Pull latest images
 pull_images() {
     log_info "Checking for latest Docker images..."
-    if docker-compose -f docker-compose.prod.yml pull --quiet 2>/dev/null; then
+    if docker compose -f docker-compose.prod.yml pull --quiet 2>/dev/null; then
         log_success "External images updated successfully"
     else
         log_info "Some images will be built locally (this is normal for custom images)"
@@ -183,7 +183,7 @@ pull_images() {
 # Build new images
 build_images() {
     log_info "Building new Docker images..."
-    if docker-compose -f docker-compose.prod.yml build --no-cache; then
+    if docker compose -f docker-compose.prod.yml build --no-cache; then
         log_success "Images built successfully"
     else
         log_error "Failed to build images"
@@ -195,11 +195,11 @@ build_images() {
 run_migrations() {
     log_info "Running database migrations..."
     # Start only database first for migrations
-    docker-compose -f docker-compose.prod.yml up -d db
+    docker compose -f docker-compose.prod.yml up -d db
     sleep 10
     
     # Run migrations using a temporary backend container
-    if docker-compose -f docker-compose.prod.yml run --rm backend python manage.py migrate; then
+    if docker compose -f docker-compose.prod.yml run --rm backend python manage.py migrate; then
         log_success "Migrations completed successfully"
     else
         log_error "Failed to run migrations"
@@ -210,8 +210,9 @@ run_migrations() {
 # Collect static files
 collect_static() {
     log_info "Collecting static files..."
-    # Run collectstatic using a temporary backend container
-    if docker-compose -f docker-compose.prod.yml run --rm backend python manage.py collectstatic --noinput; then
+    
+    # Run collectstatic with --clear flag to avoid permission issues
+    if docker compose -f docker-compose.prod.yml run --rm backend python manage.py collectstatic --noinput --clear; then
         log_success "Static files collected successfully"
     else
         log_error "Failed to collect static files"
@@ -224,17 +225,40 @@ deploy_services() {
     log_info "Deploying services..."
     
     # Stop existing services
-    docker-compose -f docker-compose.prod.yml down
+    docker compose -f docker-compose.prod.yml down
     
-    # Start new services
-    if ! docker-compose -f docker-compose.prod.yml up -d; then
-        log_error "Failed to start services"
+    # Start services in order: database first, then backend, then others
+    log_info "Starting database and Redis..."
+    if ! docker compose -f docker-compose.prod.yml up -d db redis; then
+        log_error "Failed to start database and Redis"
         exit 1
     fi
     
-    # Wait for services to be healthy
-    log_info "Waiting for services to be healthy..."
-    sleep 45
+    # Wait for database to be ready
+    log_info "Waiting for database to be ready..."
+    sleep 15
+    
+    # Start backend
+    log_info "Starting backend..."
+    if ! docker compose -f docker-compose.prod.yml up -d backend; then
+        log_error "Failed to start backend"
+        exit 1
+    fi
+    
+    # Wait for backend to be ready
+    log_info "Waiting for backend to be ready..."
+    sleep 10
+    
+    # Start remaining services
+    log_info "Starting remaining services..."
+    if ! docker compose -f docker-compose.prod.yml up -d; then
+        log_error "Failed to start remaining services"
+        exit 1
+    fi
+    
+    # Wait for all services to be healthy
+    log_info "Waiting for all services to be healthy..."
+    sleep 30
     
     # Check health
     if health_check; then
@@ -251,7 +275,7 @@ health_check() {
     log_info "Performing health checks..."
     
     # Check if all containers are running
-    containers=$(docker-compose -f docker-compose.prod.yml ps -q)
+    containers=$(docker compose -f docker-compose.prod.yml ps -q)
     all_healthy=true
     
     for container in $containers; do
@@ -299,7 +323,7 @@ rollback() {
     log_warning "Rolling back deployment..."
     
     # Stop current services
-    docker-compose -f docker-compose.prod.yml down
+    docker compose -f docker-compose.prod.yml down
     
     # Restore from backup if available
     latest_backup=$(ls -t "$BACKUP_DIR"/pre_deploy_backup_*.sql 2>/dev/null | head -1)
@@ -311,11 +335,11 @@ rollback() {
         name_db=${name_db:-sive_db}
         
         # Start database first
-        docker-compose -f docker-compose.prod.yml up -d db
+        docker compose -f docker-compose.prod.yml up -d db
         sleep 10
         
         # Restore database
-        if docker-compose -f docker-compose.prod.yml exec -T db psql -U "$user_postgres" -d "$name_db" < "$latest_backup"; then
+        if docker compose -f docker-compose.prod.yml exec -T db psql -U "$user_postgres" -d "$name_db" < "$latest_backup"; then
             log_success "Database restored from backup"
         else
             log_error "Failed to restore database from backup"
@@ -325,7 +349,7 @@ rollback() {
     fi
     
     # Start previous version
-    docker-compose -f docker-compose.prod.yml up -d
+    docker compose -f docker-compose.prod.yml up -d
     
     log_warning "Rollback completed"
 }
@@ -335,14 +359,14 @@ post_deployment() {
     log_info "Running post-deployment tasks..."
     
     # Clear cache
-    if docker-compose -f docker-compose.prod.yml exec -T backend python manage.py clear_cache 2>/dev/null; then
+    if docker compose -f docker-compose.prod.yml exec -T backend python manage.py clear_cache 2>/dev/null; then
         log_success "Cache cleared successfully"
     else
         log_warning "Cache clear command not available"
     fi
     
     # Restart Celery workers
-    docker-compose -f docker-compose.prod.yml restart celery_worker celery_beat
+    docker compose -f docker-compose.prod.yml restart celery_worker celery_beat
     
     log_success "Post-deployment tasks completed"
 }

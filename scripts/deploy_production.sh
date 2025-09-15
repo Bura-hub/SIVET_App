@@ -21,6 +21,16 @@ BACKUP_DIR="./backups"
 LOG_DIR="./logs"
 DEPLOYMENT_LOG="$LOG_DIR/deployment_$(date +%Y%m%d_%H%M%S).log"
 
+# Get server IP from .env or use default
+SERVER_IP=""
+if [ -f "$ENV_FILE" ]; then
+    # Extract DOMAIN_NAME from .env file
+    DOMAIN_LINE=$(grep "^DOMAIN_NAME=" "$ENV_FILE" | head -1)
+    if [ -n "$DOMAIN_LINE" ]; then
+        SERVER_IP=$(echo "$DOMAIN_LINE" | cut -d'=' -f2 | tr -d ' ')
+    fi
+fi
+
 # Load environment variables from .env file
 if [ -f "$ENV_FILE" ]; then
     # Load variables safely, avoiding issues with spaces and special characters
@@ -35,9 +45,6 @@ if [ -f "$ENV_FILE" ]; then
         fi
     done < "$ENV_FILE"
 fi
-
-# Get server IP from .env or use default
-SERVER_IP=${DOMAIN_NAME}
 
 if [ -z "$SERVER_IP" ]; then
     log_error "DOMAIN_NAME not found in .env file. Please set DOMAIN_NAME in your .env file."
@@ -187,7 +194,12 @@ build_images() {
 # Run database migrations
 run_migrations() {
     log_info "Running database migrations..."
-    if docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate; then
+    # Start only database first for migrations
+    docker-compose -f docker-compose.prod.yml up -d db
+    sleep 10
+    
+    # Run migrations using a temporary backend container
+    if docker-compose -f docker-compose.prod.yml run --rm backend python manage.py migrate; then
         log_success "Migrations completed successfully"
     else
         log_error "Failed to run migrations"
@@ -198,7 +210,8 @@ run_migrations() {
 # Collect static files
 collect_static() {
     log_info "Collecting static files..."
-    if docker-compose -f docker-compose.prod.yml exec -T backend python manage.py collectstatic --noinput; then
+    # Run collectstatic using a temporary backend container
+    if docker-compose -f docker-compose.prod.yml run --rm backend python manage.py collectstatic --noinput; then
         log_success "Static files collected successfully"
     else
         log_error "Failed to collect static files"
@@ -211,9 +224,7 @@ deploy_services() {
     log_info "Deploying services..."
     
     # Stop existing services
-    if ! docker-compose -f docker-compose.prod.yml down; then
-        log_warning "Failed to stop existing services (this might be expected if no services were running)"
-    fi
+    docker-compose -f docker-compose.prod.yml down
     
     # Start new services
     if ! docker-compose -f docker-compose.prod.yml up -d; then
@@ -263,7 +274,7 @@ health_check() {
     # Check if curl is available
     if ! command -v curl > /dev/null 2>&1; then
         log_warning "curl is not available, skipping port checks"
-        return 0
+        return $([ "$all_healthy" = true ] && echo 0 || echo 1)
     fi
     
     if curl -f -s http://$DOMAIN_NAME:$FRONTEND_PORT > /dev/null 2>&1; then
@@ -331,11 +342,7 @@ post_deployment() {
     fi
     
     # Restart Celery workers
-    if docker-compose -f docker-compose.prod.yml restart celery_worker celery_beat; then
-        log_success "Celery workers restarted"
-    else
-        log_warning "Failed to restart Celery workers"
-    fi
+    docker-compose -f docker-compose.prod.yml restart celery_worker celery_beat
     
     log_success "Post-deployment tasks completed"
 }
@@ -346,7 +353,7 @@ cleanup() {
     if docker image prune -f; then
         log_success "Cleanup completed"
     else
-        log_warning "Cleanup failed or no images to remove"
+        log_warning "Cleanup failed"
     fi
 }
 
@@ -364,9 +371,9 @@ deploy() {
     create_backup
     pull_images
     build_images
-    deploy_services
     run_migrations
     collect_static
+    deploy_services
     post_deployment
     cleanup
     
